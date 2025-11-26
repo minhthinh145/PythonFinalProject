@@ -50,7 +50,6 @@ PythonProject/
 └── README.md
 ```
 
-└── README.md
 
 ````
 
@@ -66,7 +65,6 @@ PythonProject/
 ### Cho Developer (Phương án Development):
 
 - **Python**: `v3.11` trở lên
-- **Node.js**: `v18.x` trở lên
 - **PNPM**: `v8.x` trở lên ([Hướng dẫn cài đặt PNPM](https://pnpm.io/installation))
 - **Git**
 - **Neon PostgreSQL Account**
@@ -126,7 +124,7 @@ docker-compose ps
 
 Sau khi các container khởi động thành công:
 
-- **Frontend (Giao diện người dùng):** [http://localhost](http://localhost)
+- **Frontend (Giao diện người dùng):** [http://localhost:5173](http://localhost:5173)
 - **Backend API:** [http://localhost:8000](http://localhost:8000)
 - **Django Admin:** [http://localhost:8000/admin](http://localhost:8000/admin)
 
@@ -172,7 +170,7 @@ ports:
 
 # Đổi port backend
 ports:
-  - "3001:3000"  # Thay vì 3000:3000
+  -   - "8001:8000"  # Thay vì 8000:8000
 
 # Đổi port frontend
 ports:
@@ -272,7 +270,7 @@ pnpm dev
 Sau khi các tiến trình khởi động thành công:
 
 - **Frontend (Giao diện người dùng):** [http://localhost:5173](http://localhost:5173) (Port mặc định của Vite)
-- **Backend (API Server):** [http://localhost:3000](http://localhost:3000)
+- **Backend (API Server):** [http://localhost:8000](http://localhost:8000)
 - **Kết nối Database:** Host: `localhost`, Port: `5433`
 
 ---
@@ -398,3 +396,4 @@ pnpm run lint
 Dự án này được cấp phép theo Giấy phép MIT.
 
 ---
+
