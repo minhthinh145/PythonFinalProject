@@ -1,0 +1,128 @@
+.toast__container {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+}
+
+.toast {
+  width: 320px;
+  height: 48px;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transform: translateX(120%);
+  opacity: 0;
+  transition: all 0.25s ease;
+}
+
+.toast--enter {
+  transform: translateX(0);
+  opacity: 1;
+}
+.toast--leave {
+  transform: translateX(120%);
+  opacity: 0;
+}
+
+/* Nội dung chính */
+.toast__content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 16px;
+  color: #fff;
+}
+
+.toast__text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toast_svg svg {
+  width: 12px;
+  height: 12px;
+}
+
+.toast_svg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 23px;
+  width: 23px;
+  border-radius: 50%;
+  box-shadow: 0px 1px 5px #0000001c;
+}
+
+.toast__title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.toast__message {
+  font-size: 13px;
+  max-width: 240px;
+  word-wrap: break-word;
+}
+
+/* Nút X góc phải */
+.toast__close {
+  position: absolute;
+  right: 10px;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #fff;
+  padding: 4px;
+  font-size: 12px;
+  line-height: 1;
+  transition: opacity 0.2s;
+}
+
+.toast__close:hover {
+  opacity: 0.7;
+}
+
+/* Thanh tiến trình (nếu có) */
+/* .toast__progress {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.8);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  transition: width 0.2s linear;
+} */
+
+/* type màu sắc */
+.toast--info {
+  background-color: #2975ee;
+}
+.toast--success {
+  background-color: rgb(77, 154, 81);
+}
+.toast--error {
+  background-color: rgba(216, 70, 70);
+}
+.toast--warning {
+  background-color: #f59e0b;
+}
+
+.toast--info .toast_svg {
+  background-color: #518ded;
+}
+.toast--success .toast_svg {
+  background-color: rgb(97, 210, 69);
+}
+.toast--error .toast_svg {
+  background-color: rgb(255, 75, 75);
+}
+
+.toast--warning .toast_svg {
+  background-color: rgb(231, 166, 34);
+}

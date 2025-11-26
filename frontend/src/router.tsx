@@ -1,0 +1,142 @@
+import { createBrowserRouter, Navigate } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PDTLayout from "./layouts/PDTLayout";
+import LoginPage from "./pages/LoginPage";
+import ChuyenHocKyHienHanh from "./pages/pdt/ChuyenHocKyHienHanh";
+import ChuyenTrangThai from "./pages/pdt/ChuyenTrangThai";
+import PDTDuyetHocPhan from "./pages/pdt/DuyetHocPhan-PDT";
+import TaoLopHocPhan from "./pages/tlk/TaoLopHocPhan";
+import QuanLyNoiBo from "./pages/pdt/QuanLyNoiBo";
+import ThongKeDashboard from "./pages/pdt/ThongKeDashboard";
+import ControlPanel from "./pages/pdt/ControlPanel";
+
+import GVLayout from "./layouts/GVLayout";
+import GiaoVienDashboard from "./pages/gv/Dashboard";
+
+import TroLyKhoaLayout from "./layouts/TroLyKhoaLayout";
+import LenDanhSachHocPhan from "./pages/tlk/LenDanhSachHocPhan";
+import TlkDuyetHocPhan from "./pages/tlk/DuyetHocPhan-TLK";
+
+import TruongKhoaLayout from "./layouts/TruongKhoaLayout";
+import TkDuyetHocPhan from "./pages/tk/DuyetHocPhan-TK";
+
+import GhiDanhHocPhan from "./pages/sv/GhiDanhHocPhan";
+import TraCuuMonHoc from "./pages/sv/TraCuuMonHoc";
+import SVLayout from "./layouts/SVLayout";
+import LichSuDangKy from "./pages/sv/LichSuDangKyHocPhan";
+import XemThoiKhoaBieu from "./pages/sv/XemThoiKhoaBieu";
+import PhanBoPhongHoc from "./pages/pdt/PhanBoPhongHoc";
+import BaoCaoThongKe from "./pages/pdt/ThongKeDashboard";
+
+import GVLopHocPhanList from "./pages/gv/GVLopHocPhanList";
+import GVLopHocPhanDetail from "./pages/gv/GVLopHocPhanDetail";
+
+import ResetPassword from "./pages/ResetPassword";
+import GVThoiKhoaBieu from "./pages/gv/GVThoiKhoaBieu";
+import DangKyHocPhan from "./pages/sv/DangKyHocPhan";
+import ThanhToanHocPhi from "./pages/sv/ThanhToanHocPhi";
+import PaymentResult from "./pages/sv/PaymentResult";
+
+// ✅ Add SV imports
+import SVLopHocPhanList from "./pages/sv/SVLopHocPhanList";
+import SVLopHocPhanDetail from "./pages/sv/SVLopHocPhanDetail";
+import TaiLieuHocTap from "./pages/sv/TaiLieuHocTap";
+
+export const router = createBrowserRouter([
+  { path: "/", element: <LoginPage /> },
+  { path: "/reset-password", element: <ResetPassword /> },
+
+  { path: "/payment/result", element: <PaymentResult /> },
+
+  {
+    path: "/pdt",
+    element: (
+      <ProtectedRoute allow={["phong_dao_tao"]}>
+        <PDTLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <Navigate to="chuyen-trang-thai" replace /> },
+      { path: "chuyen-trang-thai", element: <ChuyenTrangThai /> },
+      { path: "duyet-hoc-phan", element: <PDTDuyetHocPhan /> },
+      { path: "quan-ly", element: <QuanLyNoiBo /> },
+      { path: "thong-ke-dashboard", element: <BaoCaoThongKe /> },
+      { path: "chuyen-hoc-ky", element: <ChuyenHocKyHienHanh /> },
+      { path: "phan-bo-phong-hoc", element: <PhanBoPhongHoc /> },
+      { path: "control-panel", element: <ControlPanel /> },
+    ],
+  },
+
+  // GV - giang_vien
+  {
+    path: "/gv",
+    element: (
+      <ProtectedRoute allow={["giang_vien"]}>
+        <GVLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <Navigate to="lop-hoc-phan" replace /> },
+      { path: "lop-hoc-phan", element: <GVLopHocPhanList /> },
+      { path: "lop-hoc-phan/:id", element: <GVLopHocPhanDetail /> },
+      { path: "thoi-khoa-bieu", element: <GVThoiKhoaBieu /> },
+    ],
+  },
+
+  // TLK - tro_ly_khoa
+  {
+    path: "/tlk",
+    element: (
+      <ProtectedRoute allow={["tro_ly_khoa"]}>
+        <TroLyKhoaLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <Navigate to="len-danh-sach-hoc-phan" replace />,
+      },
+      { path: "len-danh-sach-hoc-phan", element: <LenDanhSachHocPhan /> },
+      { path: "duyet-hoc-phan", element: <TlkDuyetHocPhan /> },
+      { path: "tao-lop-hoc-phan", element: <TaoLopHocPhan /> },
+    ],
+  },
+
+  // TK - truong_khoa
+  {
+    path: "/tk",
+    element: (
+      <ProtectedRoute allow={["truong_khoa"]}>
+        <TruongKhoaLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <Navigate to="duyet-hoc-phan" replace /> },
+      { path: "duyet-hoc-phan", element: <TkDuyetHocPhan /> },
+    ],
+  },
+
+  // SV - sinh_vien
+  {
+    path: "/sv",
+    element: <SVLayout />,
+    children: [
+      { index: true, element: <Navigate to="ghi-danh-hoc-phan" replace /> },
+      { path: "ghi-danh-hoc-phan", element: <GhiDanhHocPhan /> },
+      { path: "tra-cuu-mon-hoc", element: <TraCuuMonHoc /> },
+      { path: "lich-su-dang-ky-hoc-phan", element: <LichSuDangKy /> },
+      { path: "xem-thoi-khoa-bieu", element: <XemThoiKhoaBieu /> },
+      { path: "dang-ky-hoc-phan", element: <DangKyHocPhan /> },
+      { path: "thanh-toan-hoc-phi", element: <ThanhToanHocPhi /> },
+
+      // ✅ Tài liệu học tập
+      { path: "tai-lieu", element: <TaiLieuHocTap /> },
+
+      // ✅ Routes for SV lớp học phần detail (nếu có)
+      { path: "lop-hoc-phan", element: <SVLopHocPhanList /> },
+      { path: "lop-hoc-phan/:id", element: <SVLopHocPhanDetail /> },
+    ],
+  },
+
+  { path: "*", element: <Navigate to="/" replace /> },
+]);
