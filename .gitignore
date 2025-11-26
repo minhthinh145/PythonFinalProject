@@ -81,4 +81,4 @@ out/
 infra/env/*.env
 infra/dbdata/
 infra/sql/
-
+be-egacy/
