@@ -71,10 +71,13 @@ function LoginPage() {
       const home = ROLE_HOME[data.user.loaiTaiKhoan] ?? "/login";
       navigate(home, { replace: true });
     } catch (err: any) {
+      // RTK Query error format: { status, data: message }
       const msg =
-        err?.data?.error ||
-        err?.error ||
-        "Đăng nhập thất bại hoặc lỗi kết nối máy chủ";
+        typeof err?.data === "string"
+          ? err.data
+          : err?.data?.message ||
+            err?.message ||
+            "Đăng nhập thất bại hoặc lỗi kết nối máy chủ";
       setErrorMsg(msg);
       openNotify?.(msg, "error");
     }
