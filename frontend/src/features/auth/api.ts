@@ -4,9 +4,15 @@ import type { LoginRequest, LoginResponse } from "./types";
 export const authApi = api.injectEndpoints({
   endpoints: (build) => ({
     login: build.mutation<LoginResponse, LoginRequest>({
-      query: (body) => ({ url: "/auth/login", method: "POST", body }),
+      query: (body: LoginRequest) => ({
+        url: "/api/auth/login",
+        method: "POST",
+        body
+      }),
+      // Không cần transformResponse - đã handle ở baseQuery
     }),
   }),
 });
-//note
+
 export const { useLoginMutation } = authApi;
+

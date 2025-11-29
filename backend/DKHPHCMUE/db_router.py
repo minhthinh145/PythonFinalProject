@@ -1,6 +1,7 @@
 """
 Database Router để tách riêng Django internal tables và app tables
 """
+import sys
 
 class DjangoInternalRouter:
     """
@@ -40,6 +41,13 @@ class DjangoInternalRouter:
         """
         Quyết định migrate vào database nào
         """
+        # In test mode, allow migration for both databases independently
+        # to avoid circular dependency
+        if 'pytest' in sys.modules or 'test' in sys.argv:
+            if app_label in self.django_apps:
+                return db == 'default'
+            return db == 'neon'
+        
         if app_label in self.django_apps:
             # Django apps chỉ migrate vào SQLite
             return db == 'default'

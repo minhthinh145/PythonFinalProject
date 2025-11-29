@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'infrastructure.persistence',
 ]
 
 MIDDLEWARE = [
@@ -90,6 +91,12 @@ DATABASES = {
         conn_max_age=600,
         conn_health_checks=True,
     )
+}
+
+# Cấu hình cho test - cho phép Django tự tạo test database (test_neondb)
+# Dùng với pytest --reuse-db để tránh tạo lại DB mỗi lần test
+DATABASES['neon']['TEST'] = {
+    'DEPENDENCIES': [],  # No dependencies to avoid circular dependency error
 }
 
 # Database Router để tách riêng Django tables và app tables

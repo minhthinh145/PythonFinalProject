@@ -7,9 +7,9 @@ export type Role =
 
 export interface User {
   id: string;
-  hoTen: string; 
+  hoTen: string;
   maNhanVien?: string;
-  loaiTaiKhoan: Role; 
+  loaiTaiKhoan: Role;
   mssv?: string;
   lop?: string;
   nganh?: string;
@@ -22,5 +22,6 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
+  refreshToken: string;
   user: User;
 }
