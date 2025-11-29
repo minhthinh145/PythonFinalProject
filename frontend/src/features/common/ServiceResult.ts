@@ -3,7 +3,7 @@
  * Map 1-1 với backend ServiceResult
  */
 export interface ServiceResult<T = any> {
-    success: boolean;  // Map với BE success field
+    isSuccess: boolean;  // Map với BE isSuccess field
     message: string;
     data?: T;
     error?: string;

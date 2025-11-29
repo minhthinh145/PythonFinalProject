@@ -31,12 +31,4 @@ class SinhVienProfileView(APIView):
         
         http_status = result.status_code or 200
         
-        return Response(
-            {
-                'isSuccess': result.success,
-                'message': result.message,
-                'data': result.data,
-                'errorCode': result.error_code
-            },
-            status=http_status
-        )
+        return Response(result.to_dict(), status=http_status)

@@ -1,6 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "./store";
-import type { ServiceResult } from "../features/common/ServiceResult";
 
 // Base query với transform mặc định unwrap ServiceResult
 const baseQuery = fetchBaseQuery({
@@ -12,32 +11,8 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
-// Transform response: unwrap ServiceResult
-const baseQueryWithTransform: typeof baseQuery = async (args, api, extraOptions) => {
-  const result = await baseQuery(args, api, extraOptions);
-
-  if (result.data) {
-    const serviceResult = result.data as ServiceResult;
-
-    // Nếu success = false, throw error để RTK Query handle
-    if (!serviceResult.success) {
-      return {
-        error: {
-          status: result.meta?.response?.status || 400,
-          data: serviceResult.message || serviceResult.error || 'Unknown error',
-        },
-      };
-    }
-
-    // Unwrap data từ ServiceResult
-    return { ...result, data: serviceResult.data };
-  }
-
-  return result;
-};
-
 export const api = createApi({
   reducerPath: "api",
-  baseQuery: baseQueryWithTransform,
+  baseQuery: baseQuery,
   endpoints: () => ({}),
 });

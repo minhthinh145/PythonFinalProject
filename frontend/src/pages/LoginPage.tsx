@@ -58,17 +58,27 @@ function LoginPage() {
     setErrorMsg("");
 
     try {
-      const data = await login({
+      const res = await login({
         tenDangNhap: username,
         matKhau: password,
       }).unwrap();
 
+      console.log("Login Response:", res);
+
+      if (!res.isSuccess) {
+        throw new Error(res.message || "Đăng nhập thất bại");
+      }
+
+      if (!res.data) {
+        throw new Error("Không có dữ liệu trả về");
+      }
+
       // lưu vào store + localStorage
-      dispatch(setCredentials({ token: data.token, user: data.user }));
+      dispatch(setCredentials({ token: res.data.token, user: res.data.user }));
 
       // notify & điều hướng theo role
-      openNotify?.("Đăng nhập thành công", "success");
-      const home = ROLE_HOME[data.user.loaiTaiKhoan] ?? "/login";
+      openNotify?.(res.message || "Đăng nhập thành công", "success");
+      const home = ROLE_HOME[res.data.user.loaiTaiKhoan] ?? "/login";
       navigate(home, { replace: true });
     } catch (err: any) {
       // RTK Query error format: { status, data: message }

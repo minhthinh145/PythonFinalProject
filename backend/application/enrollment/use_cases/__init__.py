@@ -2,3 +2,5 @@ from .check_ghi_danh_use_case import CheckGhiDanhUseCase
 from .get_mon_hoc_ghi_danh_use_case import GetMonHocGhiDanhUseCase
 from .ghi_danh_mon_hoc_use_case import GhiDanhMonHocUseCase
 from .get_danh_sach_da_ghi_danh_use_case import GetDanhSachDaGhiDanhUseCase
+from .get_hoc_ky_use_case import GetHocKyUseCase
+from .huy_ghi_danh_mon_hoc_use_case import HuyGhiDanhMonHocUseCase

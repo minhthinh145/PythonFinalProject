@@ -27,8 +27,8 @@ class GetDanhSachDaGhiDanhUseCase:
             de_xuat = de_xuat_list[0] if de_xuat_list else None
             
             ten_giang_vien = None
-            if de_xuat and de_xuat.giang_vien and de_xuat.giang_vien.users:
-                ten_giang_vien = de_xuat.giang_vien.users.ho_ten
+            if de_xuat and de_xuat.giang_vien_de_xuat and de_xuat.giang_vien_de_xuat.id:
+                ten_giang_vien = de_xuat.giang_vien_de_xuat.id.ho_ten
                 
             data.append({
                 'ghiDanhId': str(gd.id),

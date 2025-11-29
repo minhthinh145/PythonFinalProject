@@ -33,7 +33,7 @@ class LoginView(APIView):
         
         Response (map 1-1 frontend LoginResponse):
             {
-                "success": true,
+                "isSuccess": true,
                 "message": "string",
                 "data": {
                     "token": "string",
@@ -49,7 +49,7 @@ class LoginView(APIView):
         if not ten_dang_nhap or not mat_khau:
             return Response(
                 {
-                    'success': False,
+                    'isSuccess': False,
                     'message': 'Vui lòng cung cấp tên đăng nhập và mật khẩu'
                 },
                 status=status.HTTP_400_BAD_REQUEST
@@ -64,15 +64,7 @@ class LoginView(APIView):
         # Map ServiceResult to HTTP response
         http_status = result.status_code or 200
         
-        return Response(
-            {
-                'isSuccess': result.success,
-                'message': result.message,
-                'data': result.data,
-                'errorCode': result.error_code
-            },
-            status=http_status
-        )
+        return Response(result.to_dict(), status=http_status)
 
 
 class RefreshTokenView(APIView):
@@ -94,7 +86,7 @@ class RefreshTokenView(APIView):
         
         Response:
             {
-                "success": true,
+                "isSuccess": true,
                 "message": "string",
                 "data": {
                     "accessToken": "string"
@@ -106,7 +98,7 @@ class RefreshTokenView(APIView):
         if not refresh_token:
             return Response(
                 {
-                    'success': False,
+                    'isSuccess': False,
                     'message': 'Vui lòng cung cấp refresh token'
                 },
                 status=status.HTTP_400_BAD_REQUEST
@@ -119,12 +111,4 @@ class RefreshTokenView(APIView):
         
         http_status = result.status_code or 200
         
-        return Response(
-            {
-                'isSuccess': result.success,
-                'message': result.message,
-                'data': result.data,
-                'errorCode': result.error_code
-            },
-            status=http_status
-        )
+        return Response(result.to_dict(), status=http_status)

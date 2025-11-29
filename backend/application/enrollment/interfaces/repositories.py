@@ -9,6 +9,10 @@ class IHocKyRepository(ABC):
     def get_current_hoc_ky(self) -> Optional[Any]:
         pass
 
+    @abstractmethod
+    def get_all_hoc_ky(self) -> List[Any]:
+        pass
+
 class IKyPhaseRepository(ABC):
     @abstractmethod
     def get_current_phase(self, hoc_ky_id: str) -> Optional[Any]:
@@ -21,6 +25,10 @@ class IDotDangKyRepository(ABC):
         
     @abstractmethod
     def is_ghi_danh_for_khoa(self, khoa_id: str, hoc_ky_id: str) -> bool:
+        pass
+
+    @abstractmethod
+    def find_active_dot_dang_ky(self, hoc_ky_id: str) -> Optional[Any]:
         pass
 
 class IGhiDanhRepository(ABC):

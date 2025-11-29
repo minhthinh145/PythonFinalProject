@@ -175,7 +175,7 @@ export const svApi = {
             return {
                 isSuccess: false,
                 message: "orderId không hợp lệ",
-                errorCode: "INVALID_ORDER_ID",
+                error: "INVALID_ORDER_ID",
             };
         }
 
@@ -199,7 +199,7 @@ export const svApi = {
             return {
                 isSuccess: false,
                 message: error.message || "Không thể lấy trạng thái thanh toán",
-                errorCode: error.code || "FETCH_ERROR",
+                error: error.code || "FETCH_ERROR",
             };
         }
     },

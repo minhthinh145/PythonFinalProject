@@ -16,10 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from presentation.api.enrollment.views import GetHocKyView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('presentation.api.auth.urls')),
     path('api/sv/', include('presentation.api.sinh_vien.urls')),
     path('api/sv/', include('presentation.api.enrollment.urls')),
+    path('api/hoc-ky-nien-khoa', GetHocKyView.as_view()),
 ]
