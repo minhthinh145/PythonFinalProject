@@ -38,3 +38,11 @@ class ServiceResult(Generic[T]):
     def not_found(message: str = "Not Found") -> 'ServiceResult':
         """404 Not Found"""
         return ServiceResult(success=False, message=message, data=None, status_code=404)
+
+    def to_dict(self):
+        return {
+            'isSuccess': self.success,
+            'message': self.message,
+            'data': self.data,
+            'errorCode': self.error_code
+        }

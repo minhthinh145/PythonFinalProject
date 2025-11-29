@@ -10,7 +10,12 @@ from application.enrollment.use_cases import (
     CheckGhiDanhUseCase,
     GetMonHocGhiDanhUseCase,
     GhiDanhMonHocUseCase,
-    GetDanhSachDaGhiDanhUseCase
+    GhiDanhMonHocUseCase,
+    GetDanhSachDaGhiDanhUseCase,
+    GhiDanhMonHocUseCase,
+    GetDanhSachDaGhiDanhUseCase,
+    GetHocKyUseCase,
+    HuyGhiDanhMonHocUseCase
 )
 from infrastructure.persistence.enrollment import (
     HocKyRepository,
@@ -49,12 +54,7 @@ class CheckGhiDanhStatusView(EnrollmentBaseView):
         
         result = use_case.execute(str(request.user.id))
         
-        return Response({
-            'isSuccess': result.success,
-            'message': result.message,
-            'data': result.data,
-            'errorCode': result.error_code
-        }, status=result.status_code or 200)
+        return Response(result.to_dict(), status=result.status_code or 200)
 
 class GetMonHocGhiDanhView(EnrollmentBaseView):
     """
@@ -70,12 +70,7 @@ class GetMonHocGhiDanhView(EnrollmentBaseView):
         
         result = use_case.execute(hoc_ky_id)
         
-        return Response({
-            'isSuccess': result.success,
-            'message': result.message,
-            'data': result.data,
-            'errorCode': result.error_code
-        }, status=result.status_code or 200)
+        return Response(result.to_dict(), status=result.status_code or 200)
 
 class GhiDanhMonHocView(EnrollmentBaseView):
     """
@@ -90,12 +85,15 @@ class GhiDanhMonHocView(EnrollmentBaseView):
         
         result = use_case.execute(request.data, str(request.user.id))
         
-        return Response({
-            'isSuccess': result.success,
-            'message': result.message,
-            'data': result.data,
-            'errorCode': result.error_code
-        }, status=result.status_code or 200)
+        return Response(result.to_dict(), status=result.status_code or 200)
+
+    def delete(self, request):
+        repos = self.get_repositories()
+        use_case = HuyGhiDanhMonHocUseCase(repos['ghi_danh'])
+        
+        result = use_case.execute(request.data, str(request.user.id))
+        
+        return Response(result.to_dict(), status=result.status_code or 200)
 
 class GetDanhSachDaGhiDanhView(EnrollmentBaseView):
     """
@@ -107,9 +105,16 @@ class GetDanhSachDaGhiDanhView(EnrollmentBaseView):
         
         result = use_case.execute(str(request.user.id))
         
-        return Response({
-            'isSuccess': result.success,
-            'message': result.message,
-            'data': result.data,
-            'errorCode': result.error_code
-        }, status=result.status_code or 200)
+        return Response(result.to_dict(), status=result.status_code or 200)
+
+class GetHocKyView(EnrollmentBaseView):
+    """
+    GET /api/hoc-ky-nien-khoa
+    """
+    def get(self, request):
+        repos = self.get_repositories()
+        use_case = GetHocKyUseCase(repos['hoc_ky'])
+        
+        result = use_case.execute()
+        
+        return Response(result.to_dict(), status=result.status_code or 200)

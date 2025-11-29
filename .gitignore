@@ -81,6 +81,6 @@ out/
 infra/env/*.env
 infra/dbdata/
 infra/sql/
-be-egacy/
 backend/check_db.py
 backend/scripts/replicate_db.sh
+be-egacy/

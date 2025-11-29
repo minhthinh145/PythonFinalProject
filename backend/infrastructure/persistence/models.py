@@ -616,10 +616,6 @@ class Users(models.Model):
     updated_at = models.DateTimeField(blank=True, null=True)
     email = models.TextField(unique=True)  # This field type is a guess.
 
-    @property
-    def is_authenticated(self):
-        return True
-
     class Meta:
         managed = False
         db_table = 'users'

@@ -27,6 +27,9 @@ class HocKyRepository(IHocKyRepository):
         except Exception:
             return None
 
+    def get_all_hoc_ky(self) -> List[HocKy]:
+        return list(HocKy.objects.using('neon').select_related('id_nien_khoa').all().order_by('-ngay_bat_dau'))
+
 class KyPhaseRepository(IKyPhaseRepository):
     def get_current_phase(self, hoc_ky_id: str) -> Optional[KyPhase]:
         try:
@@ -40,15 +43,7 @@ class KyPhaseRepository(IKyPhaseRepository):
 class DotDangKyRepository(IDotDangKyRepository):
     def find_toan_truong_by_hoc_ky(self, hoc_ky_id: str, phase: str) -> Optional[DotDangKy]:
         now = timezone.now()
-        # Note: phase is not directly in DotDangKy based on legacy logic, 
-        # but legacy passed "ghi_danh" as phase. 
-        # However, DotDangKy model has `loai_dot`.
-        # Legacy logic: findToanTruongByHocKy(hocKyId, phase) 
-        # -> where hoc_ky_id = ... and is_check_toan_truong = true and now between start and end
-        # The phase argument in legacy seems to map to `loai_dot` or just context.
-        # Let's assume `loai_dot` should match or just check time.
-        # Legacy: `return this.model.findFirst({ where: { hoc_ky_id, is_check_toan_truong: true, ... } })`
-        
+
         return DotDangKy.objects.using('neon').filter(
             hoc_ky_id=hoc_ky_id,
             is_check_toan_truong=True,
@@ -65,6 +60,14 @@ class DotDangKyRepository(IDotDangKyRepository):
             thoi_gian_ket_thuc__gte=now
         ).exists()
 
+    def find_active_dot_dang_ky(self, hoc_ky_id: str) -> Optional[DotDangKy]:
+        now = timezone.now()
+        return DotDangKy.objects.using('neon').filter(
+            hoc_ky_id=hoc_ky_id,
+            thoi_gian_bat_dau__lte=now,
+            thoi_gian_ket_thuc__gte=now
+        ).first()
+
 class HocPhanRepository(IHocPhanRepository):
     def find_all_open(self, hoc_ky_id: str) -> List[HocPhan]:
         return list(HocPhan.objects.using('neon').filter(
@@ -75,8 +78,7 @@ class HocPhanRepository(IHocPhanRepository):
             'mon_hoc__khoa'
         ).prefetch_related(
             'mon_hoc__dexuathocphan_set',
-            'mon_hoc__dexuathocphan_set__giang_vien',
-            'mon_hoc__dexuathocphan_set__giang_vien__users'
+            'mon_hoc__dexuathocphan_set__giang_vien_de_xuat'
         ))
         
     def find_by_id(self, id: str) -> Optional[HocPhan]:
@@ -110,8 +112,7 @@ class GhiDanhRepository(IGhiDanhRepository):
             'hoc_phan__mon_hoc__khoa'
         ).prefetch_related(
             'hoc_phan__mon_hoc__dexuathocphan_set',
-            'hoc_phan__mon_hoc__dexuathocphan_set__giang_vien',
-            'hoc_phan__mon_hoc__dexuathocphan_set__giang_vien__users'
+            'hoc_phan__mon_hoc__dexuathocphan_set__giang_vien_de_xuat'
         ))
         
     def delete_many(self, ids: List[str]) -> None:
