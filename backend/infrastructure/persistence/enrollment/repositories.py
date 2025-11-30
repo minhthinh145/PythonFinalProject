@@ -3,18 +3,13 @@ Infrastructure Layer - Enrollment Repository Implementations
 """
 from typing import Optional, List, Any
 from django.utils import timezone
+from datetime import datetime
 from application.enrollment.interfaces import (
-    IHocKyRepository,
-    IKyPhaseRepository,
-    IDotDangKyRepository,
-    IHocPhanRepository,
-    IGhiDanhRepository
+    IHocKyRepository, IKyPhaseRepository, IDotDangKyRepository,
+    IHocPhanRepository, IGhiDanhRepository, IHocPhiRepository, IKhoaRepository
 )
 from infrastructure.persistence.models import (
-    HocKy,
-    KyPhase,
-    DotDangKy,
-    HocPhan,
+    HocKy, KyPhase, DotDangKy, HocPhan, LopHocPhan, HocPhi, Khoa,
     GhiDanhHocPhan,
     SinhVien
 )
@@ -30,6 +25,12 @@ class HocKyRepository(IHocKyRepository):
     def get_all_hoc_ky(self) -> List[HocKy]:
         return list(HocKy.objects.using('neon').select_related('id_nien_khoa').all().order_by('-ngay_bat_dau'))
 
+    def update_dates(self, id: str, start_at: Any, end_at: Any) -> None:
+        HocKy.objects.using('neon').filter(id=id).update(
+            ngay_bat_dau=start_at,
+            ngay_ket_thuc=end_at
+        )
+
 class KyPhaseRepository(IKyPhaseRepository):
     def get_current_phase(self, hoc_ky_id: str) -> Optional[KyPhase]:
         try:
@@ -39,6 +40,45 @@ class KyPhaseRepository(IKyPhaseRepository):
             ).first()
         except Exception:
             return None
+
+    def create_bulk(self, phases: List[dict], hoc_ky_id: str) -> List[dict]:
+        # 1. Delete existing phases for this semester
+        # KyPhase.objects.using('neon').filter(hoc_ky_id=hoc_ky_id).delete()
+        
+        # 2. Create new phases
+        new_phases = []
+        result_data = []
+        for p in phases:
+            # Parse dates
+            start_at = datetime.strptime(p.get('ngayBatDau'), '%Y-%m-%d') if p.get('ngayBatDau') else None
+            end_at = datetime.strptime(p.get('ngayKetThuc'), '%Y-%m-%d') if p.get('ngayKetThuc') else None
+
+            phase = KyPhase.objects.using('neon').create(
+                id=uuid.uuid4(),
+                hoc_ky_id=hoc_ky_id,
+                phase=p.get('tenPhase'),
+                start_at=start_at,
+                end_at=end_at,
+                is_enabled=True # Default to enabled
+            )
+            # phase.save(using='neon')
+            new_phases.append(phase)
+            
+            result_data.append({
+                "id": str(uuid.uuid4()),
+                "hocKyId": str(hoc_ky_id),
+                "tenPhase": p.get('tenPhase'),
+                "ngayBatDau": p.get('ngayBatDau'),
+                "ngayKetThuc": p.get('ngayKetThuc'),
+                "isEnabled": True
+            })
+            
+        # KyPhase.objects.using('neon').bulk_create(new_phases)
+        
+        return result_data
+
+    def find_by_hoc_ky(self, hoc_ky_id: str) -> List[KyPhase]:
+        return list(KyPhase.objects.using('neon').filter(hoc_ky_id=hoc_ky_id))
 
 class DotDangKyRepository(IDotDangKyRepository):
     def find_toan_truong_by_hoc_ky(self, hoc_ky_id: str, phase: str) -> Optional[DotDangKy]:
@@ -68,6 +108,33 @@ class DotDangKyRepository(IDotDangKyRepository):
             thoi_gian_ket_thuc__gte=now
         ).first()
 
+    def delete_by_hoc_ky(self, hoc_ky_id: str) -> None:
+        DotDangKy.objects.using('neon').filter(hoc_ky_id=hoc_ky_id).delete()
+
+    def create(self, data: dict) -> DotDangKy:
+        if 'id' not in data:
+            data['id'] = uuid.uuid4()
+        
+        dot = DotDangKy(**data)
+        dot.save(using='neon')
+        return dot
+
+    def find_by_hoc_ky_and_loai(self, hoc_ky_id: str, loai_dot: str) -> List[DotDangKy]:
+        return list(DotDangKy.objects.using('neon').filter(
+            hoc_ky_id=hoc_ky_id,
+            loai_dot=loai_dot
+        ).order_by('thoi_gian_bat_dau'))
+
+    def update(self, id: str, data: dict) -> Optional[DotDangKy]:
+        try:
+            dot = DotDangKy.objects.using('neon').get(id=id)
+            for key, value in data.items():
+                setattr(dot, key, value)
+            dot.save(using='neon')
+            return dot
+        except DotDangKy.DoesNotExist:
+            return None
+
 class HocPhanRepository(IHocPhanRepository):
     def find_all_open(self, hoc_ky_id: str) -> List[HocPhan]:
         return list(HocPhan.objects.using('neon').filter(
@@ -76,15 +143,26 @@ class HocPhanRepository(IHocPhanRepository):
         ).select_related(
             'mon_hoc', 
             'mon_hoc__khoa'
-        ).prefetch_related(
-            'mon_hoc__dexuathocphan_set',
-            'mon_hoc__dexuathocphan_set__giang_vien_de_xuat'
         ))
         
     def find_by_id(self, id: str) -> Optional[HocPhan]:
         try:
             return HocPhan.objects.using('neon').get(id=id)
         except HocPhan.DoesNotExist:
+            return None
+
+
+
+class KhoaRepository(IKhoaRepository):
+    def get_all(self) -> List[Any]:
+        return list(Khoa.objects.using('neon').all())
+
+class HocPhiRepository(IHocPhiRepository):
+    def get_hoc_phi_by_sinh_vien(self, sinh_vien_id: str, hoc_ky_id: str) -> Optional[Any]:
+        # Simple query without prefetch_related to avoid complexity
+        try:
+            return HocPhi.objects.using('neon').get(sinh_vien_id=sinh_vien_id, hoc_ky_id=hoc_ky_id)
+        except HocPhi.DoesNotExist:
             return None
 
 class GhiDanhRepository(IGhiDanhRepository):

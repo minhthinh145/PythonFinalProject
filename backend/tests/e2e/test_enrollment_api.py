@@ -1,6 +1,14 @@
 """
 E2E Tests for Enrollment API
 """
+import os
+import django
+from django.conf import settings
+
+if not settings.configured:
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'DKHPHCMUE.settings')
+    django.setup()
+
 import pytest
 from rest_framework.test import APIClient
 from django.urls import reverse

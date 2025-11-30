@@ -2,8 +2,20 @@
 E2E Tests for Auth API
 Test-Driven Development - RED Phase
 """
+import os
+import django
+from django.conf import settings
+
+if not settings.configured:
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'DKHPHCMUE.settings')
+    django.setup()
+
 import pytest
 from rest_framework import status
+from rest_framework.test import APIClient
+from django.urls import reverse
+from infrastructure.persistence.models import Users, TaiKhoan
+import uuid
 
 
 @pytest.mark.e2e
