@@ -5,6 +5,7 @@ import ModalCapNhatMonHoc from "../../components/crud_mh/ModalCapNhatMonHoc";
 import "../../../../styles/reset.css";
 import "../../../../styles/menu.css";
 import { useModalContext } from "../../../../hook/ModalContext";
+import { pdtApi } from "../../../../features/pdt/api/pdtApi";
 
 export type MonHoc = {
   id: string;
@@ -19,16 +20,7 @@ export type MonHoc = {
   mon_hoc_nganh?: { nganh_hoc: { id: string; ten_nganh: string } }[];
 };
 
-type Khoa = { id: string; ten_khoa: string };
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-const withToken = (init: RequestInit = {}) => {
-  const headers = new Headers(init.headers || {});
-  const token = localStorage.getItem("token");
-  if (token) headers.set("Authorization", `Bearer ${token}`);
-  headers.set("Content-Type", "application/json");
-  return { ...init, headers };
-};
+type Khoa = { id: string; ten_khoa: string }; // Note: API returns snake_case for khoa here? Need to verify. Assuming yes based on previous code.
 
 // Map giá trị trong DB -> nhãn hiển thị
 const LOAI_MON_LABEL: Record<string, string> = {
@@ -56,13 +48,9 @@ const QuanLyMonHoc: React.FC = () => {
 
   const loadMonHoc = async () => {
     try {
-      const res = await fetch(
-        `${API}/pdt/mon-hoc?page=1&pageSize=10000`,
-        withToken()
-      );
-      const json = await res.json();
-      if (!json.isSuccess) throw new Error(json.message);
-      setAllMH(json.data?.items ?? []);
+      const res = await pdtApi.getMonHoc();
+      if (!res.isSuccess) throw new Error(res.message);
+      setAllMH(res.data?.items ?? []);
     } catch (e) {
       console.error(e);
       openNotify?.("Không thể tải danh sách môn học", "error");
@@ -71,9 +59,23 @@ const QuanLyMonHoc: React.FC = () => {
 
   const loadDanhMuc = async () => {
     try {
-      const res = await fetch(`${API}/dm/khoa`, withToken());
-      const json = await res.json();
-      setKhoaList(json?.data || []);
+      // Using pdtApi.getDanhSachKhoa() which returns KhoaDTO (camelCase: tenKhoa)
+      // BUT the component expects snake_case (ten_khoa).
+      // I should check what pdtApi.getDanhSachKhoa returns.
+      // pdtApi.getDanhSachKhoa calls "pdt/khoa".
+      // If backend returns camelCase, I need to adapt.
+      // Let's use the existing pdtApi.getDanhSachKhoa and map if needed.
+      const res = await pdtApi.getDanhSachKhoa();
+      if (res.isSuccess) {
+         // Map camelCase to snake_case if necessary, or update component to use camelCase.
+         // Updating component to use camelCase is better for consistency.
+         // But for now, let's map to keep changes minimal in logic.
+         const mapped = (res.data || []).map((k: any) => ({
+             id: k.id,
+             ten_khoa: k.tenKhoa || k.ten_khoa // Handle both
+         }));
+         setKhoaList(mapped);
+      }
     } catch {
       // có thể bỏ qua
     }
@@ -127,16 +129,12 @@ const QuanLyMonHoc: React.FC = () => {
     if (!ok) return;
 
     try {
-      const res = await fetch(
-        `${API}/pdt/mon-hoc/${id}`,
-        withToken({ method: "DELETE" })
-      );
-      const json = await res.json();
-      if (json.isSuccess) {
+      const res = await pdtApi.deleteMonHoc(id);
+      if (res.isSuccess) {
         openNotify?.("Đã xoá môn học", "success");
         setAllMH((prev) => prev.filter((x) => x.id !== id));
       } else {
-        openNotify?.(json.message || "Xoá thất bại", "error");
+        openNotify?.(res.message || "Xoá thất bại", "error");
       }
     } catch {
       openNotify?.("Không thể gọi API", "error");

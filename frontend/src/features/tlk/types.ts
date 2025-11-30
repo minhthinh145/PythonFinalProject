@@ -2,6 +2,7 @@ export interface DeXuatHocPhanRequest {
     maHocPhan: string;
     maGiangVien: string;
 }
+
 export interface DeXuatHocPhanForTroLyKhoaDTO {
     id: string;
     maHocPhan: string;
@@ -17,6 +18,7 @@ export interface PhongHocDTO {
     tenCoSo: string;
     sucChua: number;
 }
+
 export interface HocPhanForCreateLopDTO {
     id: string;
     maHocPhan: string;
@@ -41,35 +43,25 @@ export interface HocKyHienHanhDTO {
     };
 }
 
-export interface XepTKBRequest {
-    maHocPhan: string;
-    hocKyId: string;
-    danhSachLop: {
-        tenLop: string;
-        phongHocId: string;
-        ngayBatDau: Date;
-        ngayKetThuc: Date;
-        tietBatDau: number;
-        tietKetThuc: number;
-        thuTrongTuan: number;
-    }[];
-}// ...existing types...
-
-// ...existing types...
-
 /**
- * ✅ Thông tin lớp học trong TKB
+ * Thông tin lớp học trong TKB
  */
 export interface ThongTinLopHoc {
     id?: string; // ID nếu lớp đã tồn tại
     tenLop: string;
     phongHoc?: string; // Tên phòng (B.310)
-    phongHocId?: string; // ✅ UUID reference
+    phongHocId?: string; // UUID reference
     ngayBatDau: Date;
     ngayKetThuc: Date;
     tietBatDau: number;
     tietKetThuc: number;
     thuTrongTuan?: number;
+}
+
+export interface XepTKBRequest {
+    maHocPhan: string;
+    hocKyId: string;
+    danhSachLop: ThongTinLopHoc[];
 }
 
 /**

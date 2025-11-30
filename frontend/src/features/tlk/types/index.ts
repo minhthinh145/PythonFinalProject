@@ -1,13 +1,11 @@
-// ...existing types...
-
 /**
- * ✅ Thông tin lớp học trong TKB
+ * Thông tin lớp học trong TKB
  */
 export interface ThongTinLopHoc {
     id?: string; // ID nếu lớp đã tồn tại
     tenLop: string;
     phongHoc?: string; // Tên phòng (B.310)
-    phongHocId?: string; // ✅ UUID reference
+    phongHocId?: string; // UUID reference
     ngayBatDau: Date;
     ngayKetThuc: Date;
     tietBatDau: number;
@@ -30,7 +28,7 @@ export interface ThoiKhoaBieuMonHocDTO {
 export interface XepThoiKhoaBieuRequest {
     maHocPhan: string;
     hocKyId: string;
-    giangVienId?: string; // ✅ Thêm giảng viên ID (optional)
+    giangVienId?: string; // Thêm giảng viên ID (optional)
     danhSachLop: {
         tenLop: string;
         phongHocId: string;

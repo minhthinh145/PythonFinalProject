@@ -4,7 +4,7 @@ import "../../styles/reset.css";
 import "../../styles/menu.css";
 import { fetchJSON } from "../../utils/fetchJSON";
 import { useModalContext } from "../../hook/ModalContext";
-import { useHocPhansForCreateLop } from "../../features/tlk/hooks"; // ✅ Import hook mới
+import { useHocPhansForCreateLop } from "../../features/tlk/hooks";
 import { HocKyNienKhoaShowSetup } from "../pdt/components/HocKyNienKhoaShowSetup";
 import DanhSachHocPhanTaoLop from "./tao-lop-hoc-phan/DanhSachHocPhanTaoLop";
 import TaoThoiKhoaBieuModal from "./tao-lop-hoc-phan/TaoThoiKhoaBieuModal";
@@ -12,6 +12,7 @@ import {
   useHocKyHienHanh,
   useHocKyNienKhoa,
 } from "../../features/common/hooks";
+
 type SelectedConfig = {
   soLuongLop: string;
   tietBatDau: string;
@@ -27,7 +28,7 @@ type SelectedConfig = {
 export default function TaoLopHocPhan() {
   const { openNotify } = useModalContext();
 
-  // ========= Hooks =========
+  // Hooks
   const {
     data: hocKyNienKhoas,
     loading: loadingSemesters,
@@ -46,7 +47,7 @@ export default function TaoLopHocPhan() {
     error: errorHocKy,
   } = useHocKyHienHanh();
 
-  // ========= States =========
+  // States
   const [selectedNienKhoa, setSelectedNienKhoa] = useState<string>("");
   const [selectedHocKyId, setSelectedHocKyId] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -56,9 +57,9 @@ export default function TaoLopHocPhan() {
   const itemsPerPage = 50;
   const [showTKBModal, setShowTKBModal] = useState(false);
 
-  // ✅ Merge tất cả auto-select logic vào 1 useEffect duy nhất
+  // Merge tất cả auto-select logic vào 1 useEffect duy nhất
   useEffect(() => {
-    // ✅ 1. Auto-select học kỳ hiện hành (ưu tiên cao nhất)
+    // 1. Auto-select học kỳ hiện hành (ưu tiên cao nhất)
     if (hocKyHienHanh?.maHocKy && hocKyNienKhoas.length > 0) {
       // Tìm niên khóa chứa học kỳ hiện hành
       for (const nk of hocKyNienKhoas) {
@@ -68,12 +69,12 @@ export default function TaoLopHocPhan() {
         if (foundHK) {
           setSelectedNienKhoa(nk.nienKhoaId);
           setSelectedHocKyId(foundHK.id);
-          return; // ✅ Exit early
+          return; // Exit early
         }
       }
     }
 
-    // ✅ 2. Fallback: Auto-select first niên khóa nếu chưa có selection
+    // 2. Fallback: Auto-select first niên khóa nếu chưa có selection
     if (hocKyNienKhoas.length > 0 && !selectedNienKhoa) {
       const firstNK = hocKyNienKhoas[0];
       setSelectedNienKhoa(firstNK.nienKhoaId);
@@ -81,16 +82,16 @@ export default function TaoLopHocPhan() {
         setSelectedHocKyId(firstNK.hocKy[0].id);
       }
     }
-  }, [hocKyNienKhoas, hocKyHienHanh, selectedNienKhoa]); // ✅ Chỉ re-run khi dependencies thay đổi
+  }, [hocKyNienKhoas, hocKyHienHanh, selectedNienKhoa]); // Chỉ re-run khi dependencies thay đổi
 
-  // ✅ Fetch data khi học kỳ thay đổi (separate effect)
+  // Fetch data khi học kỳ thay đổi (separate effect)
   useEffect(() => {
     if (selectedHocKyId) {
       fetchData(selectedHocKyId);
     }
   }, [selectedHocKyId, fetchData]);
 
-  // ========= Filter data =========
+  // Filter data
   useEffect(() => {
     if (!searchQuery.trim()) {
       setFiltered(hocPhans);
@@ -109,12 +110,12 @@ export default function TaoLopHocPhan() {
     setCurrentPage(1);
   }, [searchQuery, hocPhans]);
 
-  // ✅ Tính toán paging trước
+  // Tính toán paging trước
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentData = filtered.slice(startIndex, startIndex + itemsPerPage);
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
 
-  // ✅ Lấy giangVienId từ học phần được chọn trong modal
+  // Lấy giangVienId từ học phần được chọn trong modal
   const giangVienId = useMemo(() => {
     // Lấy từ học phần đầu tiên trong currentData (trang hiện tại)
     if (currentData.length > 0) {
@@ -122,9 +123,6 @@ export default function TaoLopHocPhan() {
     }
     return undefined;
   }, [currentData]);
-
-  console.log("🔍 [TaoLopHocPhan] currentData:", currentData);
-  console.log("🔍 [TaoLopHocPhan] giangVienId:", giangVienId);
 
   const currentNK = hocKyNienKhoas.find((nk) => nk.nienKhoaId === selectedNienKhoa);
   const currentHK = currentNK?.hocKy.find((hk) => hk.id === selectedHocKyId);
@@ -140,7 +138,7 @@ export default function TaoLopHocPhan() {
       : null,
   };
 
-  // ========= Handlers =========
+  // Handlers
   const handleChangeNienKhoa = (nienKhoaId: string) => {
     setSelectedNienKhoa(nienKhoaId);
     const nk = hocKyNienKhoas.find((x) => x.nienKhoaId === nienKhoaId);
@@ -212,51 +210,7 @@ export default function TaoLopHocPhan() {
     return null;
   };
 
-  const handleSubmit = async () => {
-    if (!selectedHocKyId) {
-      openNotify({ message: "Vui lòng chọn Học kỳ", type: "warning" });
-      return;
-    }
 
-    const entries = Object.entries(selected);
-    if (entries.length === 0) {
-      openNotify({ message: "Chưa chọn học phần nào", type: "warning" });
-      return;
-    }
-
-    for (const [hocPhanId, cfg] of entries) {
-      const msg = validateConfig(cfg);
-      if (msg) {
-        const row = hocPhans.find((hp) => hp.id === hocPhanId);
-        openNotify({
-          message: `HP ${row?.maHocPhan || hocPhanId}: ${msg}`,
-          type: "warning",
-        });
-        return;
-      }
-    }
-
-    const danhSachLop = entries.map(([hocPhanId, data]) => ({
-      hocPhanId,
-      ...data,
-    }));
-
-    try {
-      await fetchJSON("/api/pdt/tao-lop-hoc-phan", {
-        method: "POST",
-        body: { danhSachLop },
-      });
-      setSelected({});
-      fetchData(selectedHocKyId);
-      openNotify({
-        message: `Tạo ${danhSachLop.length} lớp thành công`,
-        type: "success",
-      });
-    } catch (e) {
-      console.error(e);
-      openNotify({ message: "Tạo lớp thất bại", type: "error" });
-    }
-  };
 
   const handleTKBSuccess = () => {
     if (selectedHocKyId) {
@@ -264,7 +218,7 @@ export default function TaoLopHocPhan() {
     }
   };
 
-  // ========= Loading & Error States (ĐẶT SAU TẤT CẢ HOOKS) =========
+  // Loading & Error States (ĐẶT SAU TẤT CẢ HOOKS)
   if (loadingSemesters || loadingHocKy) return <p>Đang tải dữ liệu...</p>;
   if (errorSemesters) return <p>{errorSemesters}</p>;
   if (errorHocKy) return <p>{errorHocKy}</p>;
@@ -320,7 +274,7 @@ export default function TaoLopHocPhan() {
               <button
                 className="btn__chung P__10__20"
                 onClick={() => setShowTKBModal(true)}
-                disabled={!selectedHocKyId} // ✅ Disable nếu chưa chọn học kỳ
+                disabled={!selectedHocKyId} // Disable nếu chưa chọn học kỳ
               >
                 Tạo Thời Khóa Biểu
               </button>
@@ -349,12 +303,12 @@ export default function TaoLopHocPhan() {
         ))}
       </div>
 
-      {/* ✅ Truyền giangVienId vào modal */}
+      {/* Truyền giangVienId vào modal */}
       {showTKBModal && selectedHocKyId && (
         <TaoThoiKhoaBieuModal
           danhSachLop={currentData}
           hocKyId={selectedHocKyId}
-          giangVienId={giangVienId} // ✅ Truyền giangVienId
+          giangVienId={giangVienId} // Truyền giangVienId
           onClose={() => setShowTKBModal(false)}
           onSuccess={handleTKBSuccess}
         />
