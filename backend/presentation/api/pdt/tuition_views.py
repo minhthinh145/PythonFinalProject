@@ -1,0 +1,43 @@
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from application.pdt.use_cases.tuition_policy_use_cases import (
+    GetChinhSachTinChiUseCase, CreateChinhSachTinChiUseCase,
+    UpdateChinhSachTinChiUseCase, TinhHocPhiHangLoatUseCase
+)
+from infrastructure.persistence.pdt.repositories import ChinhSachHocPhiRepository
+
+class TuitionPolicyView(APIView):
+    """
+    GET /api/pdt/hoc-phi/chinh-sach
+    POST /api/pdt/hoc-phi/chinh-sach
+    PATCH /api/pdt/hoc-phi/chinh-sach/{id}
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        use_case = GetChinhSachTinChiUseCase(ChinhSachHocPhiRepository())
+        result = use_case.execute()
+        return Response(result.to_dict(), status=result.status_code or 200)
+
+    def post(self, request):
+        use_case = CreateChinhSachTinChiUseCase(ChinhSachHocPhiRepository())
+        result = use_case.execute(request.data)
+        return Response(result.to_dict(), status=result.status_code or 200)
+
+    def patch(self, request, id):
+        use_case = UpdateChinhSachTinChiUseCase(ChinhSachHocPhiRepository())
+        result = use_case.execute(id, request.data)
+        return Response(result.to_dict(), status=result.status_code or 200)
+
+class CalculateTuitionView(APIView):
+    """
+    POST /api/pdt/hoc-phi/tinh-toan-hang-loat
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        hoc_ky_id = request.data.get('hocKyId')
+        use_case = TinhHocPhiHangLoatUseCase(ChinhSachHocPhiRepository())
+        result = use_case.execute(hoc_ky_id)
+        return Response(result.to_dict(), status=result.status_code or 200)

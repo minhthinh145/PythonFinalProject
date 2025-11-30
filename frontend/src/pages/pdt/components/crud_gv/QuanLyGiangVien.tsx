@@ -1,12 +1,11 @@
-// ================================
 // src/pages/pdt/QuanLyGiangVien.tsx
-// ================================
 import React, { useEffect, useMemo, useState } from "react";
 import ModalThemGiangVien from "./ModalThemGiangVien";
 import ModalCapNhatGiangVien from "./ModalCapNhatGiangVien";
 import { useModalContext } from "../../../../hook/ModalContext";
 import "../../../../styles/reset.css";
 import "../../../../styles/menu.css";
+import { pdtApi } from "../../../../features/pdt/api/pdtApi";
 
 type GiangVien = {
   id: string;
@@ -25,15 +24,6 @@ type GiangVien = {
 
 type Khoa = { id: string; ten_khoa: string };
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-const withToken = (init: RequestInit = {}) => {
-  const headers = new Headers(init.headers || {});
-  const token = localStorage.getItem("token");
-  if (token) headers.set("Authorization", `Bearer ${token}`);
-  headers.set("Content-Type", "application/json");
-  return { ...init, headers };
-};
-
 const QuanLyGiangVien: React.FC = () => {
   const { openNotify, openConfirm } = useModalContext();
 
@@ -47,11 +37,9 @@ const QuanLyGiangVien: React.FC = () => {
 
   const loadGV = async () => {
     try {
-      const res = await fetch(`${API}/pdt/giang-vien`, withToken());
-      const json = await res.json();
-      if (!json.isSuccess) throw new Error(json.message);
-      const items: GiangVien[] = json.data?.items ?? [];
-      setAllGV(items);
+      const res = await pdtApi.getGiangVien();
+      if (!res.isSuccess) throw new Error(res.message);
+      setAllGV(res.data?.items ?? []);
     } catch (e) {
       console.error(e);
       openNotify?.("Không thể tải danh sách giảng viên", "error");
@@ -60,9 +48,15 @@ const QuanLyGiangVien: React.FC = () => {
 
   const loadDanhMuc = async () => {
     try {
-      const res = await fetch(`${API}/dm/khoa`, withToken());
-      const json = await res.json();
-      setKhoaList(json?.data || []);
+      const res = await pdtApi.getDanhSachKhoa();
+      if (res.isSuccess) {
+         // Map camelCase to snake_case if necessary
+         const mapped = (res.data || []).map((k: any) => ({
+             id: k.id,
+             ten_khoa: k.tenKhoa || k.ten_khoa
+         }));
+         setKhoaList(mapped);
+      }
     } catch {
       // có thể bỏ qua, không cần notify
     }
@@ -110,16 +104,12 @@ const QuanLyGiangVien: React.FC = () => {
     if (!ok) return;
 
     try {
-      const res = await fetch(
-        `${API}/pdt/giang-vien/${id}`,
-        withToken({ method: "DELETE" })
-      );
-      const json = await res.json();
-      if (json.isSuccess) {
+      const res = await pdtApi.deleteGiangVien(id);
+      if (res.isSuccess) {
         openNotify?.("Đã xoá giảng viên", "success");
         setAllGV((prev) => prev.filter((x) => x.id !== id));
       } else {
-        throw new Error(json.message);
+        throw new Error(res.message);
       }
     } catch (e) {
       console.error(e);

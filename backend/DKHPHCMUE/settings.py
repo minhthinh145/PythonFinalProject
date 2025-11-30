@@ -86,11 +86,14 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     },
-    'neon': dj_database_url.config(
-        default=config('DATABASE_URL', default='postgresql://user:pass@host/db'),
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
+    'neon': {
+        **dj_database_url.config(
+            default=config('DATABASE_URL', default='postgresql://user:pass@host/db'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        ),
+        'TIME_ZONE': 'Asia/Ho_Chi_Minh',
+    }
 }
 
 # Cấu hình cho test - cho phép Django tự tạo test database (test_neondb)
@@ -161,3 +164,11 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'USER_ID_CLAIM': 'user_id',
+}
+

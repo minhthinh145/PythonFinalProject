@@ -25,17 +25,17 @@ export interface ClassInstance {
   id: string;
   maLopHP: string;
   tenMon: string;
-  tenLop?: string; // ✅ Tên lớp từ BE (COMP1010_1)
+  tenLop?: string; // Tên lớp từ BE (COMP1010_1)
   lopHocPhanId: string;
   position?: { thu: number; tiet: number };
   tietBatDau?: number;
   tietKetThuc?: number;
-  phongHocId?: string; // ✅ ID phòng (UUID)
-  tenPhongHoc?: string; // ✅ Tên phòng để hiển thị
+  phongHocId?: string; // ID phòng (UUID)
+  tenPhongHoc?: string; // Tên phòng để hiển thị
   ngayBatDau?: string;
   ngayKetThuc?: string;
-  isFromBackend?: boolean; // ✅ Flag để phân biệt TKB cũ/mới
-  isReadonly?: boolean; // ✅ Không cho sửa/xóa
+  isFromBackend?: boolean; // Flag để phân biệt TKB cũ/mới
+  isReadonly?: boolean; // Không cho sửa/xóa
   tenGiangVien?: string;
 }
 
@@ -44,7 +44,7 @@ interface Props {
   hocKyId: string;
   onClose: () => void;
   onSuccess?: () => void;
-  giangVienId?: string; // ✅ Nhận giảng viên ID từ parent
+  giangVienId?: string; // Nhận giảng viên ID từ parent
 }
 
 export default function TaoThoiKhoaBieuModal({
@@ -52,7 +52,6 @@ export default function TaoThoiKhoaBieuModal({
   danhSachLop,
   hocKyId,
   onSuccess,
-  giangVienId, // ✅ Destructure giangVienId
 }: Props) {
   const { openNotify } = useModalContext();
   const { xepTKB, submitting } = useXepThoiKhoaBieu();
@@ -80,17 +79,14 @@ export default function TaoThoiKhoaBieuModal({
     { tiet: 12, gioVao: "16:50", gioRa: "17:40", label: "16h50-17h40" },
   ];
 
-  // ✅ Fetch TKB đã có khi mở modal
+  // Fetch TKB đã có khi mở modal
   useEffect(() => {
     const fetchExistingTKB = async () => {
       setLoading(true);
       try {
         const maHocPhans = danhSachLop.map((lop) => lop.maHocPhan);
-        console.log("🔍 [TKB] Fetching TKB for:", maHocPhans);
 
         const result = await tlkAPI.getTKBByMaHocPhans(maHocPhans, hocKyId);
-
-        console.log("🔍 [TKB] API Response:", result);
 
         if (result.isSuccess && result.data) {
           const existingInstances = convertTKBToInstances(
@@ -98,28 +94,9 @@ export default function TaoThoiKhoaBieuModal({
             danhSachLop
           );
 
-          console.log("🔍 [TKB] Converted instances:", existingInstances);
-          console.log(
-            "🔍 [TKB] Instance flags:",
-            existingInstances.map((i) => ({
-              id: i.id,
-              isFromBackend: i.isFromBackend,
-              isReadonly: i.isReadonly,
-              hasAllData: !!(
-                i.position &&
-                i.tietBatDau &&
-                i.tietKetThuc &&
-                i.phongHocId &&
-                i.ngayBatDau &&
-                i.ngayKetThuc
-              ),
-            }))
-          );
-
           setInstances(existingInstances);
         }
       } catch (error) {
-        console.error("❌ [TKB] Error fetching TKB:", error);
         openNotify({
           message: "Lỗi tải thời khóa biểu",
           type: "error",
@@ -132,35 +109,23 @@ export default function TaoThoiKhoaBieuModal({
     fetchExistingTKB();
   }, [hocKyId, danhSachLop, openNotify]);
 
-  // ✅ Convert BE data → ClassInstance
+  // Convert BE data → ClassInstance
   const convertTKBToInstances = (
     tkbData: ThoiKhoaBieuMonHocDTO[],
     danhSachLop: HocPhanForCreateLopDTO[]
   ): ClassInstance[] => {
     const instances: ClassInstance[] = [];
 
-    console.log("🔍 [Convert] Input TKB data:", tkbData);
-    console.log("🔍 [Convert] Input danhSachLop:", danhSachLop);
-
     tkbData.forEach((tkb) => {
       const lopData = danhSachLop.find(
         (lop) => lop.maHocPhan === tkb.maHocPhan
       );
 
-      console.log(`🔍 [Convert] Processing ${tkb.maHocPhan}:`, {
-        tkb,
-        lopData,
-      });
-
       if (!lopData) {
-        console.warn(
-          `⚠️ [Convert] Không tìm thấy lopData cho ${tkb.maHocPhan}`
-        );
         return;
       }
 
-      tkb.danhSachLop.forEach((lop, index) => {
-        console.log(`🔍 [Convert] Processing lop ${index}:`, lop);
+      tkb.danhSachLop.forEach((lop) => {
 
         const instance: ClassInstance = {
           id: lop.id || `existing-${Date.now()}-${Math.random()}`,
@@ -169,34 +134,32 @@ export default function TaoThoiKhoaBieuModal({
           tenLop: lop.tenLop,
           lopHocPhanId: lopData.id,
 
-          // ✅ Map position từ thuTrongTuan và tietBatDau
+          // Map position từ thuTrongTuan và tietBatDau
           position: lop.thuTrongTuan
             ? { thu: lop.thuTrongTuan, tiet: lop.tietBatDau }
             : undefined,
 
-          // ✅ Map đầy đủ thông tin tiết học
+          // Map đầy đủ thông tin tiết học
           tietBatDau: lop.tietBatDau,
           tietKetThuc: lop.tietKetThuc,
 
-          // ✅ Map cả phongHocId và tenPhongHoc
+          // Map cả phongHocId và tenPhongHoc
           phongHocId: lop.phongHocId,
           tenPhongHoc: lop.phongHoc,
 
-          // ✅ Map ngày bắt đầu/kết thúc
+          // Map ngày bắt đầu/kết thúc
           ngayBatDau: new Date(lop.ngayBatDau).toISOString().split("T")[0],
           ngayKetThuc: new Date(lop.ngayKetThuc).toISOString().split("T")[0],
 
-          // ✅ Đánh dấu từ BE
+          // Đánh dấu từ BE
           isFromBackend: true,
           isReadonly: true,
         };
 
-        console.log(`✅ [Convert] Created instance:`, instance);
         instances.push(instance);
       });
     });
 
-    console.log("🔍 [Convert] Final instances:", instances);
     return instances;
   };
 
@@ -206,7 +169,7 @@ export default function TaoThoiKhoaBieuModal({
 
   const handleDragStart = (event: DragStartEvent) => {
     const instance = instances.find((i) => i.id === event.active.id);
-    // ✅ Không cho drag TKB cũ
+    // Không cho drag TKB cũ
     if (instance?.isReadonly) return;
     setActiveId(event.active.id as string);
   };
@@ -220,7 +183,7 @@ export default function TaoThoiKhoaBieuModal({
     }
 
     const instance = instances.find((i) => i.id === active.id);
-    // ✅ Không cho drop TKB cũ
+    // Không cho drop TKB cũ
     if (instance?.isReadonly) {
       setActiveId(null);
       return;
@@ -232,7 +195,7 @@ export default function TaoThoiKhoaBieuModal({
       | undefined;
 
     if (dropData) {
-      // ✅ Kiểm tra conflict với TKB cũ
+      // Kiểm tra conflict với TKB cũ
       const hasConflict = instances.some(
         (inst) =>
           inst.isReadonly &&
@@ -270,7 +233,7 @@ export default function TaoThoiKhoaBieuModal({
       maLopHP: lopData.maHocPhan,
       tenMon: lopData.tenHocPhan,
       lopHocPhanId: lopData.id,
-      isFromBackend: false, // ✅ Buổi học mới
+      isFromBackend: false, // Buổi học mới
       isReadonly: false,
     };
 
@@ -318,14 +281,10 @@ export default function TaoThoiKhoaBieuModal({
     }
   };
 
-  // ✅ Hàm validate và lưu TKB
+  // Hàm validate và lưu TKB
   const handleSave = async () => {
-    console.log("🔍 [Save] All instances:", instances);
-    console.log("🔍 [Save] giangVienId from props:", giangVienId); // ✅ Debug
 
     const newInstances = instances.filter((inst) => !inst.isFromBackend);
-
-    console.log("🔍 [Save] New instances only:", newInstances);
 
     const incompleteInstances = newInstances.filter(
       (inst) =>
@@ -353,7 +312,7 @@ export default function TaoThoiKhoaBieuModal({
       return;
     }
 
-    // ✅ Group instances theo maHocPhan VÀ giangVienId
+    // Group instances theo maHocPhan VÀ giangVienId
     const groupedByMaHP = newInstances.reduce((acc, inst) => {
       // Tìm học phần tương ứng để lấy giangVienId
       const hocPhan = danhSachLop.find((hp) => hp.id === inst.lopHocPhanId);
@@ -371,7 +330,7 @@ export default function TaoThoiKhoaBieuModal({
       return acc;
     }, {} as Record<string, { maHocPhan: string; giangVienId?: string; instances: ClassInstance[] }>);
 
-    // ✅ Tạo request cho từng nhóm
+    // Tạo request cho từng nhóm
     const requests = Object.values(groupedByMaHP).map((group) => {
       const baseRequest = {
         maHocPhan: group.maHocPhan,
@@ -394,12 +353,9 @@ export default function TaoThoiKhoaBieuModal({
       return baseRequest;
     });
 
-    console.log("🔍 [Save] Final requests:", requests); // ✅ Debug
-
-    // ✅ Call API cho từng học phần
+    // Call API cho từng học phần
     let successCount = 0;
     for (const req of requests) {
-      console.log("🔍 [Save] Sending request:", req); // ✅ Debug
       const result = await xepTKB(req);
       if (result.success) {
         successCount++;

@@ -8,15 +8,15 @@ export type ChatbotPayload =
   | { type: "answer"; text: string; results?: VectorItem[] }
   | { type: "table"; data: string }
   | {
-      type: "course";
-      data: { ten_mon: string; description: string; match_score: number };
-    }
+    type: "course";
+    data: { ten_mon: string; description: string; match_score: number };
+  }
   | {
-      type: "vector_search";
-      results: VectorItem[];
-      message?: string;
-      natural_answer?: string;
-    }
+    type: "vector_search";
+    results: VectorItem[];
+    message?: string;
+    natural_answer?: string;
+  }
   | { type: "error"; message: string }
   | Record<string, unknown>;
 
@@ -31,7 +31,7 @@ const PHONG_BASE = trimBase(
 );
 const MONHOC_BASE = trimBase(
   import.meta.env.VITE_API_MONHOC ||
-    "https://anhfeee-truyvanmonhochcmue.hf.space"
+  "https://anhfeee-truyvanmonhochcmue.hf.space"
 );
 const KHOA_BASE = trimBase(
   import.meta.env.VITE_API_KHOA || "https://anhfeee-truyvankhoahcmue.hf.space"
@@ -40,7 +40,7 @@ const NGANH_BASE = trimBase(
   import.meta.env.VITE_API_NGANH || "https://anhfeee-truyvannganhhcmue.hf.space"
 );
 
-/** 👉 FileQA dùng /ask (POST {question}), không phải /search */
+// FileQA dùng /ask (POST {question}), không phải /search
 const FILEQA_BASE = trimBase(
   import.meta.env.VITE_API_FILEQA || "https://anhfeee-truyvangemini.hf.space"
 );
@@ -56,7 +56,7 @@ export const DOMAIN_BASES = {
 };
 export type DomainKey = keyof typeof DOMAIN_BASES;
 
-/* ===================== Helpers chắc chắn ===================== */
+// Helpers chắc chắn
 
 /** parse an toàn (backend đôi khi trả stringified JSON) */
 function safeParse<T = any>(x: any): T | null {
@@ -132,9 +132,8 @@ function fmtKhoa(raw: any): string {
     `**${name}**`,
     info.van_phong_lam_viec ? `Văn phòng: ${info.van_phong_lam_viec}` : null,
     info.dien_thoai
-      ? `Điện thoại: ${info.dien_thoai}${
-          info.noi_bo ? ` (Nội bộ ${info.noi_bo})` : ""
-        }`
+      ? `Điện thoại: ${info.dien_thoai}${info.noi_bo ? ` (Nội bộ ${info.noi_bo})` : ""
+      }`
       : null,
     info.email ? `Email: ${info.email}` : null,
     info.website ? `Website: ${info.website}` : null,
@@ -154,9 +153,8 @@ function fmtPhong(raw: any): string {
     `**${name}**`,
     info.van_phong_lam_viec ? `Văn phòng: ${info.van_phong_lam_viec}` : null,
     info.dien_thoai
-      ? `Điện thoại: ${info.dien_thoai}${
-          info.noi_bo ? ` (Nội bộ ${info.noi_bo})` : ""
-        }`
+      ? `Điện thoại: ${info.dien_thoai}${info.noi_bo ? ` (Nội bộ ${info.noi_bo})` : ""
+      }`
       : null,
     info.email ? `Email: ${info.email}` : null,
     info.website ? `Website: ${info.website}` : null,
@@ -272,7 +270,7 @@ export async function queryByDomain(
       try {
         const j = JSON.parse(detail);
         detail = j?.detail?.error || j?.message || detail;
-      } catch {}
+      } catch { }
       throw new Error(`[fileqa] ${detail}`);
     }
     const raw = await res.json();
@@ -292,7 +290,7 @@ export async function queryByDomain(
     try {
       const j = JSON.parse(detail);
       detail = j?.detail?.error || j?.message || detail;
-    } catch {}
+    } catch { }
     throw new Error(`[${domain}] ${detail}`);
   }
 

@@ -80,7 +80,7 @@ export default function GVLopHocPhanDetail() {
                   onDelete={deleteDocument}
                   onGetUrl={getDocumentUrl}
                   submitting={submitting}
-                  lhpId={id!} // ✅ Pass lhpId
+                  lhpId={id!}
                 />
               </div>
             )}
@@ -137,7 +137,7 @@ export default function GVLopHocPhanDetail() {
                       {students.map((s) => (
                         <tr key={s.id}>
                           {" "}
-                          {/* ✅ Use UUID as key */}
+                          {/* Use UUID as key */}
                           <td>{s.mssv}</td>
                           <td>{s.hoTen}</td>
                           <td style={{ maxWidth: 120 }}>
@@ -150,7 +150,7 @@ export default function GVLopHocPhanDetail() {
                               onChange={(e) =>
                                 setGrades((g) => ({
                                   ...g,
-                                  // ✅ Use UUID as key
+                                  // Use UUID as key
                                   [s.id]:
                                     e.target.value === ""
                                       ? ""

@@ -7,7 +7,7 @@ export const useHocPhansForCreateLop = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // ✅ Wrap với useCallback để giữ reference ổn định
+    // Wrap với useCallback để giữ reference ổn định
     const fetchData = useCallback(async (hocKyId: string) => {
         if (!hocKyId) {
             setData([]);
@@ -33,7 +33,7 @@ export const useHocPhansForCreateLop = () => {
         } finally {
             setLoading(false);
         }
-    }, []); // ✅ Empty dependency - function không đổi
+    }, []); // Empty dependency - function không đổi
 
     return {
         data,

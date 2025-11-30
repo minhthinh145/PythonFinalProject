@@ -1,5 +1,5 @@
 /**
- * ✅ Fix broken UTF-8 encoding from backend
+ * Fix broken UTF-8 encoding from backend
  * Backend đang encode sai UTF-8 → Frontend fix lại
  */
 export const fixUTF8 = (str: string): string => {
@@ -12,25 +12,25 @@ export const fixUTF8 = (str: string): string => {
 };
 
 /**
- * ✅ Parse JWT token and extract user info
+ * Parse JWT token and extract user info
  * Handles broken UTF-8 encoding from backend
  */
 export const getStudentInfoFromJWT = () => {
     try {
         const token = localStorage.getItem("token");
         if (!token) {
-            console.warn("⚠️ No token found");
+            console.warn("No token found");
             return null;
         }
 
         const parts = token.split(".");
         if (parts.length !== 3) {
-            console.error("❌ Invalid token format");
+            console.error("Invalid token format");
             return null;
         }
 
         const payload = JSON.parse(atob(parts[1]));
-        console.log("📦 JWT Payload:", payload);
+        console.log("JWT Payload:", payload);
 
         return {
             id: payload.sub || "",
@@ -41,7 +41,7 @@ export const getStudentInfoFromJWT = () => {
             role: payload.role || payload.loaiTaiKhoan || "",
         };
     } catch (error) {
-        console.error("💥 Error parsing JWT:", error);
+        console.error("Error parsing JWT:", error);
         return null;
     }
 };

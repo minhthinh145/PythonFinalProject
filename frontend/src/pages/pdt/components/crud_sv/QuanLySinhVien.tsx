@@ -4,29 +4,22 @@ import ModalThemSinhVien from "./ModalThemSinhVien";
 import ModalCapNhatSinhVien from "./ModalCapNhatSinhVien";
 import "../../../../styles/reset.css";
 import "../../../../styles/menu.css";
+import { pdtApi } from "../../../../features/pdt/api/pdtApi";
+import { commonApi } from "../../../../features/common/api/commonApi";
 
 type SinhVien = {
   id: string;
-  maSoSinhVien: string; // ✅ Changed from ma_so_sinh_vien
-  hoTen: string; // ✅ Add missing field
+  maSoSinhVien: string;
+  hoTen: string;
   lop: string;
-  khoaHoc: string; // ✅ Changed from khoa_hoc
-  tenKhoa: string; // ✅ Changed from khoa.ten_khoa
-  tenNganh: string; // ✅ Changed from nganh_hoc.ten_nganh
-  trangThaiHoatDong: boolean; // ✅ Add missing field
+  khoaHoc: string;
+  tenKhoa: string;
+  tenNganh: string;
+  trangThaiHoatDong: boolean;
 };
 
-type Khoa = { id: string; tenKhoa: string }; // ✅ Change from ten_khoa
-type Nganh = { id: string; tenNganh: string; khoaId: string }; // ✅ Change from ten_nganh & khoa_id
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-const withToken = (init: RequestInit = {}) => {
-  const headers = new Headers(init.headers || {});
-  const token = localStorage.getItem("token");
-  if (token) headers.set("Authorization", `Bearer ${token}`);
-  headers.set("Content-Type", "application/json");
-  return { ...init, headers };
-};
+type Khoa = { id: string; tenKhoa: string };
+type Nganh = { id: string; tenNganh: string; khoaId: string };
 
 const QuanLySinhVien: React.FC = () => {
   const { openNotify, openConfirm } = useModalContext();
@@ -45,13 +38,12 @@ const QuanLySinhVien: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
 
-  /** ========== LOAD DATA ========== */
+  // LOAD DATA
   const loadSinhVien = async () => {
     try {
-      const res = await fetch(`${API}/pdt/sinh-vien`, withToken());
-      const json = await res.json();
-      if (!json.isSuccess) throw new Error(json.message);
-      const items: SinhVien[] = json.data?.items ?? [];
+      const res = await pdtApi.getSinhVien();
+      if (!res.isSuccess) throw new Error(res.message);
+      const items: SinhVien[] = res.data?.items ?? [];
       setAllSinhVien(items);
     } catch (e: any) {
       console.error(e);
@@ -61,29 +53,25 @@ const QuanLySinhVien: React.FC = () => {
 
   const loadDanhMuc = async () => {
     try {
-      console.log("🔍 [QuanLy] Loading Khoa & Nganh...");
-
       const [khoaRes, nganhRes] = await Promise.all([
-        fetch(`${API}/pdt/khoa`, withToken()), // ✅ Use PDT endpoint
-        fetch(`${API}/dm/nganh`, withToken()),
+        pdtApi.getDanhSachKhoa(),
+        commonApi.getDanhSachNganh(),
       ]);
 
-      const [kjson, njson] = [await khoaRes.json(), await nganhRes.json()];
+      if (!khoaRes.isSuccess) throw new Error(khoaRes.message);
+      if (!nganhRes.isSuccess) throw new Error(nganhRes.message);
 
-      console.log("📦 [QuanLy] Khoa response:", kjson);
-      console.log("📦 [QuanLy] Nganh response:", njson);
-
-      // ✅ Handle both formats
-      const khoaData = kjson?.data || kjson || [];
-      const nganhData = njson?.data || njson || [];
-
-      console.log("✅ [QuanLy] Parsed Khoa:", khoaData);
-      console.log("✅ [QuanLy] Parsed Nganh:", nganhData);
-
-      setKhoaList(Array.isArray(khoaData) ? khoaData : []);
-      setNganhList(Array.isArray(nganhData) ? nganhData : []);
+      setKhoaList(khoaRes.data || []);
+      
+      // Map NganhDTO (snake_case) to Nganh (camelCase)
+      const mappedNganh = (nganhRes.data || []).map((n: any) => ({
+        id: n.id,
+        tenNganh: n.ten_nganh || n.tenNganh,
+        khoaId: n.khoa_id || n.khoaId,
+      }));
+      setNganhList(mappedNganh);
     } catch (error) {
-      console.error("❌ [QuanLy] Error loading data:", error);
+      console.error("Error loading data:", error);
       openNotify?.("Không thể tải danh sách Khoa/Ngành", "error");
     }
   };
@@ -93,11 +81,10 @@ const QuanLySinhVien: React.FC = () => {
     loadDanhMuc();
   }, []);
 
-  /** ========== FILTER CLIENT-SIDE ========== */
+  // FILTER CLIENT-SIDE
   const filteredData = useMemo(() => {
     let list = allSinhVien;
 
-    // ✅ Filter theo khoa (by tenKhoa string match)
     if (filterKhoa) {
       const selectedKhoa = khoaList.find((k) => k.id === filterKhoa);
       if (selectedKhoa) {
@@ -105,7 +92,6 @@ const QuanLySinhVien: React.FC = () => {
       }
     }
 
-    // ✅ Filter theo ngành (by tenNganh string match)
     if (filterNganh) {
       const selectedNganh = nganhList.find((n) => n.id === filterNganh);
       if (selectedNganh) {
@@ -113,14 +99,12 @@ const QuanLySinhVien: React.FC = () => {
       }
     }
 
-    // ✅ Filter theo lớp
     if (filterLop.trim()) {
       list = list.filter((sv) =>
         sv.lop?.toLowerCase().includes(filterLop.toLowerCase())
       );
     }
 
-    // ✅ Search toàn bộ
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter((sv) =>
@@ -141,34 +125,32 @@ const QuanLySinhVien: React.FC = () => {
     nganhList,
   ]);
 
-  /** ========== DELETE ========== */
+  // DELETE
   const handleDeleteSinhVien = async (id: string) => {
     const ok = await (openConfirm
       ? openConfirm({
           message: "Bạn có chắc muốn xoá sinh viên này?",
           variant: "danger",
+          confirmText: "Xoá",
+          cancelText: "Hủy",
         })
       : Promise.resolve(confirm("Xoá sinh viên này?")));
     if (!ok) return;
 
     try {
-      const res = await fetch(
-        `${API}/pdt/sinh-vien/${id}`,
-        withToken({ method: "DELETE" })
-      );
-      const json = await res.json();
-      if (json.isSuccess) {
+      const res = await pdtApi.deleteSinhVien(id);
+      if (res.isSuccess) {
         openNotify?.("Đã xoá sinh viên", "success");
         setAllSinhVien((prev) => prev.filter((s) => s.id !== id));
       } else {
-        throw new Error(json.message);
+        throw new Error(res.message);
       }
     } catch {
       openNotify?.("Lỗi khi xoá sinh viên", "error");
     }
   };
 
-  /** ========== JSX ========== */
+  // JSX
   return (
     <section className="">
       <div className="">
@@ -191,13 +173,12 @@ const QuanLySinhVien: React.FC = () => {
           {/* Bộ lọc */}
           {showFilters && (
             <div className="filter-group selecy__duyethp__container mt_20">
-              {/* ✅ Filter Khoa */}
               <select
                 className="form__input form__select mr_20"
                 value={filterKhoa}
                 onChange={(e) => {
                   setFilterKhoa(e.target.value);
-                  setFilterNganh(""); // ✅ Reset ngành khi đổi khoa
+                  setFilterNganh("");
                 }}
               >
                 <option value="">-- Tất cả khoa --</option>
@@ -208,16 +189,15 @@ const QuanLySinhVien: React.FC = () => {
                 ))}
               </select>
 
-              {/* ✅ Filter Ngành (theo khoa đã chọn) */}
               <select
                 className="form__input form__select mr_20"
                 value={filterNganh}
                 onChange={(e) => setFilterNganh(e.target.value)}
-                disabled={!filterKhoa} // ✅ Disable nếu chưa chọn khoa
+                disabled={!filterKhoa}
               >
                 <option value="">-- Tất cả ngành --</option>
                 {nganhList
-                  .filter((n) => !filterKhoa || n.khoaId === filterKhoa) // ✅ Chỉ hiện ngành thuộc khoa
+                  .filter((n) => !filterKhoa || n.khoaId === filterKhoa)
                   .map((n) => (
                     <option key={n.id} value={n.id}>
                       {n.tenNganh}
@@ -225,7 +205,6 @@ const QuanLySinhVien: React.FC = () => {
                   ))}
               </select>
 
-              {/* ✅ Filter Lớp */}
               <input
                 className="form__input form__select mr_20"
                 placeholder="Lọc theo lớp..."
@@ -233,7 +212,6 @@ const QuanLySinhVien: React.FC = () => {
                 onChange={(e) => setFilterLop(e.target.value)}
               />
 
-              {/* ✅ Nút clear filter */}
               <button
                 className="btn__chung h__40 w__100"
                 onClick={() => {

@@ -3,5 +3,6 @@ from .repositories import (
     IDangKyHocPhanRepository,
     IDangKyTKBRepository,
     ILichSuDangKyRepository,
-    ILichHocDinhKyRepository
+    ILichHocDinhKyRepository,
+    IHocPhiRepository
 )

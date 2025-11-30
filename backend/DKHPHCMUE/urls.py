@@ -17,11 +17,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from presentation.api.enrollment.views import GetHocKyView
+from presentation.api.pdt.tuition_views import CalculateTuitionView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('presentation.api.auth.urls')),
     path('api/sv/', include('presentation.api.sinh_vien.urls')),
     path('api/sv/', include('presentation.api.enrollment.urls')),
-    path('api/hoc-ky-nien-khoa', GetHocKyView.as_view()),
+    path('api/sv/', include('presentation.api.course_registration.urls')),
+    path('api/pdt/', include('presentation.api.pdt.urls')),
+    path('api/bao-cao/', include('presentation.api.pdt.report_urls')),
+    path('api/tuition/calculate-semester', CalculateTuitionView.as_view(), name='calculate-tuition-alias'),
+    path('api/', include('presentation.api.common.urls')),  # Common/public APIs
+    path('api/hoc-ky-nien-khoa', GetHocKyView.as_view()),  # TODO: Remove after migration
 ]

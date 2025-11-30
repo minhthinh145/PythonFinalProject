@@ -5,7 +5,6 @@ import type {
     DeXuatHocPhanForTroLyKhoaDTO,
     HocPhanForCreateLopDTO,
     PhongHocDTO,
-    HocKyHienHanhDTO,
     XepTKBRequest,
     ThoiKhoaBieuMonHocDTO,
 } from "../types";
@@ -27,9 +26,8 @@ export const tlkAPI = {
         });
     },
 
-
     /**
-     * ✅ COPY từ PDT - Lấy phòng học available
+     * COPY từ PDT - Lấy phòng học available
      */
     getAvailablePhongHoc: async (): Promise<ServiceResult<PhongHocDTO[]>> => {
         return await fetchJSON("tlk/phong-hoc/available", {
@@ -38,7 +36,7 @@ export const tlkAPI = {
     },
 
     /**
-     * ✅ MOVE từ PDT - Lấy học phần để tạo lớp
+     * MOVE từ PDT - Lấy học phần để tạo lớp
      */
     getHocPhansForCreateLop: async (hocKyId: string): Promise<ServiceResult<HocPhanForCreateLopDTO[]>> => {
         return await fetchJSON(`tlk/lop-hoc-phan/get-hoc-phan/${hocKyId}`, {
@@ -47,7 +45,7 @@ export const tlkAPI = {
     },
 
     /**
-     * ✅ Lấy tất cả phòng học của TLK (có thể filter theo khoa)
+     * Lấy tất cả phòng học của TLK (có thể filter theo khoa)
      */
     getPhongHocByTLK: async (): Promise<ServiceResult<PhongHocDTO[]>> => {
         return await fetchJSON("tlk/phong-hoc", {
@@ -56,7 +54,7 @@ export const tlkAPI = {
     },
 
     /**
-     * ✅ Lấy TKB đã có của nhiều môn học
+     * Lấy TKB đã có của nhiều môn học
      */
     getTKBByMaHocPhans: async (
         maHocPhans: string[],
@@ -69,7 +67,7 @@ export const tlkAPI = {
     },
 
     /**
-     * ✅ Xếp thời khóa biểu
+     * Xếp thời khóa biểu
      */
     xepThoiKhoaBieu: async (data: XepTKBRequest): Promise<ServiceResult<any>> => {
         return await fetchJSON("tlk/thoi-khoa-bieu", {
