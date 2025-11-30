@@ -14,17 +14,16 @@ import {
 import type { RoomItem } from "../../features/gv/types";
 import TKBClassCard from "../tlk/tao-lop-hoc-phan/TKBClassCard";
 import type { ClassInstance } from "../tlk/tao-lop-hoc-phan/TaoThoiKhoaBieuModal";
-import type { HocKyDTO } from "../../features/pdt";
 import type { HocKyItemDTO } from "../../features/common/types";
 
 const WEEK_DAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
 export default function GVThoiKhoaBieu() {
-  // ✅ Use common hooks
+  // Use common hooks
   const { data: hocKyHienHanh, loading: loadingHocKyHienHanh } =
     useHocKyHienHanh();
   const { data: hocKyNienKhoas, loading: loadingHocKy } = useHocKyNienKhoa();
-  const { config: tietHocConfig, loading: loadingConfig } = useTietHocConfig();
+  const { loading: loadingConfig } = useTietHocConfig();
 
   // ========= State =========
   const [selectedNienKhoa, setSelectedNienKhoa] = useState<string>("");
@@ -70,7 +69,7 @@ export default function GVThoiKhoaBieu() {
     [weeks, selectedWeekIndex]
   );
 
-  // ✅ Tính ngày trong tuần (T2 → CN)
+  // Tính ngày trong tuần (T2 → CN)
   const weekDates = useMemo(() => {
     if (!selectedWeek) return Array(7).fill("");
 

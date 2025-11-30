@@ -166,7 +166,7 @@ export interface DotGhiDanhTheoKhoaDTO {
     thoiGianKetThuc: string; // ISO string
 }
 
-// ✅ Response DTO
+// Response DTO
 export interface DotGhiDanhResponseDTO {
     id: string;
     hocKyId: string;
@@ -181,7 +181,7 @@ export interface DotGhiDanhResponseDTO {
     trangThai: boolean;
 }
 
-// ========== PHÂN BỔ PHÒNG HỌC ==========
+// PHÂN BỔ PHÒNG HỌC
 
 export interface PhongHocDTO {
     id: string;
@@ -191,16 +191,16 @@ export interface PhongHocDTO {
 }
 
 export interface AssignPhongRequest {
-    khoaId?: string; // ✅ Optional - will be merged in API call
+    khoaId?: string; // Optional - will be merged in API call
     phongHocIds: string[];
 }
 
 export interface UnassignPhongRequest {
-    khoaId?: string; // ✅ Optional - will be merged in API call
+    khoaId?: string; // Optional - will be merged in API call
     phongHocIds: string[];
 }
 
-// ========== PHASE MANAGEMENT ==========
+// PHASE MANAGEMENT
 
 export interface PhaseTimeConfigDTO {
     phaseType: "ghi_danh" | "dang_ky";
@@ -220,7 +220,7 @@ export interface GetPhaseTimeResponse {
     dangKy: PhaseTimeConfigDTO | null;
 }
 
-// ✅ Response đợt đăng ký (giống cấu trúc ghi danh)
+// Response đợt đăng ký (giống cấu trúc ghi danh)
 export interface DotDangKyResponseDTO {
     id: string;
     hocKyId: string;
@@ -258,7 +258,7 @@ export interface UpdateDotDangKyRequest {
     dotTheoKhoa?: DotDangKyTheoKhoaDTO[];
 }
 
-// ========== CHÍNH SÁCH TÍN CHỈ ==========
+// CHÍNH SÁCH TÍN CHỈ
 
 export interface ChinhSachTinChiDTO {
     id: string;
@@ -290,12 +290,12 @@ export interface UpdateChinhSachTinChiRequest {
 
 export interface NganhDTO {
     id: string;
-    maNganh: string; // ✅ Add maNganh
+    maNganh: string; // Add maNganh
     tenNganh: string;
     khoaId: string;
 }
 
-// ========== HỌC PHÍ ==========
+// HỌC PHÍ
 
 export interface TinhHocPhiHangLoatRequest {
     hoc_ky_id: string;
@@ -314,11 +314,11 @@ export interface TinhHocPhiHangLoatResponse {
     errors: TinhHocPhiErrorItem[];
 }
 
-// ✅ Types cho Báo cáo thống kê
+// Types cho Báo cáo thống kê
 export interface OverviewPayload {
     svUnique: number;
-    soDangKy: number; // ✅ Changed from soDK
-    soLopHocPhan: number; // ✅ Changed from soLHP
+    soDangKy: number; // Changed from soDK
+    soLopHocPhan: number; // Changed from soLHP
     taiChinh: { thuc_thu: number; ky_vong: number };
     ketLuan: string;
 }

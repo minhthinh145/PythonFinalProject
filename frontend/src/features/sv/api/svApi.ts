@@ -24,7 +24,7 @@ import type { LichSuDangKyDTO } from "../types";
 import type { MonHocTraCuuDTO } from "../types";
 import api from "../../../utils/api";
 export const svApi = {
-    // ========== GHI DANH ==========
+    // GHI DANH
 
     getMonHocGhiDanh: async (): Promise<ServiceResult<MonHocGhiDanhForSinhVien[]>> => {
         return await fetchJSON("sv/mon-hoc-ghi-danh", {
@@ -58,7 +58,7 @@ export const svApi = {
         });
     },
 
-    // ========== ĐĂNG KÝ HỌC PHẦN ==========
+    // ĐĂNG KÝ HỌC PHẦN
 
     checkPhaseDangKy: async (hocKyId: string): Promise<ServiceResult<null>> => {
         return await fetchJSON(`sv/check-phase-dang-ky?hoc_ky_id=${hocKyId}`);
@@ -80,17 +80,17 @@ export const svApi = {
     },
 
     /**
-     * ✅ Hủy đăng ký học phần (1 lớp)
+     * Hủy đăng ký học phần (1 lớp)
      */
     huyDangKyLopHocPhan: async (data: HuyDangKyHocPhanRequest): Promise<ServiceResult<null>> => {
         return await fetchJSON("sv/huy-dang-ky-hoc-phan", {
-            method: "POST", // ✅ Backend uses POST
+            method: "POST",
             body: data,
         });
     },
 
     /**
-     * ✅ Chuyển lớp học phần
+     * Chuyển lớp học phần
      */
     chuyenLopHocPhan: async (data: ChuyenLopHocPhanRequest): Promise<ServiceResult<null>> => {
         return await fetchJSON("sv/chuyen-lop-hoc-phan", {
@@ -100,7 +100,7 @@ export const svApi = {
     },
 
     /**
-     * ✅ Load danh sách lớp chưa đăng ký theo môn (để chuyển lớp)
+     * Load danh sách lớp chưa đăng ký theo môn (để chuyển lớp)
      */
     getLopChuaDangKyByMonHoc: async (
         monHocId: string,
@@ -110,7 +110,7 @@ export const svApi = {
     },
 
     /**
-     * ✅ Lấy lịch sử đăng ký theo học kỳ
+     * Lấy lịch sử đăng ký theo học kỳ
      */
     getLichSuDangKy: async (hocKyId: string): Promise<ServiceResult<LichSuDangKyDTO>> => {
         return await fetchJSON(`sv/lich-su-dang-ky?hoc_ky_id=${hocKyId}`, {
@@ -119,7 +119,7 @@ export const svApi = {
     },
 
     /**
-     * ✅ Lấy TKB theo tuần (sinh viên)
+     * Lấy TKB theo tuần (sinh viên)
      */
     getTKBWeekly: async (
         hocKyId: string,
@@ -132,7 +132,7 @@ export const svApi = {
     },
 
     /**
-     * ✅ Tra cứu học phần theo học kỳ
+     * Tra cứu học phần theo học kỳ
      */
     traCuuHocPhan: async (
         hocKyId: string
@@ -141,14 +141,14 @@ export const svApi = {
     },
 
     /**
-     * ✅ Lấy chi tiết học phí theo học kỳ
+     * Lấy chi tiết học phí theo học kỳ
      */
     getChiTietHocPhi: async (hocKyId: string): Promise<ServiceResult<ChiTietHocPhiDTO>> => {
         return await fetchJSON(`hoc-phi/chi-tiet?hoc_ky_id=${hocKyId}`);
     },
 
     /**
-     * ✅ Thanh toán học phí (mock)
+     * Thanh toán học phí (mock)
      */
     thanhToanHocPhi: async (data: ThanhToanHocPhiRequest): Promise<ServiceResult<any>> => {
         return await fetchJSON("hoc-phi/thanh-toan", {
@@ -158,17 +158,17 @@ export const svApi = {
     },
 
     /**
-     * ✅ Tạo payment MoMo (ONLY hocKyId)
+     * Tạo payment MoMo (ONLY hocKyId)
      */
     createPayment: async (data: CreatePaymentRequest): Promise<ServiceResult<CreatePaymentResponse>> => {
         return await fetchJSON("payment/create", {
             method: "POST",
-            body: data, // ✅ { hocKyId } only - NO amount
+            body: data,
         });
     },
 
     /**
-     * ✅ Get payment status with query parameter
+     * Get payment status with query parameter
      */
     getPaymentStatus: async (orderId: string): Promise<ServiceResult<PaymentStatusResponse>> => {
         if (!orderId || !orderId.trim()) {
@@ -179,22 +179,16 @@ export const svApi = {
             };
         }
 
-        // ✅ Trim & sanitize orderId
         const cleanOrderId = orderId.trim();
 
-        console.log(`📤 Fetching status for orderId: "${cleanOrderId}"`);
-
         try {
-            // ✅ CHANGE: Use query parameter instead of path parameter
             const result = await fetchJSON(`payment/status?orderId=${encodeURIComponent(cleanOrderId)}`, {
                 method: "GET",
             });
 
-            console.log(`📥 Status API response:`, result);
-
             return result;
         } catch (error: any) {
-            console.error("❌ getPaymentStatus error:", error);
+            console.error("getPaymentStatus error:", error);
 
             return {
                 isSuccess: false,
@@ -204,7 +198,7 @@ export const svApi = {
         }
     },
 
-    // ========== TÀI LIỆU HỌC TẬP ==========
+    // TÀI LIỆU HỌC TẬP
 
     /**
      * Lấy danh sách lớp đã đăng ký kèm tài liệu

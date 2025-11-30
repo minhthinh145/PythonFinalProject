@@ -1,6 +1,7 @@
 * {
   box-sizing: border-box;
 }
+
 :root {
   --main-color: #0c4874;
 }
@@ -96,7 +97,8 @@ a {
   color: #fff;
   font-size: 1.4rem;
   font-weight: 500;
-  line-height: 1.57; /* 167.467% */
+  line-height: 1.57;
+  /* 167.467% */
 }
 
 .user__name__tlk,
@@ -112,7 +114,8 @@ a {
   color: #fff;
   font-size: 2.3063rem;
   font-weight: 700;
-  line-height: 1.39; /* 138.753% */
+  line-height: 1.39;
+  /* 138.753% */
   text-transform: uppercase;
 }
 
@@ -197,13 +200,10 @@ button.btn__quanlylhp.active {
   padding-top: 0px;
   padding-bottom: 0px;
   border-left: 5px solid;
-  border-image: linear-gradient(
-      rgba(108, 219, 141, 0) 25%,
+  border-image: linear-gradient(rgba(108, 219, 141, 0) 25%,
       rgb(46, 48, 144) 25%,
       orange 75%,
-      rgba(108, 219, 141, 0) 75%
-    )
-    1 / 1 / 0 stretch;
+      rgba(108, 219, 141, 0) 75%) 1 / 1 / 0 stretch;
 }
 
 .btn__quanlysv.active {
@@ -219,6 +219,7 @@ button.btn__quanlylhp.active {
   display: inline-block;
   transition: transform 0.3s ease;
 }
+
 /* ==============layout__main============= */
 .layout__main {
   margin-left: 20.52vw;
@@ -244,7 +245,8 @@ button.btn__quanlylhp.active {
   text-align: center;
   font-size: 3.2rem;
   font-weight: 700;
-  line-height: 1.24; /* 123.941% */
+  line-height: 1.24;
+  /* 123.941% */
   text-transform: uppercase;
   margin-left: 16px;
 }
@@ -270,7 +272,8 @@ button.btn__quanlylhp.active {
 
 .language {
   position: absolute;
-  top: 50px; /* ngay dưới hình tròn (100 + 10px margin) */
+  top: 50px;
+  /* ngay dưới hình tròn (100 + 10px margin) */
   right: 20px;
   padding: 10px 15px;
   background-color: #fff;
@@ -307,7 +310,8 @@ button.btn__quanlylhp.active {
 .modal {
   position: absolute;
   width: max-content;
-  top: 50px; /* ngay dưới hình tròn (100 + 10px margin) */
+  top: 50px;
+  /* ngay dưới hình tròn (100 + 10px margin) */
   right: 20px;
   background-color: #fff;
   border: 1px solid #ccc;
@@ -329,6 +333,7 @@ button.btn__quanlylhp.active {
 .sign__out {
   padding: 16px;
 }
+
 .name__student {
   display: flex;
   align-items: center;
@@ -338,6 +343,7 @@ button.btn__quanlylhp.active {
 .border_bottom {
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
+
 .sign__out button {
   border-radius: 15px;
   width: 100%;
@@ -370,8 +376,10 @@ button.btn__quanlylhp.active {
   border-radius: 0px;
   border: none;
 }
+
 .user__icon-img {
-  width: 70%; /* Hoặc 100% tùy bạn, thường 60–80% là vừa */
+  width: 70%;
+  /* Hoặc 100% tùy bạn, thường 60–80% là vừa */
   height: 70%;
   display: block;
 }
@@ -380,15 +388,18 @@ button.btn__quanlylhp.active {
 .main__body {
   flex: 1;
   display: flex;
-  flex-direction: column; /* sắp xếp title và inner theo chiều dọc */
-  min-height: 0; /* ✅ QUAN TRỌNG để tính toán chiều cao bên trong đúng */
+  flex-direction: column;
+  /* sắp xếp title và inner theo chiều dọc */
+  min-height: 0;
+  /* QUAN TRỌNG để tính toán chiều cao bên trong đúng */
   background: #f4f5f7;
   overflow-y: auto;
   overflow-x: auto;
 }
 
 .body__title {
-  flex-shrink: 0; /* giữ nguyên chiều cao */
+  flex-shrink: 0;
+  /* giữ nguyên chiều cao */
   margin-bottom: 12px;
   border-bottom: 1px solid #e6e7e8;
   padding: 20px 0 0 20px;
@@ -398,7 +409,8 @@ button.btn__quanlylhp.active {
   color: #fff;
   font-size: 1.7rem;
   font-weight: 700;
-  line-height: 2.18; /* 218.249% */
+  line-height: 2.18;
+  /* 218.249% */
   text-transform: uppercase;
   background: var(--main-color);
   min-width: 203px;
@@ -431,12 +443,14 @@ button.btn__quanlylhp.active {
   animation: ripple-effect 0.4s ease-out;
   z-index: 1;
 }
+
 @keyframes ripple-effect {
   to {
     transform: translate(-50%, -50%) scale(4);
     opacity: 0;
   }
 }
+
 .navbar__link {
   position: relative;
   overflow: hidden;
@@ -457,16 +471,20 @@ button.btn__quanlylhp.active {
 } */
 
 .body__inner.scroll-x {
-  overflow-x: auto; /* bật kéo ngang */
-  overscroll-behavior-x: contain; /* tránh kéo lan ra ngoài */
+  overflow-x: auto;
+  /* bật kéo ngang */
+  overscroll-behavior-x: contain;
+  /* tránh kéo lan ra ngoài */
   -webkit-overflow-scrolling: touch;
 }
 
 /* Tuỳ chọn: nếu bạn render 1 dải item ngang, bọc trong .hstack để trải ngang đẹp */
 .body__inner.scroll-x .hstack {
-  display: inline-flex; /* inline để không chiếm 100% rồi vẫn tràn vô ích */
+  display: inline-flex;
+  /* inline để không chiếm 100% rồi vẫn tràn vô ích */
   gap: 12px;
-  white-space: nowrap; /* item không bị xuống dòng */
+  white-space: nowrap;
+  /* item không bị xuống dòng */
 }
 
 .search-form {
@@ -492,7 +510,8 @@ button.btn__quanlylhp.active {
   font-size: 1.6rem;
   outline: none;
   color: #172b4d;
-  line-height: 1.52; /* 152.066% */
+  line-height: 1.52;
+  /* 152.066% */
   /* Ẩn mũi tên mặc định & thêm mũi tên tùy chỉnh */
   appearance: none;
   -moz-appearance: none;
@@ -501,7 +520,8 @@ button.btn__quanlylhp.active {
   background-repeat: no-repeat;
   background-position: right 14px center;
   background-size: 36px;
-  padding-right: 20px; /* Chừa chỗ cho icon */
+  padding-right: 20px;
+  /* Chừa chỗ cho icon */
 }
 
 .search-form .form__label {
@@ -515,7 +535,8 @@ button.btn__quanlylhp.active {
   top: 0px;
   font-size: 1.2rem;
   color: #6b778c;
-  line-height: 1.56; /* 155.932% */
+  line-height: 1.56;
+  /* 155.932% */
 }
 
 .form__group__tracuu input {
@@ -542,11 +563,12 @@ button.btn__quanlylhp.active {
   background: #ffffff;
   padding: 0 4px;
   color: #6b778c;
-  line-height: 1.52; /* 152.066% */
+  line-height: 1.52;
+  /* 152.066% */
 }
 
-.form__group__tracuu input:focus + .form__floating-label,
-.form__group__tracuu input:not(:placeholder-shown) + .form__floating-label {
+.form__group__tracuu input:focus+.form__floating-label,
+.form__group__tracuu input:not(:placeholder-shown)+.form__floating-label {
   top: 0px;
   font-size: 1.2rem;
 }
@@ -611,34 +633,42 @@ button.btn__quanlylhp.active {
   table-layout: fixed;
   width: 100%;
 }
+
 .table_ldshp th.c-chon,
 .table_ldshp td:nth-child(1) {
   width: 71px;
 }
+
 .table_ldshp th.c-ma,
 .table_ldshp td:nth-child(2) {
   width: 110px;
 }
+
 .table_ldshp th.c-ten,
 .table_ldshp td:nth-child(3) {
   width: 340px;
 }
+
 .table_ldshp th.c-stc,
 .table_ldshp td:nth-child(4) {
   width: 66px;
 }
+
 .table_ldshp th.c-gv,
 .table_ldshp td:nth-child(5) {
   width: 200px;
 }
+
 .table_ldshp th.c-action,
 .table_ldshp td:nth-child(6) {
   width: 120px;
 }
+
 .table_ldshp tbody tr {
   height: 44px;
   vertical-align: middle;
 }
+
 .table_ldshp th,
 .table_ldshp td {
   overflow: hidden;
@@ -745,6 +775,7 @@ legend {
   cursor: pointer;
   margin-right: 10px;
 }
+
 .btn__quanly:hover {
   background-color: #3b68b6;
 }
@@ -1062,6 +1093,7 @@ input.form__floating-label__quanly {
 .mt__10 {
   margin-top: 10px;
 }
+
 .mb_10 {
   margin-bottom: 10px;
 }
@@ -1125,6 +1157,7 @@ input.form__floating-label__quanly {
   font-weight: 700;
   font-size: 15px;
 }
+
 .search-form__gd {
   position: relative;
 }
@@ -1146,6 +1179,7 @@ input.form__floating-label__quanly {
   color: #172b4d;
   font-weight: 600;
 }
+
 .note__dkhp {
   display: flex;
   align-items: center;
@@ -1217,6 +1251,7 @@ input.form__floating-label__quanly {
   top: 0;
   left: 0;
 }
+
 .setting {
   position: absolute;
   height: 100vh;
@@ -1247,7 +1282,8 @@ input.form__floating-label__quanly {
   width: 24px;
   height: 24px;
   display: block;
-  flex-shrink: 0; /* không co khi trong flex */
+  flex-shrink: 0;
+  /* không co khi trong flex */
 }
 
 .setting__title {
@@ -1286,14 +1322,14 @@ input.form__floating-label__quanly {
 }
 
 /* Hiển thị tên ngành đã chọn hoặc placeholder */
-.md-hp-nganh > div:first-child {
+.md-hp-nganh>div:first-child {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 /* Danh sách ngành xổ xuống */
-.md-hp-nganh > div:last-child {
+.md-hp-nganh>div:last-child {
   position: absolute;
   top: 100%;
   left: 0;
@@ -1310,13 +1346,13 @@ input.form__floating-label__quanly {
 }
 
 /* Item checkbox ngành */
-.md-hp-nganh > div:last-child > div {
+.md-hp-nganh>div:last-child>div {
   display: flex;
   align-items: center;
   margin-bottom: 6px;
 }
 
-.md-hp-nganh > div:last-child > div:last-child {
+.md-hp-nganh>div:last-child>div:last-child {
   margin-bottom: 0;
 }
 
@@ -1359,12 +1395,14 @@ input.form__floating-label__quanly {
 }
 
 .notify-modal.success {
-  border-left: 6px solid #4caf50; /* viền xanh cho thành công */
+  border-left: 6px solid #4caf50;
+  /* viền xanh cho thành công */
   color: #2e7d32;
 }
 
 .notify-modal.error {
-  border-left: 6px solid #f44336; /* viền đỏ cho lỗi */
+  border-left: 6px solid #f44336;
+  /* viền đỏ cho lỗi */
   color: #c62828;
 }
 
@@ -1513,6 +1551,7 @@ th {
   padding: 8px 20px;
   margin-bottom: 22px;
 }
+
 .btn__thanhtoan:hover {
   background-color: #a50064;
   box-shadow: 0 0 5px 1px #de148d;
@@ -1536,10 +1575,12 @@ th {
   gap: 12px;
   padding: 10px 0;
 }
+
 .tk-label {
   font-weight: 600;
   margin-right: 8px;
 }
+
 .tk-select {
   min-width: 320px;
   padding: 8px 10px;
@@ -1547,10 +1588,12 @@ th {
   border-radius: 16px;
   background: #fff;
 }
+
 .tk-status {
   opacity: 0.5;
   transition: opacity 0.2s ease;
 }
+
 .tk-status.is-loading {
   opacity: 1;
 }
@@ -1559,18 +1602,23 @@ th {
 .tk-grid {
   display: grid;
 }
+
 .tk-grid-12 {
   grid-template-columns: repeat(12, minmax(0, 1fr));
 }
+
 .tk-gap-16 {
   gap: 16px;
 }
+
 .tk-col-span-2 {
   grid-column: span 2;
 }
+
 .tk-col-span-6 {
   grid-column: span 6;
 }
+
 .tk-col-span-12 {
   grid-column: span 12;
 }
@@ -1584,12 +1632,14 @@ th {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
   height: 100%;
 }
+
 .tk-card__head {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
 }
+
 .tk-card__title {
   font-weight: 700;
 }
@@ -1607,6 +1657,7 @@ th {
   align-items: center;
   justify-content: center;
 }
+
 .btn-tk__zoom svg,
 .btn-tk__close svg {
   width: 22px;
@@ -1623,15 +1674,18 @@ th {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
   height: 110px;
 }
+
 .kpi__title {
   font-size: 12px;
   color: #666;
 }
+
 .kpi__value {
   font-size: 22px;
   font-weight: 800;
   margin-top: 6px;
 }
+
 .kpi__sub {
   font-size: 12px;
   color: #888;
@@ -1645,6 +1699,7 @@ th {
   background: rgba(0, 0, 0, 0.4);
   z-index: 50;
 }
+
 .tk-modal {
   position: fixed;
   top: 50%;
@@ -1662,6 +1717,7 @@ th {
   animation: modalIn 180ms ease-out;
   will-change: transform, opacity;
 }
+
 .tk-modal__head {
   display: flex;
   justify-content: space-between;
@@ -1670,6 +1726,7 @@ th {
   margin-bottom: 8px;
   border-bottom: 1px solid #eee;
 }
+
 .tk-modal__title {
   font-weight: 600;
 }
@@ -1679,6 +1736,7 @@ th {
     opacity: 0;
     transform: translate(-50%, -48%) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
@@ -1689,6 +1747,7 @@ th {
 .tk-chart {
   height: 260px;
 }
+
 .tk-chart--lg {
   height: 520px;
 }
@@ -1735,19 +1794,25 @@ th {
 
 /* Xếp dọc riêng cho form phases, không ảnh hưởng form khác */
 .phases-form {
-  display: block !important; /* thay vì flex của .search-form */
+  display: block !important;
+  /* thay vì flex của .search-form */
   width: 100%;
-  height: auto !important; /* bỏ chiều cao cố định */
+  height: auto !important;
+  /* bỏ chiều cao cố định */
   min-height: unset !important;
-  overflow: visible !important; /* tránh cắt bớt nội dung */
-  padding: 0; /* tuỳ, nếu .search-form có padding cho thanh tìm kiếm */
-  gap: 0; /* gap của flex không cần nữa vì đã display:block */
+  overflow: visible !important;
+  /* tránh cắt bớt nội dung */
+  padding: 0;
+  /* tuỳ, nếu .search-form có padding cho thanh tìm kiếm */
+  gap: 0;
+  /* gap của flex không cần nữa vì đã display:block */
 }
 
 /* Mỗi phase là 1 khối full-width, tự đẩy form cao lên đúng bằng tổng các hàng */
 .phases-form .phase-row {
   display: grid;
-  grid-template-columns: minmax(180px, 250px) 1fr 1fr; /* tuỳ chỉnh cho cân đối */
+  grid-template-columns: minmax(180px, 250px) 1fr 1fr;
+  /* tuỳ chỉnh cho cân đối */
   gap: 16px;
   align-items: center;
   margin-bottom: 10px;
@@ -1762,17 +1827,19 @@ th {
 /* Nút submit nằm dưới toàn bộ các hàng */
 .phases-form .btn__chung {
   margin-top: 8px;
-  align-self: flex-start; /* đề phòng nếu có flex ở container cha */
+  align-self: flex-start;
+  /* đề phòng nếu có flex ở container cha */
 }
 
 /* Nếu .search-form gốc có align-items/justify-content/white-space ảnh hưởng — reset luôn */
 .phases-form,
 .phases-form * {
-  white-space: normal; /* tránh ép cùng 1 hàng */
+  white-space: normal;
+  /* tránh ép cùng 1 hàng */
 }
 
 /* Nhìn gọn hơn giữa các phase */
-.phases-form .phase-row + .phase-row {
+.phases-form .phase-row+.phase-row {
   border-top: 1px dashed #e5e7eb;
   padding-top: 12px;
 }
@@ -1802,7 +1869,8 @@ th {
   }
 
   .layout {
-    display: block; /* bỏ flex để main chiếm full */
+    display: block;
+    /* bỏ flex để main chiếm full */
   }
 
   .layout__sidebar {
@@ -1859,7 +1927,8 @@ th {
   }
 
   .layout {
-    display: block; /* bỏ flex để main chiếm full */
+    display: block;
+    /* bỏ flex để main chiếm full */
   }
 
   .layout__sidebar {

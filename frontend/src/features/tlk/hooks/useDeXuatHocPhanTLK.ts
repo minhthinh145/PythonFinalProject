@@ -42,6 +42,6 @@ export const useDeXuatHocPhanTLK = () => {
         loading,
         error,
         refetch: fetchData,
-        // ✅ Không có duyetDeXuat, tuChoiDeXuat (TLK chỉ xem)
+        // Không có duyetDeXuat, tuChoiDeXuat (TLK chỉ xem)
     };
 };

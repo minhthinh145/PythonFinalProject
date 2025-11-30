@@ -5,12 +5,12 @@
 ### Step 1: Models Setup ✅
 
 - [x] Generate models từ Neon DB
-- [ ] Copy models vào `infrastructure/persistence/models.py`
-- [ ] Configure database routing
+- [x] Copy models vào `infrastructure/persistence/models.py`
+- [x] Configure database routing
 
-### Step 2: Authentication Use Case 🎯
+### Step 2: Authentication Use Case 🎯 ✅
 
-**Priority: HIGH | Complexity: LOW**
+**Priority: HIGH | Complexity: LOW | Status: DONE**
 
 #### Files cần tạo:
 
