@@ -1,7 +1,4 @@
 from .repositories import (
-    IHocKyRepository,
-    IKyPhaseRepository,
-    IDotDangKyRepository,
-    IGhiDanhRepository,
-    IHocPhanRepository
+    IHocKyRepository, IKyPhaseRepository, IDotDangKyRepository,
+    IHocPhanRepository, IGhiDanhRepository, IHocPhiRepository, IKhoaRepository
 )

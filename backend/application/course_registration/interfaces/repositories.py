@@ -13,6 +13,14 @@ class ILopHocPhanRepository(ABC):
     def update_so_luong(self, id: str, amount: int) -> None:
         pass
 
+    @abstractmethod
+    def find_all_by_hoc_ky(self, hoc_ky_id: str) -> List[Any]:
+        pass
+
+    @abstractmethod
+    def get_by_mon_hoc_and_hoc_ky(self, mon_hoc_id: str, hoc_ky_id: str) -> List[Any]:
+        pass
+
 class IDangKyHocPhanRepository(ABC):
     @abstractmethod
     def has_registered_mon_hoc_in_hoc_ky(self, sinh_vien_id: str, mon_hoc_id: str, hoc_ky_id: str) -> bool:
@@ -22,6 +30,14 @@ class IDangKyHocPhanRepository(ABC):
     def is_student_registered(self, sinh_vien_id: str, lop_hoc_phan_id: str) -> bool:
         pass
         
+    @abstractmethod
+    def find_registered_class_ids(self, sinh_vien_id: str, hoc_ky_id: str) -> List[str]:
+        pass
+
+    @abstractmethod
+    def find_by_sinh_vien_and_hoc_ky(self, sinh_vien_id: str, hoc_ky_id: str) -> List[Any]:
+        pass
+
     @abstractmethod
     def create(self, data: dict) -> Any:
         pass
@@ -36,6 +52,10 @@ class IDangKyHocPhanRepository(ABC):
         
     @abstractmethod
     def update_lop_hoc_phan(self, id: str, new_lop_hoc_phan_id: str) -> None:
+        pass
+
+    @abstractmethod
+    def get_registered_classes_by_subject(self, sinh_vien_id: str, mon_hoc_id: str, hoc_ky_id: str) -> List[Any]:
         pass
 
 class IDangKyTKBRepository(ABC):
@@ -60,7 +80,16 @@ class ILichSuDangKyRepository(ABC):
     def upsert_and_log(self, sinh_vien_id: str, hoc_ky_id: str, dang_ky_hoc_phan_id: str, hanh_dong: str) -> None:
         pass
 
+    @abstractmethod
+    def find_by_sinh_vien_and_hoc_ky(self, sinh_vien_id: str, hoc_ky_id: str) -> Optional[Any]:
+        pass
+
 class ILichHocDinhKyRepository(ABC):
     @abstractmethod
     def find_by_lop_hoc_phan(self, lop_hoc_phan_id: str) -> List[Any]:
+        pass
+
+class IHocPhiRepository(ABC):
+    @abstractmethod
+    def get_hoc_phi_by_sinh_vien(self, sinh_vien_id: str, hoc_ky_id: str) -> Optional[Any]:
         pass
