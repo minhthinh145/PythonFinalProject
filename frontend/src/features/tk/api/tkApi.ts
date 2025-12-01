@@ -14,9 +14,9 @@ export const tkApi = {
         });
     },
 
-     /**
-     * ✅ Duyệt đề xuất học phần
-     */
+    /**
+    *  Duyệt đề xuất học phần
+    */
     duyetDeXuatHocPhan: async (
         data: UpdateTrangThaiByPDTRequest
     ): Promise<ServiceResult<null>> => {
@@ -27,7 +27,7 @@ export const tkApi = {
     },
 
     /**
-     * ✅ Từ chối đề xuất học phần (shared endpoint)
+     * Từ chối đề xuất học phần (shared endpoint)
      */
     tuChoiDeXuatHocPhan: async (
         data: TuChoiDeXuatHocPhanRequest

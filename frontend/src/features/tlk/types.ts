@@ -29,6 +29,20 @@ export interface HocPhanForCreateLopDTO {
     giangVienId: string;
 }
 
+// ============ Types for LenDanhSachHocPhan ============
+
+export interface MonHocDTO {
+    id: string;
+    ma_mon: string;
+    ten_mon: string;
+    so_tin_chi: number;
+}
+
+export interface GiangVienDTO {
+    id: string;
+    ho_ten: string;
+}
+
 export interface HocKyHienHanhDTO {
     id: string;
     hoc_ky_id: string;
@@ -41,6 +55,13 @@ export interface HocKyHienHanhDTO {
         nam_bat_dau: number;
         nam_ket_thuc: number;
     };
+}
+
+// ============ Alternative HocKyHienHanh response format ============
+export interface HocKyHienHanhResponse {
+    hoc_ky_id: string;
+    ten_hoc_ky: string;
+    nien_khoa: string;
 }
 
 /**

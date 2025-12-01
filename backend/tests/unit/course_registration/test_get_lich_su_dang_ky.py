@@ -30,9 +30,13 @@ class TestGetLichSuDangKyUseCase:
         # Assert
         assert result.success
         data = result.data
-        assert len(data['logs']) == 2
-        assert data['logs'][0]['hanhDong'] == "dang_ky"
-        assert data['logs'][1]['hanhDong'] == "huy_dang_ky"
+        # Both 'lichSu' and 'logs' keys exist (backward compat)
+        assert 'lichSu' in data
+        assert 'logs' in data
+        assert len(data['lichSu']) == 2
+        # Results sorted descending by thoi_gian, so newest (2023-01-02) first
+        assert data['lichSu'][0]['hanhDong'] == "huy_dang_ky"
+        assert data['lichSu'][1]['hanhDong'] == "dang_ky"
 
     def test_execute_no_history(self, use_case, mock_lich_su_repo):
         mock_lich_su_repo.find_by_sinh_vien_and_hoc_ky.return_value = None
@@ -40,7 +44,8 @@ class TestGetLichSuDangKyUseCase:
         result = use_case.execute("sv1", "hk1")
         
         assert result.success
-        assert result.data['logs'] == []
+        assert result.data['lichSu'] == []
+        assert result.data['logs'] == []  # backward compat
 
     def test_execute_missing_params(self, use_case):
         result = use_case.execute("", "hk1")

@@ -7,9 +7,45 @@ import type {
     PhongHocDTO,
     XepTKBRequest,
     ThoiKhoaBieuMonHocDTO,
+    MonHocDTO,
+    GiangVienDTO,
+    HocKyHienHanhResponse,
 } from "../types";
 
 export const tlkAPI = {
+    // ============ Học kỳ hiện hành ============
+    /**
+     * Lấy thông tin học kỳ hiện hành
+     */
+    getHocKyHienHanh: async (): Promise<ServiceResult<HocKyHienHanhResponse>> => {
+        return await fetchJSON("hien-hanh", {
+            method: "GET",
+        });
+    },
+
+    // ============ Môn học theo khoa của TLK ============
+    /**
+     * Lấy danh sách môn học theo khoa của TLK
+     */
+    getMonHoc: async (): Promise<ServiceResult<MonHocDTO[]>> => {
+        return await fetchJSON("tlk/mon-hoc", {
+            method: "GET",
+        });
+    },
+
+    // ============ Giảng viên theo khoa của TLK ============
+    /**
+     * Lấy danh sách giảng viên theo khoa của TLK
+     * @param monHocId - Optional: filter by mon_hoc_id
+     */
+    getGiangVien: async (monHocId?: string): Promise<ServiceResult<GiangVienDTO[]>> => {
+        const url = monHocId ? `tlk/giang-vien?mon_hoc_id=${monHocId}` : "tlk/giang-vien";
+        return await fetchJSON(url, {
+            method: "GET",
+        });
+    },
+
+    // ============ Đề xuất học phần ============
     /**
      * Tạo đề xuất học phần
      */
