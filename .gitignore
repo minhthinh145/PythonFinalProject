@@ -84,3 +84,4 @@ infra/sql/
 backend/check_db.py
 backend/scripts/replicate_db.sh
 be-egacy/
+backend/.env.test

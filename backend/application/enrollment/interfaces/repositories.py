@@ -100,3 +100,8 @@ class IHocPhanRepository(ABC):
     @abstractmethod
     def find_by_id(self, id: str) -> Optional[Any]:
         pass
+
+    @abstractmethod
+    def find_lop_hoc_phan_by_hoc_ky(self, hoc_ky_id: str) -> List[Any]:
+        """Get all LopHocPhan for a semester"""
+        pass

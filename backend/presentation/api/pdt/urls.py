@@ -9,6 +9,7 @@ from .room_views import (
     AvailableRoomView, RoomByKhoaView, AssignRoomView, UnassignRoomView
 )
 from .tuition_views import TuitionPolicyView, CalculateTuitionView
+from .internal_management_views import SinhVienView, MonHocView, GiangVienView
 
 urlpatterns = [
     path('quan-ly-hoc-ky/hoc-ky-hien-hanh', SetHocKyHienHanhView.as_view(), name='set-hoc-ky-hien-hanh'),
@@ -25,7 +26,15 @@ urlpatterns = [
     path('phong-hoc/khoa/<str:khoaId>', RoomByKhoaView.as_view(), name='get-rooms-by-khoa'),
     path('phong-hoc/assign', AssignRoomView.as_view(), name='assign-room'),
     path('phong-hoc/unassign', UnassignRoomView.as_view(), name='unassign-room'),
-    path('hoc-phi/chinh-sach', TuitionPolicyView.as_view(), name='tuition-policy-list-create'),
-    path('hoc-phi/chinh-sach/<str:id>', TuitionPolicyView.as_view(), name='tuition-policy-update'),
+    path('chinh-sach-tin-chi', TuitionPolicyView.as_view(), name='tuition-policy-list-create'),
+    path('chinh-sach-tin-chi/<str:id>', TuitionPolicyView.as_view(), name='tuition-policy-update'),
     path('hoc-phi/tinh-toan-hang-loat', CalculateTuitionView.as_view(), name='calculate-tuition-bulk'),
+    
+    # Internal Management (CRUD)
+    path('sinh-vien', SinhVienView.as_view(), name='manage-sinh-vien'),
+    path('sinh-vien/<str:id>', SinhVienView.as_view(), name='delete-sinh-vien'),
+    path('mon-hoc', MonHocView.as_view(), name='manage-mon-hoc'),
+    path('mon-hoc/<str:id>', MonHocView.as_view(), name='delete-mon-hoc'),
+    path('giang-vien', GiangVienView.as_view(), name='manage-giang-vien'),
+    path('giang-vien/<str:id>', GiangVienView.as_view(), name='delete-giang-vien'),
 ]

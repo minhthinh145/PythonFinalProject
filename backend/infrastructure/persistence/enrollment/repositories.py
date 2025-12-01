@@ -151,6 +151,24 @@ class HocPhanRepository(IHocPhanRepository):
         except HocPhan.DoesNotExist:
             return None
 
+    def find_lop_hoc_phan_by_hoc_ky(self, hoc_ky_id: str) -> List[LopHocPhan]:
+        """
+        Get all LopHocPhan for a semester with related data
+        Used by TraCuuHocPhan to show class listings
+        """
+        return list(LopHocPhan.objects.using('neon').filter(
+            hoc_phan__id_hoc_ky_id=hoc_ky_id
+        ).select_related(
+            'hoc_phan',
+            'hoc_phan__mon_hoc',
+            'giang_vien',
+            'giang_vien__id',  # Users via OneToOne
+        ).prefetch_related(
+            'lichhocdinhky_set',
+            'lichhocdinhky_set__phong',
+            'dangkyhocphan_set'
+        ))
+
 
 
 class KhoaRepository(IKhoaRepository):

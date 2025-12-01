@@ -25,7 +25,7 @@ class TuitionPolicyView(APIView):
         result = use_case.execute(request.data)
         return Response(result.to_dict(), status=result.status_code or 200)
 
-    def patch(self, request, id):
+    def put(self, request, id):
         use_case = UpdateChinhSachTinChiUseCase(ChinhSachHocPhiRepository())
         result = use_case.execute(id, request.data)
         return Response(result.to_dict(), status=result.status_code or 200)
