@@ -10,7 +10,28 @@ class GetChinhSachTinChiUseCase:
 
     def execute(self) -> ServiceResult:
         try:
-            policies = self.chinh_sach_repo.get_all()
+            policies_data = self.chinh_sach_repo.get_all()
+            # Map flat dict to nested structure expected by Frontend
+            policies = []
+            for p in policies_data:
+                policies.append({
+                    'id': str(p['id']),
+                    'hocKyId': str(p['hoc_ky_id']) if p['hoc_ky_id'] else None,
+                    'khoaId': str(p['khoa_id']) if p['khoa_id'] else None,
+                    'nganhId': str(p['nganh_id']) if p['nganh_id'] else None,
+                    'phiMoiTinChi': float(p['phi_moi_tin_chi']),
+                    'ngayHieuLuc': p['ngay_hieu_luc'],
+                    'ngayHetHieuLuc': p['ngay_het_hieu_luc'],
+                    'hocKy': {
+                        'tenHocKy': p['hoc_ky__ten_hoc_ky']
+                    } if p['hoc_ky__ten_hoc_ky'] else None,
+                    'khoa': {
+                        'tenKhoa': p['khoa__ten_khoa']
+                    } if p['khoa__ten_khoa'] else None,
+                    'nganhHoc': {
+                        'tenNganh': p['nganh__ten_nganh']
+                    } if p['nganh__ten_nganh'] else None
+                })
             return ServiceResult.ok(policies)
         except Exception as e:
             return ServiceResult.fail(str(e))

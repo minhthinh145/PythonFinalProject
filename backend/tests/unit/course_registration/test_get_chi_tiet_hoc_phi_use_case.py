@@ -25,16 +25,30 @@ class TestGetChiTietHocPhiUseCase(unittest.TestCase):
         mock_hoc_phi.tong_hoc_phi = 5000000
         mock_hoc_phi.trang_thai_thanh_toan = "CHUA_THANH_TOAN"
         mock_hoc_phi.so_tin_chi = 15
+        mock_hoc_phi.chinh_sach = None  # No policy
         
-        # Mock details (chi_tiet_hoc_phi_set)
+        # Mock mon_hoc
+        mock_mon_hoc = Mock()
+        mock_mon_hoc.ma_mon = "MH001"
+        mock_mon_hoc.ten_mon = "Subject 1"
+        
+        # Mock hoc_phan
+        mock_hoc_phan = Mock()
+        mock_hoc_phan.mon_hoc = mock_mon_hoc
+        
+        # Mock lop_hoc_phan
+        mock_lhp = Mock()
+        mock_lhp.ma_lop = "LHP001"
+        mock_lhp.hoc_phan = mock_hoc_phan
+        
+        # Mock chi tiet (chitiethocphi_set, not chi_tiet_hoc_phi_set)
         mock_detail_1 = Mock()
-        mock_detail_1.lop_hoc_phan.ma_lop = "LHP001"
-        mock_detail_1.lop_hoc_phan.hoc_phan.ten_hoc_phan = "Subject 1"
+        mock_detail_1.lop_hoc_phan = mock_lhp
         mock_detail_1.so_tin_chi = 3
         mock_detail_1.phi_tin_chi = 500000
         mock_detail_1.thanh_tien = 1500000
         
-        mock_hoc_phi.chi_tiet_hoc_phi_set.all.return_value = [mock_detail_1]
+        mock_hoc_phi.chitiethocphi_set.all.return_value = [mock_detail_1]
         
         self.mock_repo.get_hoc_phi_by_sinh_vien.return_value = mock_hoc_phi
 

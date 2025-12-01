@@ -19,7 +19,7 @@ class LoginView(APIView):
     Map 1-1: { url: "/auth/login", method: "POST", body }
     """
     
-    authentication_classes = [] # ✅ Disable auth to allow invalid tokens (e.g. expired)
+    authentication_classes = [] #
     permission_classes = [AllowAny]
     
     def post(self, request):
