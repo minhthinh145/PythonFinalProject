@@ -6,6 +6,7 @@ import urllib.request
 import urllib.error
 import uuid
 from datetime import datetime
+import pytest
 
 # Setup Django
 sys.path.append('/app')
@@ -69,6 +70,7 @@ def create_test_proposal():
         print(f"Error creating proposal: {e}")
         return None
 
+@pytest.mark.django_db(databases=['default', 'neon'])
 def test_reject_proposal():
     print("Testing Course Proposal Rejection...")
     

@@ -15,8 +15,6 @@ class GetTKBWeeklyUseCase:
             )
 
         # 1. Get registered classes with full related data
-        # We need a repo method that fetches classes AND their schedules
-        # The existing find_by_sinh_vien_and_hoc_ky does prefetch 'lop_hoc_phan__lichhocdinhky_set'
         registered_classes = self.dang_ky_repo.find_by_sinh_vien_and_hoc_ky(sinh_vien_id, hoc_ky_id)
         
         tkb_items = []
@@ -24,11 +22,6 @@ class GetTKBWeeklyUseCase:
         # 2. Iterate and expand schedule
         for reg in registered_classes:
             lhp = reg.lop_hoc_phan
-            
-            # Check if class has schedule
-            # In Django, reverse relation is usually 'lichhocdinhky_set'
-            # We assume the repo returns objects where we can access this.
-            # If using mock, we access .all() or list.
             
             schedules = []
             if hasattr(lhp, 'lichhocdinhky_set'):
@@ -40,34 +33,15 @@ class GetTKBWeeklyUseCase:
             for lich in schedules:
                 current_date = date_start
                 while current_date <= date_end:
-                    # Python date.weekday(): Mon=0, Sun=6
-                    # DB 'thu': Mon=2, ..., Sat=7, Sun=8 (or 1?)
-                    # Legacy logic: thu = dayOfWeek === 0 ? 1 : dayOfWeek + 1
-                    # JS getDay(): Sun=0, Mon=1...
-                    # So:
-                    # Sun (0) -> 1
-                    # Mon (1) -> 2
-                    # ...
-                    # Sat (6) -> 7
-                    
-                    # Python weekday():
-                    # Mon (0) -> need 2 => +2
-                    # Tue (1) -> need 3 => +2
-                    # ...
-                    # Sat (5) -> need 7 => +2
-                    # Sun (6) -> need 1? Or 8?
-                    # Let's follow legacy: "thu = dayOfWeek === 0 ? 1 : dayOfWeek + 1" (JS)
-                    # Python weekday() to JS getDay():
-                    # Py Mon(0) -> JS 1
-                    # Py Sun(6) -> JS 0
-                    
-                    py_weekday = current_date.weekday() # 0-6 (Mon-Sun)
-                    js_day = (py_weekday + 1) % 7 # 0-6 (Sun-Sat)
-                    
-                    thu_db = 1 if js_day == 0 else js_day + 1
+                    # Python weekday(): Mon=0, Sun=6
+                    # DB thu: Sun=1, Mon=2, ..., Sat=7
+                    py_weekday = current_date.weekday()  # 0-6 (Mon-Sun)
+                    # Convert to DB format: Sun=1, Mon=2, ..., Sat=7
+                    thu_db = 2 + py_weekday if py_weekday < 6 else 1  # Sun=1
                     
                     if thu_db == lich.thu:
                         # Match! Add to items
+                        # FE expects SVTKBWeeklyItemDTO format
                         item = {
                             "thu": lich.thu,
                             "tiet_bat_dau": lich.tiet_bat_dau,
@@ -76,15 +50,11 @@ class GetTKBWeeklyUseCase:
                                 "id": str(lich.phong.id) if lich.phong else "",
                                 "ma_phong": lich.phong.ma_phong if lich.phong else ""
                             },
-                            "lop_hoc_phan": {
-                                "id": str(lhp.id),
-                                "ma_lop": lhp.ma_lop
-                            },
                             "mon_hoc": {
                                 "ma_mon": lhp.hoc_phan.mon_hoc.ma_mon,
                                 "ten_mon": lhp.hoc_phan.mon_hoc.ten_mon
                             },
-                            "giang_vien": lhp.giang_vien.users.ho_ten if lhp.giang_vien and lhp.giang_vien.users else None,
+                            "giang_vien": lhp.giang_vien.id.ho_ten if lhp.giang_vien and lhp.giang_vien.id else None,
                             "ngay_hoc": current_date.isoformat()
                         }
                         tkb_items.append(item)

@@ -85,21 +85,37 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'TEST': {
+            'NAME': BASE_DIR / 'test_db.sqlite3',
+        },
     },
     'neon': {
-        **dj_database_url.config(
-            default=config('DATABASE_URL', default='postgresql://user:pass@host/db'),
-            conn_max_age=600,
-            conn_health_checks=True,
-        ),
-        'TIME_ZONE': 'Asia/Ho_Chi_Minh',
+        'ENGINE': config('DB_ENGINE', default='django.db.backends.postgresql'),
+        'NAME': config('DB_NAME', default='neondb'),
+        'USER': config('DB_USER', default=''),
+        'PASSWORD': config('DB_PASSWORD', default=''),
+        'HOST': config('DB_HOST', default=''),
+        'PORT': config('DB_PORT', default='5432'),
+        'OPTIONS': {
+            'sslmode': config('DB_SSLMODE', default='require'),
+            'channel_binding': 'require',
+        },
+        'TIME_ZONE': config('DB_TIMEZONE', default='Asia/Ho_Chi_Minh'),
+        'CONN_MAX_AGE': 600,
+        'CONN_HEALTH_CHECKS': True,
+        'TEST': {
+            'NAME': config('TEST_DB_NAME', default='test_neondb'),
+            'USER': config('TEST_DB_USER', default=''),
+            'PASSWORD': config('TEST_DB_PASSWORD', default=''),
+            'HOST': config('TEST_DB_HOST', default=''),
+            'PORT': config('TEST_DB_PORT', default='5432'),
+            'OPTIONS': {
+                'sslmode': config('TEST_DB_SSLMODE', default='require'),
+                'channel_binding': 'require',
+            },
+            'DEPENDENCIES': [],
+        }
     }
-}
-
-# Cấu hình cho test - cho phép Django tự tạo test database (test_neondb)
-# Dùng với pytest --reuse-db để tránh tạo lại DB mỗi lần test
-DATABASES['neon']['TEST'] = {
-    'DEPENDENCIES': [],  # No dependencies to avoid circular dependency error
 }
 
 # Database Router để tách riêng Django tables và app tables

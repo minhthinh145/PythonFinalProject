@@ -5,6 +5,7 @@ import json
 import urllib.request
 import urllib.error
 import uuid
+import pytest
 
 # Setup Django
 sys.path.append('/app')
@@ -54,6 +55,7 @@ def make_request(url, method='GET', data=None, token=None):
         print(f"HTTP Error {e.code}: {e.read().decode('utf-8')}")
         return None
 
+@pytest.mark.django_db(databases=['default', 'neon'])
 def test_reports():
     print("Testing Reports & Stats...")
     

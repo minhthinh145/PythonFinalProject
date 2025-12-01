@@ -19,7 +19,8 @@ from infrastructure.persistence.models import (
     LichSuDangKy,
     ChiTietLichSuDangKy,
     LichHocDinhKy,
-    HocPhi
+    HocPhi,
+    TaiLieu
 )
 import uuid
 
@@ -172,7 +173,9 @@ class LichSuDangKyRepository(ILichSuDangKyRepository):
 
     def find_by_sinh_vien_and_hoc_ky(self, sinh_vien_id: str, hoc_ky_id: str) -> Optional[LichSuDangKy]:
         try:
-            return LichSuDangKy.objects.using('neon').prefetch_related(
+            return LichSuDangKy.objects.using('neon').select_related(
+                'hoc_ky'
+            ).prefetch_related(
                 'chitietlichsudangky_set',
                 'chitietlichsudangky_set__dang_ky_hoc_phan',
                 'chitietlichsudangky_set__dang_ky_hoc_phan__lop_hoc_phan',
@@ -194,6 +197,18 @@ class HocPhiRepository(IHocPhiRepository):
             return HocPhi.objects.using('neon').filter(
                 sinh_vien_id=sinh_vien_id,
                 hoc_ky_id=hoc_ky_id
+            ).select_related(
+                'chinh_sach',
+                'hoc_ky'
+            ).prefetch_related(
+                'chitiethocphi_set__lop_hoc_phan__hoc_phan__mon_hoc'
             ).first()
         except Exception:
             return None
+
+
+class TaiLieuRepository:
+    def find_by_lop_hoc_phan(self, lop_hoc_phan_id: str) -> List[TaiLieu]:
+        return list(TaiLieu.objects.using('neon').filter(
+            lop_hoc_phan_id=lop_hoc_phan_id
+        ).select_related('uploaded_by').order_by('-created_at'))
