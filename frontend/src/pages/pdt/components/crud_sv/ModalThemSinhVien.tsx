@@ -12,7 +12,7 @@ type Props = {
 
 type Khoa = { id: string; tenKhoa: string };
 
-const API = import.meta.env.VITE_API_URL;
+const API = import.meta.env.VITE_API_URL || "/api";
 const withToken = (init: RequestInit = {}) => {
   const headers = new Headers(init.headers || {});
   const token = localStorage.getItem("token");

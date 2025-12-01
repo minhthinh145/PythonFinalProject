@@ -3,42 +3,32 @@ import React, { useEffect, useMemo, useState } from "react";
 import Fuse from "fuse.js";
 import { useModalContext } from "../../hook/ModalContext";
 import { tlkAPI } from "../../features/tlk/api/tlkAPI";
-type MonHoc = {
-  id: string;
-  ma_mon: string;
-  ten_mon: string;
-  so_tin_chi: number;
-};
-type GiangVien = { id: string; ho_ten: string };
-type DeXuatRow = { monHocId: string; soLuongLop: number; giangVienId: string };
-type HocKyHienHanh = {
-  hoc_ky_id: string;
-  ten_hoc_ky: string;
-  nien_khoa: string;
-};
+import type {
+  MonHocDTO,
+  GiangVienDTO,
+  HocKyHienHanhResponse,
+} from "../../features/tlk/types";
 
-const API = import.meta.env.VITE_API_URL;
+type DeXuatRow = { monHocId: string; soLuongLop: number; giangVienId: string };
 
 const LenDanhSachHocPhan: React.FC = () => {
   const { openNotify } = useModalContext();
 
-  const [monHocs, setMonHocs] = useState<MonHoc[]>([]);
-  const [filteredMonHocs, setFilteredMonHocs] = useState<MonHoc[]>([]);
+  const [monHocs, setMonHocs] = useState<MonHocDTO[]>([]);
+  const [filteredMonHocs, setFilteredMonHocs] = useState<MonHocDTO[]>([]);
   const [searchValue, setSearchValue] = useState("");
   const [selectedRows, setSelectedRows] = useState<DeXuatRow[]>([]);
   const [giangVienByMon, setGiangVienByMon] = useState<
-    Record<string, GiangVien[]>
+    Record<string, GiangVienDTO[]>
   >({});
-  const [hocKyHienHanh, setHocKyHienHanh] = useState<HocKyHienHanh | null>(
-    null
-  );
+  const [hocKyHienHanh, setHocKyHienHanh] =
+    useState<HocKyHienHanhResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const token = localStorage.getItem("token") || "";
 
   const fuse = useMemo(
     () =>
-      new Fuse<MonHoc>(monHocs, {
+      new Fuse<MonHocDTO>(monHocs, {
         keys: ["ma_mon", "ten_mon"],
         threshold: 0.3,
       }),
@@ -47,16 +37,17 @@ const LenDanhSachHocPhan: React.FC = () => {
 
   const fetchHocKyHienHanh = async () => {
     try {
-      const res = await fetch(`${API}/hien-hanh`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Không lấy được học kỳ hiện hành");
-      const data: HocKyHienHanh = await res.json();
-      setHocKyHienHanh(data);
-      openNotify?.(
-        `Học kỳ hiện hành: ${data.ten_hoc_ky} • Niên khóa ${data.nien_khoa}`,
-        "info"
-      );
+      const result = await tlkAPI.getHocKyHienHanh();
+      if (result.isSuccess && result.data) {
+        setHocKyHienHanh(result.data);
+        openNotify?.(
+          `Học kỳ hiện hành: ${result.data.ten_hoc_ky} • Niên khóa ${result.data.nien_khoa}`,
+          "info"
+        );
+      } else {
+        openNotify?.("Không lấy được học kỳ hiện hành", "warning");
+        setHocKyHienHanh(null);
+      }
     } catch (err) {
       console.error(err);
       openNotify?.("Không lấy được học kỳ hiện hành", "warning");
@@ -66,14 +57,11 @@ const LenDanhSachHocPhan: React.FC = () => {
 
   const fetchMonHocs = async () => {
     try {
-      const res = await fetch(`${API}/tlk/mon-hoc`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const out = await res.json();
-      if (res.ok && Array.isArray(out.data)) {
-        setMonHocs(out.data);
-        setFilteredMonHocs(out.data);
-        openNotify?.(`Đã tải ${out.data.length} môn học`, "info");
+      const result = await tlkAPI.getMonHoc();
+      if (result.isSuccess && Array.isArray(result.data)) {
+        setMonHocs(result.data);
+        setFilteredMonHocs(result.data);
+        openNotify?.(`Đã tải ${result.data.length} môn học`, "info");
       } else {
         setMonHocs([]);
         setFilteredMonHocs([]);
@@ -123,16 +111,10 @@ const LenDanhSachHocPhan: React.FC = () => {
     // nạp danh sách GV cho môn (nếu chưa có)
     if (!giangVienByMon[monHocId]) {
       try {
-        const res = await fetch(
-          `${API}/tlk/giang-vien?mon_hoc_id=${monHocId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const data: { data: GiangVien[] } = await res.json();
+        const result = await tlkAPI.getGiangVien(monHocId);
         setGiangVienByMon((prev) => ({
           ...prev,
-          [monHocId]: data?.data ?? [],
+          [monHocId]: result.data ?? [],
         }));
       } catch (err) {
         console.error(err);
@@ -163,7 +145,7 @@ const LenDanhSachHocPhan: React.FC = () => {
 
   /**
    */
-  const addDeXuat = async (monHoc: MonHoc, giangVienId: string) => {
+  const addDeXuat = async (monHoc: MonHocDTO, giangVienId: string) => {
     try {
       setSubmitting(true);
 

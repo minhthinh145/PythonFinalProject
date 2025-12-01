@@ -14,14 +14,12 @@ export default function LichSuDangKy() {
 
   const [selectedNienKhoa, setSelectedNienKhoa] = useState<string>("");
   const [selectedHocKyId, setSelectedHocKyId] = useState<string>("");
-
-  // ✅ Flatten data - Niên khóa list
+  
   const nienKhoas = useMemo(
     () => Array.from(new Set(hocKyNienKhoas.map((nk) => nk.tenNienKhoa))),
     [hocKyNienKhoas]
   );
 
-  // ✅ Flatten data - Học kỳ list
   const flatHocKys = useMemo(() => {
     const result: (HocKyItemDTO & { tenNienKhoa: string })[] = [];
 
@@ -37,9 +35,7 @@ export default function LichSuDangKy() {
     return result;
   }, [hocKyNienKhoas]);
 
-  // ✅ Auto-select học kỳ hiện hành ONLY on mount (once)
   useEffect(() => {
-    // Only run if both data loaded AND no selection made yet
     if (
       loadingHocKyHienHanh ||
       loadingHocKy ||
@@ -49,7 +45,6 @@ export default function LichSuDangKy() {
       return;
     }
 
-    // ✅ Only auto-select if BOTH fields are empty (first load)
     if (selectedHocKyId || selectedNienKhoa) {
       return;
     }
@@ -60,7 +55,6 @@ export default function LichSuDangKy() {
       setSelectedNienKhoa(hkHienHanh.tenNienKhoa);
       setSelectedHocKyId(hkHienHanh.id);
     }
-    // ✅ Remove selectedHocKyId from dependencies to prevent re-running
   }, [
     hocKyHienHanh,
     flatHocKys,
@@ -69,16 +63,13 @@ export default function LichSuDangKy() {
     selectedNienKhoa,
   ]);
 
-  // ✅ Reset học kỳ khi đổi niên khóa
   useEffect(() => {
     setSelectedHocKyId("");
   }, [selectedNienKhoa]);
 
-  // ✅ Fetch lịch sử đăng ký
   const { data: lichSuData, loading: loadingLichSu } =
     useLichSuDangKy(selectedHocKyId);
 
-  // ✅ Format datetime
   const formatDateTime = (dateString: string) => {
     return new Date(dateString).toLocaleString("vi-VN", {
       hour: "2-digit",
@@ -89,7 +80,6 @@ export default function LichSuDangKy() {
     });
   };
 
-  // ✅ Format action
   const getActionLabel = (action: string) => {
     return action === "dang_ky" ? "Đăng ký" : "Hủy đăng ký";
   };
