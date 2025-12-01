@@ -2,12 +2,14 @@
 Application Layer - Get Danh Sach Lop Da Dang Ky Use Case
 """
 from typing import List, Dict, Any
+from collections import defaultdict
 from core.types import ServiceResult
 from application.course_registration.interfaces import IDangKyHocPhanRepository
 
 class GetDanhSachLopDaDangKyUseCase:
     """
     Use case to get list of registered course classes for student
+    Returns grouped by MonHoc: MonHocInfoDTO[] with danhSachLop
     """
     
     def __init__(self, dang_ky_hp_repo: IDangKyHocPhanRepository):
@@ -15,20 +17,21 @@ class GetDanhSachLopDaDangKyUseCase:
         
     def execute(self, sinh_vien_id: str, hoc_ky_id: str) -> ServiceResult:
         """
-        Execute logic
+        Execute logic - returns MonHocInfoDTO[] grouped by môn học
         """
         try:
             # 1. Get registered classes
             dang_kys = self.dang_ky_hp_repo.find_by_sinh_vien_and_hoc_ky(sinh_vien_id, hoc_ky_id)
             
-            # 2. Group by MonHoc
-            mon_hoc_map: Dict[str, Any] = {}
+            # 2. Group by môn học
+            mon_hoc_map: Dict[str, Dict] = {}
             
             for dk in dang_kys:
                 lhp = dk.lop_hoc_phan
                 mon_hoc = lhp.hoc_phan.mon_hoc
                 ma_mon = mon_hoc.ma_mon
                 
+                # Initialize mon hoc entry if not exists
                 if ma_mon not in mon_hoc_map:
                     mon_hoc_map[ma_mon] = {
                         "maMon": ma_mon,
@@ -37,13 +40,13 @@ class GetDanhSachLopDaDangKyUseCase:
                         "danhSachLop": []
                     }
                 
-                # Format TKB
+                # Build TKB list for this lớp
                 tkb_list = []
                 for lich in lhp.lichhocdinhky_set.all():
+                    gv_text = lhp.giang_vien.id.ho_ten if lhp.giang_vien and lhp.giang_vien.id else "Chưa phân công"
                     thu_text = self._get_thu_name(lich.thu)
                     tiet_text = f"{lich.tiet_bat_dau} - {lich.tiet_ket_thuc}"
                     phong_text = lich.phong.ma_phong if lich.phong else "TBA"
-                    gv_text = lhp.giang_vien.id.ho_ten if lhp.giang_vien and lhp.giang_vien.id else "Chưa phân công"
                     ngay_bd = lhp.ngay_bat_dau.strftime("%d/%m/%Y") if lhp.ngay_bat_dau else ""
                     ngay_kt = lhp.ngay_ket_thuc.strftime("%d/%m/%Y") if lhp.ngay_ket_thuc else ""
                     
@@ -57,6 +60,7 @@ class GetDanhSachLopDaDangKyUseCase:
                         "formatted": f"{thu_text}, Tiết({tiet_text}), {phong_text}, {gv_text}\n({ngay_bd} -> {ngay_kt})"
                     })
                 
+                # Add lớp to môn học
                 mon_hoc_map[ma_mon]["danhSachLop"].append({
                     "id": str(lhp.id),
                     "maLop": lhp.ma_lop,

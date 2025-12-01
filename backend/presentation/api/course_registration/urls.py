@@ -15,7 +15,9 @@ from .views import (
     GetLichSuDangKyView,
     GetTKBWeeklyView,
     TraCuuHocPhanView,
-    GetChiTietHocPhiView
+    GetChiTietHocPhiView,
+    GetTaiLieuByLopHocPhanView,
+    GetLopDaDangKyWithTaiLieuView
 )
 
 urlpatterns = [
@@ -30,4 +32,6 @@ urlpatterns = [
     path('tkb-weekly', GetTKBWeeklyView.as_view(), name='tkb-weekly'),
     path('tra-cuu-hoc-phan', TraCuuHocPhanView.as_view(), name='tra-cuu-hoc-phan'),
     path('hoc-phi', GetChiTietHocPhiView.as_view(), name='hoc-phi'),
+    path('lop-hoc-phan/<str:lop_hoc_phan_id>/tai-lieu', GetTaiLieuByLopHocPhanView.as_view(), name='tai-lieu-by-lop'),
+    path('lop-da-dang-ky/tai-lieu', GetLopDaDangKyWithTaiLieuView.as_view(), name='lop-da-dang-ky-tai-lieu'),
 ]

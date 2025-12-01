@@ -26,8 +26,11 @@ urlpatterns = [
     path('api/sv/', include('presentation.api.enrollment.urls')),
     path('api/sv/', include('presentation.api.course_registration.urls')),
     path('api/pdt/', include('presentation.api.pdt.urls')),
+    path('api/gv/', include('presentation.api.gv.urls')),  # GV Module
+    path('api/tlk/', include('presentation.api.tlk.urls')),  # TLK Module
     path('api/bao-cao/', include('presentation.api.pdt.report_urls')),
     path('api/tuition/calculate-semester', CalculateTuitionView.as_view(), name='calculate-tuition-alias'),
+    path('api/payment/', include('presentation.api.payment.urls')),  # Payment Module
     path('api/', include('presentation.api.common.urls')),  # Common/public APIs
     path('api/hoc-ky-nien-khoa', GetHocKyView.as_view()),  # TODO: Remove after migration
 ]

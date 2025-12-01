@@ -21,6 +21,27 @@ from django.utils import timezone
 from datetime import timedelta
 import uuid
 
+class AuthenticatedUser:
+    """Wrapper for Users model to satisfy DRF authentication"""
+    def __init__(self, user):
+        self._user = user
+        self.id = user.id
+        self.ho_ten = user.ho_ten
+        self.email = user.email
+        self.tai_khoan = user.tai_khoan
+        self.ma_nhan_vien = user.ma_nhan_vien
+        
+    @property
+    def is_authenticated(self):
+        return True
+    
+    @property 
+    def is_anonymous(self):
+        return False
+    
+    def __getattr__(self, name):
+        return getattr(self._user, name)
+
 @pytest.mark.django_db(databases=['default', 'neon'])
 class TestEnrollmentAPI:
     
@@ -89,8 +110,11 @@ class TestEnrollmentAPI:
             trang_thai_mo=True
         )
         
+        # Wrap user for DRF auth
+        auth_user = AuthenticatedUser(user)
+        
         return {
-            'user': user,
+            'user': auth_user,
             'tk': tk,
             'hp': hp
         }

@@ -2,13 +2,7 @@
 E2E Tests for Auth API
 Test-Driven Development - RED Phase
 """
-import os
-import django
-from django.conf import settings
 
-if not settings.configured:
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'DKHPHCMUE.settings')
-    django.setup()
 
 import pytest
 from rest_framework import status
@@ -38,15 +32,18 @@ class TestLoginAPI:
             - Response có user info
         """
         # Arrange - Tạo test account
+        import uuid
+        unique_username = f"teststudent_{uuid.uuid4().hex[:8]}"
+        
         test_data = create_test_account(
-            username='teststudent',
+            username=unique_username,
             password='testpass123',
             loai='sinh_vien',
             active=True
         )
         
         login_payload = {
-            'tenDangNhap': 'teststudent',
+            'tenDangNhap': unique_username,
             'matKhau': 'testpass123'
         }
         
@@ -54,10 +51,13 @@ class TestLoginAPI:
         response = api_client.post('/api/auth/login', login_payload, format='json')
         
         # Assert
+        print(f"\nDEBUG: Response Status: {response.status_code}")
+        print(f"DEBUG: Response Data: {response.json()}")
+        
         assert response.status_code == status.HTTP_200_OK
         
         data = response.json()
-        assert data['success'] is True
+        assert data['isSuccess'] is True
         assert data['message'] == 'Đăng nhập thành công'
         assert 'data' in data
         assert 'token' in data['data']
@@ -100,7 +100,7 @@ class TestLoginAPI:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         
         data = response.json()
-        assert data['success'] is False
+        assert data['isSuccess'] is False
         assert 'Tên đăng nhập hoặc mật khẩu không đúng' in data['message']
     
     def test_login_fail_with_nonexistent_user(self, api_client):
@@ -126,7 +126,7 @@ class TestLoginAPI:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         
         data = response.json()
-        assert data['success'] is False
+        assert data['isSuccess'] is False
         assert 'Tên đăng nhập hoặc mật khẩu không đúng' in data['message']
     
     def test_login_fail_with_inactive_account(self, api_client, create_test_account):
@@ -159,7 +159,7 @@ class TestLoginAPI:
         assert response.status_code == status.HTTP_403_FORBIDDEN
         
         data = response.json()
-        assert data['success'] is False
+        assert data['isSuccess'] is False
         assert 'Tài khoản đã bị vô hiệu hóa' in data['message']
     
     def test_login_fail_with_missing_credentials(self, api_client):
@@ -175,17 +175,17 @@ class TestLoginAPI:
         # Test missing username
         response = api_client.post('/api/auth/login', {'matKhau': 'pass123'}, format='json')
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.json()['success'] is False
+        assert response.json()['isSuccess'] is False
         
         # Test missing password
         response = api_client.post('/api/auth/login', {'tenDangNhap': 'user'}, format='json')
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.json()['success'] is False
+        assert response.json()['isSuccess'] is False
         
         # Test empty payload
         response = api_client.post('/api/auth/login', {}, format='json')
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.json()['success'] is False
+        assert response.json()['isSuccess'] is False
 
 
 @pytest.mark.e2e
@@ -225,7 +225,7 @@ class TestRefreshTokenAPI:
         assert response.status_code == status.HTTP_200_OK
         
         data = response.json()
-        assert data['success'] is True
+        assert data['isSuccess'] is True
         assert 'data' in data
         assert 'accessToken' in data['data']
     
@@ -248,7 +248,7 @@ class TestRefreshTokenAPI:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         
         data = response.json()
-        assert data['success'] is False
+        assert data['isSuccess'] is False
         assert 'Invalid or expired refresh token' in data['message']
     
     def test_refresh_token_fail_with_missing_token(self, api_client):
@@ -268,5 +268,5 @@ class TestRefreshTokenAPI:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         
         data = response.json()
-        assert data['success'] is False
+        assert data['isSuccess'] is False
         assert 'Vui lòng cung cấp refresh token' in data['message']

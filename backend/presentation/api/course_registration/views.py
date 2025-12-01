@@ -33,7 +33,8 @@ class CheckPhaseDangKyView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        hoc_ky_id = request.query_params.get('hocKyId')
+        # Accept both hocKyId (camelCase) and hoc_ky_id (snake_case)
+        hoc_ky_id = request.query_params.get('hocKyId') or request.query_params.get('hoc_ky_id')
         
         if not hoc_ky_id:
             return Response({
@@ -58,7 +59,8 @@ class GetDanhSachLopHocPhanView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        hoc_ky_id = request.query_params.get('hocKyId')
+        # Accept both hocKyId (camelCase) and hoc_ky_id (snake_case)
+        hoc_ky_id = request.query_params.get('hocKyId') or request.query_params.get('hoc_ky_id')
         
         if not hoc_ky_id:
             return Response({
@@ -84,7 +86,8 @@ class GetDanhSachLopDaDangKyView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        hoc_ky_id = request.query_params.get('hocKyId')
+        # Accept both hocKyId (camelCase) and hoc_ky_id (snake_case)
+        hoc_ky_id = request.query_params.get('hocKyId') or request.query_params.get('hoc_ky_id')
         
         if not hoc_ky_id:
             return Response({
@@ -206,8 +209,8 @@ class GetLopChuaDangKyByMonHocView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        mon_hoc_id = request.query_params.get('monHocId')
-        hoc_ky_id = request.query_params.get('hocKyId')
+        mon_hoc_id = request.query_params.get('monHocId') or request.query_params.get('mon_hoc_id')
+        hoc_ky_id = request.query_params.get('hocKyId') or request.query_params.get('hoc_ky_id')
         
         if not mon_hoc_id or not hoc_ky_id:
             return Response({
@@ -234,7 +237,7 @@ class GetLichSuDangKyView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        hoc_ky_id = request.query_params.get('hocKyId')
+        hoc_ky_id = request.query_params.get('hocKyId') or request.query_params.get('hoc_ky_id')
         
         if not hoc_ky_id:
             return Response({
@@ -258,9 +261,9 @@ class GetTKBWeeklyView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        hoc_ky_id = request.query_params.get('hocKyId')
-        date_start_str = request.query_params.get('dateStart')
-        date_end_str = request.query_params.get('dateEnd')
+        hoc_ky_id = request.query_params.get('hocKyId') or request.query_params.get('hoc_ky_id')
+        date_start_str = request.query_params.get('dateStart') or request.query_params.get('date_start')
+        date_end_str = request.query_params.get('dateEnd') or request.query_params.get('date_end')
         
         if not hoc_ky_id or not date_start_str or not date_end_str:
             return Response({
@@ -294,7 +297,7 @@ class TraCuuHocPhanView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        hoc_ky_id = request.query_params.get('hocKyId')
+        hoc_ky_id = request.query_params.get('hocKyId') or request.query_params.get('hoc_ky_id')
         
         if not hoc_ky_id:
             return Response({
@@ -321,7 +324,7 @@ class GetChiTietHocPhiView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        hoc_ky_id = request.query_params.get('hocKyId')
+        hoc_ky_id = request.query_params.get('hocKyId') or request.query_params.get('hoc_ky_id')
         
         if not hoc_ky_id:
             return Response({
@@ -334,6 +337,53 @@ class GetChiTietHocPhiView(APIView):
         from infrastructure.persistence.course_registration.repositories import HocPhiRepository
         
         use_case = GetChiTietHocPhiUseCase(HocPhiRepository())
+        
+        result = use_case.execute(str(request.user.id), hoc_ky_id)
+        
+        return Response(result.to_dict(), status=result.status_code or 200)
+
+
+class GetTaiLieuByLopHocPhanView(APIView):
+    """
+    GET /api/sv/lop-hoc-phan/{id}/tai-lieu
+    
+    Get documents for a specific class
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, lop_hoc_phan_id):
+        from application.course_registration.use_cases.get_tai_lieu_use_case import GetTaiLieuByLopHocPhanUseCase
+        from infrastructure.persistence.course_registration.repositories import TaiLieuRepository, DangKyHocPhanRepository
+        
+        use_case = GetTaiLieuByLopHocPhanUseCase(TaiLieuRepository(), DangKyHocPhanRepository())
+        
+        result = use_case.execute(str(request.user.id), lop_hoc_phan_id)
+        
+        return Response(result.to_dict(), status=result.status_code or 200)
+
+
+class GetLopDaDangKyWithTaiLieuView(APIView):
+    """
+    GET /api/sv/lop-da-dang-ky/tai-lieu
+    
+    Get registered classes with their documents
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        hoc_ky_id = request.query_params.get('hocKyId') or request.query_params.get('hoc_ky_id')
+        
+        if not hoc_ky_id:
+            return Response({
+                "success": False,
+                "message": "Thiếu thông tin (hocKyId)",
+                "errorCode": "MISSING_PARAM"
+            }, status=400)
+        
+        from application.course_registration.use_cases.get_tai_lieu_use_case import GetLopDaDangKyWithTaiLieuUseCase
+        from infrastructure.persistence.course_registration.repositories import TaiLieuRepository, DangKyHocPhanRepository
+        
+        use_case = GetLopDaDangKyWithTaiLieuUseCase(DangKyHocPhanRepository(), TaiLieuRepository())
         
         result = use_case.execute(str(request.user.id), hoc_ky_id)
         
