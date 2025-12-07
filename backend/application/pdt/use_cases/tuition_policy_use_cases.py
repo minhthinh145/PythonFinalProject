@@ -43,21 +43,31 @@ class CreateChinhSachTinChiUseCase:
     def execute(self, data: dict) -> ServiceResult:
         try:
             # Validate required fields
-            required = ['hocKyId', 'phiMoiTinChi', 'ngayHieuLuc']
+            required = ['hocKyId', 'phiMoiTinChi', 'khoaId', 'nganhId']
             if not all(k in data for k in required):
                 return ServiceResult.fail("Thiếu thông tin bắt buộc", error_code="MISSING_PARAMS")
 
-            # Check if policy exists for this combination (if specific logic needed)
-            # For now, just create
+            # Get học kỳ to auto-fill ngày hiệu lực
+            from infrastructure.persistence.models import HocKy
+            hoc_ky = HocKy.objects.using('neon').filter(id=data['hocKyId']).first()
+            if not hoc_ky:
+                return ServiceResult.fail("Học kỳ không tồn tại", error_code="NOT_FOUND")
             
+            # Ngày hiệu lực = ngày bắt đầu học kỳ, Ngày hết hiệu lực = ngày kết thúc học kỳ
+            ngay_hieu_luc = hoc_ky.ngay_bat_dau
+            ngay_het_hieu_luc = hoc_ky.ngay_ket_thuc
+            
+            if not ngay_hieu_luc:
+                return ServiceResult.fail("Học kỳ chưa có ngày bắt đầu", error_code="INVALID_HOC_KY")
+                
             new_policy = {
                 'id': uuid.uuid4(),
                 'hoc_ky_id': data['hocKyId'],
                 'khoa_id': data.get('khoaId'),
                 'nganh_id': data.get('nganhId'),
                 'phi_moi_tin_chi': data['phiMoiTinChi'],
-                'ngay_hieu_luc': data['ngayHieuLuc'],
-                'ngay_het_hieu_luc': data.get('ngayHetHieuLuc')
+                'ngay_hieu_luc': ngay_hieu_luc,
+                'ngay_het_hieu_luc': ngay_het_hieu_luc
             }
             
             created = self.chinh_sach_repo.create(new_policy)
@@ -107,7 +117,45 @@ class TinhHocPhiHangLoatUseCase:
 
     def execute(self, hoc_ky_id: str) -> ServiceResult:
         try:
+            
             count = self.chinh_sach_repo.calculate_tuition_bulk(hoc_ky_id)
-            return ServiceResult.ok({'count': count}, f"Đã tính học phí cho {count} sinh viên")
+            return ServiceResult.ok({'count': count}, f"Đã tính học phí cho {count} sinh viên ở học kì")
         except Exception as e:
             return ServiceResult.fail(str(e))
+
+
+class DeleteChinhSachTinChiUseCase:
+    """Delete a tuition policy (ChinhSachTinChi)"""
+    
+    def __init__(self, chinh_sach_repo: IChinhSachHocPhiRepository):
+        self.chinh_sach_repo = chinh_sach_repo
+
+    def execute(self, chinh_sach_id: str) -> ServiceResult:
+        try:
+            # Check if any hoc_phi references this policy
+            from infrastructure.persistence.models import HocPhi
+            
+            referenced_count = HocPhi.objects.using('neon').filter(
+                chinh_sach_id=chinh_sach_id
+            ).count()
+            
+            if referenced_count > 0:
+                return ServiceResult.fail(
+                    f"Không thể xóa: có {referenced_count} bản ghi học phí đang sử dụng chính sách này",
+                    error_code="CONSTRAINT_VIOLATION"
+                )
+            
+            # Delete the policy
+            success = self.chinh_sach_repo.delete(chinh_sach_id)
+            
+            if success:
+                return ServiceResult.ok(None, "Xóa chính sách thành công")
+            else:
+                return ServiceResult.fail(
+                    "Không tìm thấy chính sách để xóa",
+                    error_code="NOT_FOUND"
+                )
+                
+        except Exception as e:
+            return ServiceResult.fail(str(e), error_code="INTERNAL_ERROR")
+

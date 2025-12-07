@@ -22,14 +22,23 @@ class GetChiTietHocPhiUseCase:
             don_gia = 0
             
             for item in hoc_phi.chitiethocphi_set.all():
-                mon_hoc = item.lop_hoc_phan.hoc_phan.mon_hoc
+                # Skip if lop_hoc_phan doesn't exist (deleted or invalid reference)
+                try:
+                    lop_hoc_phan = item.lop_hoc_phan
+                    if not lop_hoc_phan:
+                        continue
+                    mon_hoc = lop_hoc_phan.hoc_phan.mon_hoc
+                except Exception:
+                    # Skip invalid ChiTietHocPhi
+                    continue
+                
                 tong_tin_chi += item.so_tin_chi
                 don_gia = float(item.phi_tin_chi)  # Same for all
                 
                 chi_tiet.append({
                     "maMon": mon_hoc.ma_mon,
                     "tenMon": mon_hoc.ten_mon,
-                    "maLop": item.lop_hoc_phan.ma_lop,
+                    "maLop": lop_hoc_phan.ma_lop,
                     "soTinChi": item.so_tin_chi,
                     "donGia": float(item.phi_tin_chi),
                     "thanhTien": float(item.thanh_tien)

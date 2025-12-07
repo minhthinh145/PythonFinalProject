@@ -47,7 +47,8 @@ class GetHocPhansForCreateLopUseCase:
                 self._map_to_response(hp) for hp in hoc_phans
             ]
             
-            return ServiceResult.ok({"hocPhan": response_list})
+            # Return array directly - FE expects result.data to be array
+            return ServiceResult.ok(response_list)
             
         except Exception as e:
             return ServiceResult.fail(str(e))
@@ -55,7 +56,8 @@ class GetHocPhansForCreateLopUseCase:
     def _map_to_response(self, hp: TLKHocPhanForCreateLopDTO) -> Dict[str, Any]:
         """Map DTO to camelCase response"""
         return {
-            "id": hp.id,
+            "id": hp.id,  # de_xuat_id - unique key for FE
+            "hocPhanId": hp.hoc_phan_id,  # actual hoc_phan.id for creating lop
             "maHocPhan": hp.ma_hoc_phan,
             "tenHocPhan": hp.ten_hoc_phan,
             "soTinChi": hp.so_tin_chi,

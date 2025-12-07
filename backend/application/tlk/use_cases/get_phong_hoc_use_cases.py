@@ -38,7 +38,8 @@ class GetPhongHocByTLKUseCase:
                 self._map_to_response(ph) for ph in phong_hoc_list
             ]
             
-            return ServiceResult.ok({"phongHoc": response_list})
+            # Return array directly - FE expects result.data to be array
+            return ServiceResult.ok(response_list)
             
         except Exception as e:
             return ServiceResult.fail(str(e))
@@ -91,7 +92,8 @@ class GetAvailablePhongHocUseCase:
                 for ph in phong_hoc_list
             ]
             
-            return ServiceResult.ok({"phongHoc": response_list})
+            # Return array directly - FE expects result.data to be array
+            return ServiceResult.ok(response_list)
             
         except Exception as e:
             return ServiceResult.fail(str(e))

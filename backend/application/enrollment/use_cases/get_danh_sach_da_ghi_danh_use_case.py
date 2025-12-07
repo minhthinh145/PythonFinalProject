@@ -23,12 +23,22 @@ class GetDanhSachDaGhiDanhUseCase:
             hoc_phan = gd.hoc_phan
             mon_hoc = hoc_phan.mon_hoc if hoc_phan else None
             
-            de_xuat_list = mon_hoc.dexuathocphan_set.all() if mon_hoc and hasattr(mon_hoc, 'dexuathocphan_set') else []
-            de_xuat = de_xuat_list[0] if de_xuat_list else None
+            # Query correct de_xuat: same mon_hoc + hoc_ky + approved by PDT
+            de_xuat = None
+            if mon_hoc and hoc_phan:
+                de_xuat = mon_hoc.dexuathocphan_set.filter(
+                    hoc_ky_id=hoc_phan.id_hoc_ky_id,
+                    trang_thai='da_duyet_pdt'
+                ).order_by('-created_at').first()
             
-            ten_giang_vien = None
-            if de_xuat and de_xuat.giang_vien_de_xuat and de_xuat.giang_vien_de_xuat.id:
-                ten_giang_vien = de_xuat.giang_vien_de_xuat.id.ho_ten
+            ten_giang_vien = "Chưa có giảng viên"
+            try:
+                if de_xuat:
+                    gv = de_xuat.giang_vien_de_xuat
+                    if gv and gv.id:
+                        ten_giang_vien = gv.id.ho_ten
+            except Exception:
+                pass  # GiangVien not found, use default
                 
             data.append({
                 'ghiDanhId': str(gd.id),

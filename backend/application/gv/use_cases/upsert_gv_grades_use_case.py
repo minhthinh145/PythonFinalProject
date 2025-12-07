@@ -45,24 +45,24 @@ class UpsertGVGradesUseCase:
             if not grades:
                 return ServiceResult.fail("Danh sách điểm không được rỗng")
             
-            # Validate grades format
+            # Validate grades format (FE sends snake_case: sinh_vien_id, diem_so)
             for grade in grades:
-                if "sinhVienId" not in grade:
+                if "sinh_vien_id" not in grade:
                     return ServiceResult.fail("Thiếu thông tin sinh viên")
-                if "diemSo" not in grade:
+                if "diem_so" not in grade:
                     return ServiceResult.fail("Thiếu thông tin điểm")
-                diem = grade.get("diemSo")
+                diem = grade.get("diem_so")
                 if diem is not None and (diem < 0 or diem > 10):
                     return ServiceResult.fail("Điểm phải từ 0 đến 10")
             
             # Validate all students are registered in LHP
-            sinh_vien_ids = [g["sinhVienId"] for g in grades]
+            sinh_vien_ids = [g["sinh_vien_id"] for g in grades]
             if not self.grade_repository.validate_students_in_lhp(lhp_id, sinh_vien_ids):
                 return ServiceResult.fail("Một số sinh viên không thuộc lớp học phần này")
             
-            # Map from camelCase to snake_case for repository
+            # Already snake_case, pass directly to repository
             mapped_grades = [
-                {"sinh_vien_id": g["sinhVienId"], "diem_so": g["diemSo"]}
+                {"sinh_vien_id": g["sinh_vien_id"], "diem_so": g["diem_so"]}
                 for g in grades
             ]
             
@@ -70,7 +70,7 @@ class UpsertGVGradesUseCase:
             success = self.grade_repository.upsert_grades(lhp_id, mapped_grades)
             
             if success:
-                return ServiceResult.ok({"message": "Cập nhật điểm thành công"})
+                return ServiceResult.ok(None, message="Cập nhật điểm thành công")
             else:
                 return ServiceResult.fail("Không thể cập nhật điểm")
             

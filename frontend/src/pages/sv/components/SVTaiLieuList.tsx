@@ -43,10 +43,21 @@ export default function SVTaiLieuList({ documents, lhpId }: Props) {
 
   const handlePreview = async (doc: SVTaiLieuDTO) => {
     setLoadingUrl(true);
-    // Use fileUrl directly from API response
-    setPreviewDoc(doc);
-    setPreviewUrl(doc.fileUrl);
-    setLoadingUrl(false);
+    try {
+      // Download file via backend proxy to avoid CORS issues
+      const blob = await svApi.downloadTaiLieu(lhpId, doc.id);
+      if (blob) {
+        const objectUrl = URL.createObjectURL(blob);
+        setPreviewDoc(doc);
+        setPreviewUrl(objectUrl);
+      } else {
+        console.error("Failed to download file for preview");
+      }
+    } catch (error) {
+      console.error("Error downloading for preview:", error);
+    } finally {
+      setLoadingUrl(false);
+    }
   };
 
   const handleDownload = async (doc: SVTaiLieuDTO) => {

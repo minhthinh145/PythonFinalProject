@@ -30,7 +30,7 @@ class GetMonHocByKhoaUseCase:
             khoa_id = self.repository.get_khoa_id_by_user(user_id)
             
             if not khoa_id:
-                return ServiceResult.failure_result(
+                return ServiceResult.fail(
                     message="Không tìm thấy thông tin khoa của trợ lý khoa",
                     error_code="TLK_KHOA_NOT_FOUND"
                 )
@@ -49,13 +49,13 @@ class GetMonHocByKhoaUseCase:
                 for mh in mon_hocs
             ]
             
-            return ServiceResult.success_result(
+            return ServiceResult.ok(
                 data=data,
                 message=f"Đã tải {len(data)} môn học"
             )
             
         except Exception as e:
-            return ServiceResult.failure_result(
+            return ServiceResult.fail(
                 message=f"Lỗi khi tải danh sách môn học: {str(e)}",
                 error_code="TLK_MONHOC_ERROR"
             )

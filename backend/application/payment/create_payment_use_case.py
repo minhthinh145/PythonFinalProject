@@ -47,13 +47,23 @@ class CreatePaymentUseCase:
             
             gateway = PaymentGatewayFactory.create(provider)
             
-            frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+            frontend_url = os.getenv("FRONTEND_URL", "http://localhost")
             ipn_url = os.getenv("UNIFIED_IPN_URL", "http://localhost:8000/api/payment/ipn")
+            
+            # ZaloPay requires public URL for redirect, use separate env var if set
+            if provider == "zalopay":
+                zalopay_redirect = os.getenv("ZALOPAY_REDIRECT_URL")
+                if zalopay_redirect:
+                    redirect_url = f"{zalopay_redirect}/payment/result"
+                else:
+                    redirect_url = f"{frontend_url}/payment/result"
+            else:
+                redirect_url = f"{frontend_url}/payment/result"
             
             gateway_response = gateway.create_payment(CreatePaymentRequest(
                 amount=amount,
                 order_info=f"Thanh toan hoc phi HK {hoc_ky_id}",
-                redirect_url=f"{frontend_url}/payment/result",
+                redirect_url=redirect_url,
                 ipn_url=ipn_url,
                 metadata={
                     "sinhVienId": sinh_vien_id,

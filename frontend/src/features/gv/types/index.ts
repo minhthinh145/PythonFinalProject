@@ -28,9 +28,8 @@ export interface TKBWeeklyItemDTO {
         ma_mon: string;
         ten_mon: string;
     };
-    ngay_hoc: string; // ✅ ISO date string (YYYY-MM-DD)
+    ngay_hoc: string;
 }
-
 /**
  * DTO - Tiết học config
  */

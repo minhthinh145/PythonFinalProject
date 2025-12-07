@@ -32,11 +32,12 @@ class RoomByKhoaView(APIView):
 class AssignRoomView(APIView):
     """
     POST /api/pdt/phong-hoc/assign
+    Body: { khoaId: string, phongId: string | string[] }
     """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        phong_id = request.data.get('phongId')
+        phong_id = request.data.get('phongId')  # Can be string or list
         khoa_id = request.data.get('khoaId')
         
         use_case = AssignPhongToKhoaUseCase(PhongHocRepository())
@@ -46,12 +47,19 @@ class AssignRoomView(APIView):
 class UnassignRoomView(APIView):
     """
     POST /api/pdt/phong-hoc/unassign
+    Body: { khoaId: string, phongId: string } or { khoaId: string, phongHocIds: string[] }
     """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        # Support both formats: phongId (single) or phongHocIds (list)
+        phong_ids = request.data.get('phongHocIds')
         phong_id = request.data.get('phongId')
         
+        # If single phongId is provided, convert to list
+        if phong_id and not phong_ids:
+            phong_ids = [phong_id]
+        
         use_case = UnassignPhongFromKhoaUseCase(PhongHocRepository())
-        result = use_case.execute(phong_id)
+        result = use_case.execute(phong_ids)
         return Response(result.to_dict(), status=result.status_code or 200)

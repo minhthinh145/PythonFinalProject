@@ -40,16 +40,16 @@ class GetGVLopHocPhanDetailUseCase:
             return ServiceResult.fail(str(e))
     
     def _map_to_response(self, detail: GVLopHocPhanDetailDTO) -> Dict[str, Any]:
-        """Map DTO to camelCase response"""
+        """Map DTO to snake_case response (matches FE types)"""
         return {
             "id": detail.id,
-            "maLop": detail.ma_lop,
-            "hocPhan": {
-                "tenHocPhan": detail.hoc_phan.get("ten_hoc_phan"),
-                "monHoc": {
-                    "maMon": detail.hoc_phan.get("mon_hoc", {}).get("ma_mon"),
-                    "tenMon": detail.hoc_phan.get("mon_hoc", {}).get("ten_mon"),
-                    "soTinChi": detail.hoc_phan.get("mon_hoc", {}).get("so_tin_chi"),
+            "ma_lop": detail.ma_lop,
+            "hoc_phan": {
+                "ten_hoc_phan": detail.hoc_phan.get("ten_hoc_phan"),
+                "mon_hoc": {
+                    "ma_mon": detail.hoc_phan.get("mon_hoc", {}).get("ma_mon"),
+                    "ten_mon": detail.hoc_phan.get("mon_hoc", {}).get("ten_mon"),
+                    "so_tin_chi": detail.hoc_phan.get("mon_hoc", {}).get("so_tin_chi"),
                 }
             }
         }

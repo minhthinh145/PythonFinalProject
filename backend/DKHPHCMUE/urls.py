@@ -28,6 +28,7 @@ urlpatterns = [
     path('api/pdt/', include('presentation.api.pdt.urls')),
     path('api/gv/', include('presentation.api.gv.urls')),  # GV Module
     path('api/tlk/', include('presentation.api.tlk.urls')),  # TLK Module
+    path('api/tk/', include('presentation.api.tk.urls')),  # TK (Truong Khoa) Module
     path('api/bao-cao/', include('presentation.api.pdt.report_urls')),
     path('api/tuition/calculate-semester', CalculateTuitionView.as_view(), name='calculate-tuition-alias'),
     path('api/payment/', include('presentation.api.payment.urls')),  # Payment Module

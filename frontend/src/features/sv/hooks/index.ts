@@ -8,3 +8,4 @@ export * from "./useTraCuuHocPhan";
 export * from "./useHocPhi";
 export * from "./useCreatePayment";
 export * from "./usePaymentStatus";
+export * from "./useSinhVienInfo";

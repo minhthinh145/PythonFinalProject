@@ -144,7 +144,7 @@ export const svApi = {
      * Lấy chi tiết học phí theo học kỳ
      */
     getChiTietHocPhi: async (hocKyId: string): Promise<ServiceResult<ChiTietHocPhiDTO>> => {
-        return await fetchJSON(`hoc-phi/chi-tiet?hoc_ky_id=${hocKyId}`);
+        return await fetchJSON(`sv/hoc-phi?hoc_ky_id=${hocKyId}`);
     },
 
     /**

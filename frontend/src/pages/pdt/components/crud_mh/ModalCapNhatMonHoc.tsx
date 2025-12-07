@@ -3,15 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import "../../../../styles/reset.css";
 import "../../../../styles/menu.css";
 import { useModalContext } from "../../../../hook/ModalContext";
-
-const API3 = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-const withToken3 = (init: RequestInit = {}) => {
-  const headers = new Headers(init.headers || {});
-  const token = localStorage.getItem("token");
-  if (token) headers.set("Authorization", `Bearer ${token}`);
-  headers.set("Content-Type", "application/json");
-  return { ...init, headers };
-};
+import { pdtApi } from "../../../../features/pdt/api/pdtApi";
 
 type PropsEdit = { id: string; isOpen: boolean; onClose: () => void };
 
@@ -74,20 +66,17 @@ const ModalCapNhatMonHoc: React.FC<PropsEdit> = ({ id, isOpen, onClose }) => {
     (async () => {
       try {
         const [dRes, kRes, nRes, mRes] = await Promise.all([
-          fetch(`${API3}/pdt/mon-hoc/${id}`, withToken3()),
-          fetch(`${API3}/dm/khoa`, withToken3()),
-          fetch(`${API3}/dm/nganh`, withToken3()),
-          fetch(`${API3}/pdt/mon-hoc?page=1&pageSize=10000`, withToken3()),
+          pdtApi.getMonHocById(id),
+          pdtApi.getDanhMucKhoa(),
+          pdtApi.getDanhMucNganh(),
+          pdtApi.getMonHoc(),
         ]);
-        const [djson, kjson, njson, mjson] = [
-          await dRes.json(),
-          await kRes.json(),
-          await nRes.json(),
-          await mRes.json(),
-        ];
 
-        if (djson.isSuccess) {
-          const d: Detail = djson.data;
+        console.log("[MonHoc Edit] detail:", dRes);
+        console.log("[MonHoc Edit] khoa:", kRes);
+
+        if (dRes.isSuccess && dRes.data) {
+          const d: Detail = dRes.data;
           setDetail(d);
           setForm({
             ma_mon: d.ma_mon,
@@ -112,15 +101,37 @@ const ModalCapNhatMonHoc: React.FC<PropsEdit> = ({ id, isOpen, onClose }) => {
           openNotify?.("Không tải được dữ liệu môn học", "error");
         }
 
-        setKhoaList(kjson?.data || []);
-        setNganhList(njson?.data || []);
-        setAllMonHoc(
-          (mjson?.data?.items || []).map((x: any) => ({
-            id: x.id,
-            ma_mon: x.ma_mon,
-            ten_mon: x.ten_mon,
-          }))
-        );
+        // Parse khoa list - map camelCase to snake_case
+        if (kRes.isSuccess && Array.isArray(kRes.data)) {
+          setKhoaList(
+            kRes.data.map((k: any) => ({
+              id: k.id,
+              ten_khoa: k.tenKhoa || k.ten_khoa,
+            }))
+          );
+        }
+
+        // Parse nganh list - map camelCase to snake_case
+        if (nRes.isSuccess && Array.isArray(nRes.data)) {
+          setNganhList(
+            nRes.data.map((n: any) => ({
+              id: n.id,
+              ten_nganh: n.tenNganh || n.ten_nganh,
+              khoa_id: n.khoaId || n.khoa_id,
+            }))
+          );
+        }
+
+        // Parse mon hoc list
+        if (mRes.isSuccess && mRes.data?.items) {
+          setAllMonHoc(
+            mRes.data.items.map((x: any) => ({
+              id: x.id,
+              ma_mon: x.ma_mon || x.maMon,
+              ten_mon: x.ten_mon || x.tenMon,
+            }))
+          );
+        }
       } catch {
         openNotify?.("Lỗi khi tải dữ liệu", "error");
       }
@@ -186,15 +197,11 @@ const ModalCapNhatMonHoc: React.FC<PropsEdit> = ({ id, isOpen, onClose }) => {
     };
 
     try {
-      const res = await fetch(
-        `${API3}/pdt/mon-hoc/${id}`,
-        withToken3({ method: "PUT", body: JSON.stringify(payload) })
-      );
-      const json = await res.json();
-      if (json.isSuccess) {
+      const res = await pdtApi.updateMonHoc(id, payload);
+      if (res.isSuccess) {
         openNotify?.("Cập nhật môn học thành công", "success");
         onClose();
-      } else openNotify?.(json.message || "Cập nhật thất bại", "error");
+      } else openNotify?.(res.message || "Cập nhật thất bại", "error");
     } catch {
       openNotify?.("Không thể gọi API", "error");
     }

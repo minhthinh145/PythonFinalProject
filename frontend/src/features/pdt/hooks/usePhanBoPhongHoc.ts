@@ -93,9 +93,11 @@ export function usePhanBoPhongHoc() {
 
             setSubmitting(true);
             try {
-                const res = await pdtApi.assignPhongToKhoa(khoaId, { phongHocIds: phongIds });
+                // BE support batch assign - gửi array 1 lần
+                const res = await pdtApi.assignPhongToKhoa(khoaId, phongIds);
                 if (res.isSuccess) {
-                    openNotify({ message: `Đã thêm ${phongIds.length} phòng`, type: "success" });
+                    const count = res.data?.count || phongIds.length;
+                    openNotify({ message: `Đã thêm ${count} phòng`, type: "success" });
                     await fetchPhongByKhoa(khoaId);
                     await fetchAvailablePhong();
                 } else {
@@ -118,7 +120,7 @@ export function usePhanBoPhongHoc() {
 
             setSubmitting(true);
             try {
-                const res = await pdtApi.unassignPhongFromKhoa(khoaId, { phongHocIds: [phongId] });
+                const res = await pdtApi.unassignPhongFromKhoa(khoaId, phongId);
                 if (res.isSuccess) {
                     openNotify({ message: "Đã xóa phòng khỏi khoa", type: "success" });
                     await fetchPhongByKhoa(khoaId);

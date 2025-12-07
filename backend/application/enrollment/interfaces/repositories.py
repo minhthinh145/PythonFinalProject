@@ -68,7 +68,15 @@ class IDotDangKyRepository(ABC):
         pass
 
     @abstractmethod
+    def find_by_hoc_ky(self, hoc_ky_id: str) -> List[Any]:
+        pass
+
+    @abstractmethod
     def update(self, id: str, data: dict) -> Optional[Any]:
+        pass
+
+    @abstractmethod
+    def delete(self, id: str) -> bool:
         pass
 
 class IGhiDanhRepository(ABC):

@@ -26,15 +26,15 @@ class GetTKBBatchUseCase:
             ServiceResult with list of ThoiKhoaBieuMonHocDTO
         """
         if not ma_hoc_phans:
-            return ServiceResult.failure("Danh sách mã học phần không được rỗng")
+            return ServiceResult.fail("Danh sách mã học phần không được rỗng")
         
         if not hoc_ky_id:
-            return ServiceResult.failure("Học kỳ ID không được rỗng")
+            return ServiceResult.fail("Học kỳ ID không được rỗng")
         
         # Get TKB data from repository
         tkb_data = self.tkb_repo.get_tkb_by_hoc_phans(ma_hoc_phans, hoc_ky_id)
         
-        return ServiceResult.success(
+        return ServiceResult.ok(
             message=f"Đã tải TKB cho {len(tkb_data)} học phần",
             data=tkb_data
         )

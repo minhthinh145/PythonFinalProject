@@ -1,0 +1,71 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-9.0.1, pluggy-1.6.0 -- /usr/local/bin/python3.11
+cachedir: .pytest_cache
+django: version: 5.2.8, settings: DKHPHCMUE.settings (from ini)
+rootdir: /app
+configfile: pytest.ini
+plugins: Faker-38.2.0, django-4.11.1
+collecting ... collected 8 items / 7 deselected / 1 selected
+
+tests/e2e/test_auth_api.py::TestLoginAPI::test_login_success_with_valid_credentials FAILED [100%]
+
+=================================== FAILURES ===================================
+____________ TestLoginAPI.test_login_success_with_valid_credentials ____________
+
+self = <tests.e2e.test_auth_api.TestLoginAPI object at 0x7b25aea04190>
+api_client = <rest_framework.test.APIClient object at 0x7b25ae596ed0>
+create_test_account = <function create_test_account.<locals>._create_account at 0x7b25aea03e20>
+
+    def test_login_success_with_valid_credentials(self, api_client, create_test_account):
+        """
+        Test Case 1: Đăng nhập thành công với thông tin hợp lệ
+    
+        Given: User có tài khoản active trong DB
+        When: POST /api/auth/login với username và password đúng
+        Then:
+            - Status code = 200
+            - Response có token
+            - Response có user info
+        """
+        # Arrange - Tạo test account
+        import uuid
+        unique_username = f"teststudent_{uuid.uuid4().hex[:8]}"
+    
+        test_data = create_test_account(
+            username=unique_username,
+            password='testpass123',
+            loai='sinh_vien',
+            active=True
+        )
+    
+        login_payload = {
+            'tenDangNhap': unique_username,
+            'matKhau': 'testpass123'
+        }
+    
+        # Act - Gọi API login
+        response = api_client.post('/api/auth/login', login_payload, format='json')
+    
+        # Assert
+        print(f"\nDEBUG: Response Status: {response.status_code}")
+        print(f"DEBUG: Response Data: {response.json()}")
+    
+        assert response.status_code == status.HTTP_200_OK
+    
+        data = response.json()
+>       assert data['success'] is True
+               ^^^^^^^^^^^^^^^
+E       KeyError: 'success'
+
+tests/e2e/test_auth_api.py:60: KeyError
+---------------------------- Captured stdout setup -----------------------------
+
+DEBUG: Using configured TEST databases (Real DB)
+DEBUG: neon TEST config: {'NAME': 'test_neondb', 'USER': 'neondb_owner', 'PASSWORD': 'npg_m3DHJUzc6Ylt', 'HOST': 'ep-winter-dream-a1hyufsu-pooler.ap-southeast-1.aws.neon.tech', 'PORT': '5432', 'OPTIONS': {'sslmode': 'require', 'channel_binding': 'require'}, 'DEPENDENCIES': [], 'CHARSET': None, 'COLLATION': None, 'MIGRATE': True, 'MIRROR': None}
+----------------------------- Captured stdout call -----------------------------
+
+DEBUG: Response Status: 200
+DEBUG: Response Data: {'isSuccess': True, 'message': 'Đăng nhập thành công', 'data': {'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY0NjQ4NjU5LCJpYXQiOjE3NjQ1NjIyNTksImp0aSI6IjY0ZWU3YjBiNjEwNTQ0NDNiN2M5MDYyMWQxYjVjYTcyIiwidXNlcl9pZCI6IjYzMDUzMWEwLTA3YmUtNDgxZC1iMTlkLWY0YmU1M2ZiNzUwZiIsInJvbGUiOiJzaW5oX3ZpZW4ifQ.fcPMcBch3i-HqufXkNKj-3KwFPOl2r7ZPTINNAfJ3Xo', 'refreshToken': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2NTE2NzA1OSwiaWF0IjoxNzY0NTYyMjU5LCJqdGkiOiI2MWQ2NDg0ZmJhODQ0YmVlYjhiNjZhMjllNzFhYWViNiIsInVzZXJfaWQiOiI2MzA1MzFhMC0wN2JlLTQ4MWQtYjE5ZC1mNGJlNTNmYjc1MGYiLCJyb2xlIjoic2luaF92aWVuIn0.v6RSdAlYNi7u6nVQzdJPr0-alE8b09QRst9ma7FwfwQ', 'user': {'id': '630531a0-07be-481d-b19d-f4be53fb750f', 'hoTen': 'Test User teststudent_23c29aff', 'maNhanVien': None, 'loaiTaiKhoan': 'sinh_vien', 'mssv': None, 'lop': None, 'nganh': None}}, 'errorCode': None}
+=========================== short test summary info ============================
+FAILED tests/e2e/test_auth_api.py::TestLoginAPI::test_login_success_with_valid_credentials - KeyError: 'success'
+======================= 1 failed, 7 deselected in 1.54s ========================

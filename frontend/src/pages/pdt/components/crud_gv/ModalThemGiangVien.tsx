@@ -1,16 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useModalContext } from "../../../../hook/ModalContext";
+import { pdtApi } from "../../../../features/pdt/api/pdtApi";
 import "../../../../styles/reset.css";
 import "../../../../styles/menu.css";
-
-const API2 = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-const withToken2 = (init: RequestInit = {}) => {
-  const headers = new Headers(init.headers || {});
-  const token = localStorage.getItem("token");
-  if (token) headers.set("Authorization", `Bearer ${token}`);
-  headers.set("Content-Type", "application/json");
-  return { ...init, headers };
-};
 
 type PropsAdd = {
   isOpen: boolean;
@@ -42,16 +34,16 @@ const ModalThemGiangVien: React.FC<PropsAdd> = ({
     if (!isOpen) return;
     (async () => {
       try {
-        const res = await fetch(`${API2}/dm/khoa`, withToken2());
-        const json = await res.json();
-        console.log("📦 [ModalGV] Response:", json);
+        const res = await pdtApi.getDanhMucKhoa();
+        console.log("📦 [ModalGV] Response:", res);
 
-        // ✅ Lấy mảng khoa từ json.message
-        const khoaData = json?.message || [];
-
-        // ✅ Kiểm tra và cập nhật state
-        if (Array.isArray(khoaData)) {
-          setDanhSachKhoa(khoaData);
+        if (res.isSuccess && Array.isArray(res.data)) {
+          // Map camelCase to snake_case if needed
+          const mapped = res.data.map((k: any) => ({
+            id: k.id,
+            ten_khoa: k.tenKhoa || k.ten_khoa,
+          }));
+          setDanhSachKhoa(mapped);
         } else {
           setDanhSachKhoa([]);
         }
@@ -96,16 +88,12 @@ const ModalThemGiangVien: React.FC<PropsAdd> = ({
     };
 
     try {
-      const res = await fetch(
-        `${API2}/pdt/giang-vien`,
-        withToken2({ method: "POST", body: JSON.stringify(payload) })
-      );
-      const json = await res.json();
-      if (json.isSuccess) {
+      const res = await pdtApi.createGiangVien(payload);
+      if (res.isSuccess) {
         openNotify?.("Thêm giảng viên thành công", "success");
         onCreated?.();
         onClose();
-        // reset form (tuỳ chọn)
+        // reset form
         setForm({
           ten_dang_nhap: "",
           mat_khau: "",
@@ -116,7 +104,7 @@ const ModalThemGiangVien: React.FC<PropsAdd> = ({
           kinh_nghiem_giang_day: "",
         });
       } else {
-        openNotify?.(json.message || "Thêm thất bại", "error");
+        openNotify?.(res.message || "Thêm thất bại", "error");
       }
     } catch {
       openNotify?.("Không thể gọi API", "error");

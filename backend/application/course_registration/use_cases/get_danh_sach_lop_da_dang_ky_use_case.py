@@ -1,19 +1,26 @@
 """
 Application Layer - Get Danh Sach Lop Da Dang Ky Use Case
 """
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from collections import defaultdict
 from core.types import ServiceResult
 from application.course_registration.interfaces import IDangKyHocPhanRepository
+from infrastructure.persistence.mongodb_service import get_mongodb_service
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class GetDanhSachLopDaDangKyUseCase:
     """
     Use case to get list of registered course classes for student
     Returns grouped by MonHoc: MonHocInfoDTO[] with danhSachLop
+    TKB data is fetched from MongoDB (primary source)
     """
     
     def __init__(self, dang_ky_hp_repo: IDangKyHocPhanRepository):
         self.dang_ky_hp_repo = dang_ky_hp_repo
+        self.mongo_service = get_mongodb_service()
         
     def execute(self, sinh_vien_id: str, hoc_ky_id: str) -> ServiceResult:
         """
@@ -23,7 +30,10 @@ class GetDanhSachLopDaDangKyUseCase:
             # 1. Get registered classes
             dang_kys = self.dang_ky_hp_repo.find_by_sinh_vien_and_hoc_ky(sinh_vien_id, hoc_ky_id)
             
-            # 2. Group by môn học
+            # 2. Build MongoDB TKB map
+            mongo_tkb_map = self._build_mongo_tkb_map(hoc_ky_id)
+            
+            # 3. Group by môn học
             mon_hoc_map: Dict[str, Dict] = {}
             
             for dk in dang_kys:
@@ -40,25 +50,8 @@ class GetDanhSachLopDaDangKyUseCase:
                         "danhSachLop": []
                     }
                 
-                # Build TKB list for this lớp
-                tkb_list = []
-                for lich in lhp.lichhocdinhky_set.all():
-                    gv_text = lhp.giang_vien.id.ho_ten if lhp.giang_vien and lhp.giang_vien.id else "Chưa phân công"
-                    thu_text = self._get_thu_name(lich.thu)
-                    tiet_text = f"{lich.tiet_bat_dau} - {lich.tiet_ket_thuc}"
-                    phong_text = lich.phong.ma_phong if lich.phong else "TBA"
-                    ngay_bd = lhp.ngay_bat_dau.strftime("%d/%m/%Y") if lhp.ngay_bat_dau else ""
-                    ngay_kt = lhp.ngay_ket_thuc.strftime("%d/%m/%Y") if lhp.ngay_ket_thuc else ""
-                    
-                    tkb_list.append({
-                        "thu": lich.thu,
-                        "tiet": tiet_text,
-                        "phong": phong_text,
-                        "giangVien": gv_text,
-                        "ngayBatDau": ngay_bd,
-                        "ngayKetThuc": ngay_kt,
-                        "formatted": f"{thu_text}, Tiết({tiet_text}), {phong_text}, {gv_text}\n({ngay_bd} -> {ngay_kt})"
-                    })
+                # Get TKB from MongoDB (primary source) or PostgreSQL (fallback)
+                tkb_list = self._get_tkb_for_lop(ma_mon, lhp.ma_lop, mongo_tkb_map, lhp)
                 
                 # Add lớp to môn học
                 mon_hoc_map[ma_mon]["danhSachLop"].append({
@@ -70,16 +63,176 @@ class GetDanhSachLopDaDangKyUseCase:
                     "tkb": tkb_list
                 })
             
-            # 3. Convert to list
+            # 4. Convert to list
             result = list(mon_hoc_map.values())
             
             return ServiceResult.ok(result, "Lấy danh sách lớp đã đăng ký thành công")
             
         except Exception as e:
-            print(f"Error getting lop da dang ky: {e}")
+            logger.error(f"Error getting lop da dang ky: {e}")
+            import traceback
+            traceback.print_exc()
             return ServiceResult.fail("Lỗi khi lấy danh sách lớp đã đăng ký", error_code="INTERNAL_ERROR")
+    
+    def _build_mongo_tkb_map(self, hoc_ky_id: str) -> Dict[str, Dict]:
+        """Build a map of maHocPhan -> { tenLop -> tkb_info } from MongoDB"""
+        tkb_map = {}
+        
+        if not self.mongo_service.is_available:
+            logger.warning("MongoDB not available, TKB will be empty")
+            return tkb_map
+        
+        try:
+            # Get all TKB for this semester (keep snake_case for internal processing)
+            all_tkb = self.mongo_service.get_tkb_by_hoc_ky(hoc_ky_id, transform_to_camel=False)
+            
+            for tkb_doc in all_tkb:
+                ma_hoc_phan = tkb_doc.get('ma_hoc_phan')
+                danh_sach_lop = tkb_doc.get('danhSachLop', [])
+                
+                if ma_hoc_phan not in tkb_map:
+                    tkb_map[ma_hoc_phan] = {}
+                
+                for lop in danh_sach_lop:
+                    ten_lop = lop.get('ten_lop')
+                    if ten_lop:
+                        tkb_map[ma_hoc_phan][ten_lop] = lop
+            
+            logger.debug(f"Built TKB map with {len(tkb_map)} môn học")
+            
+        except Exception as e:
+            logger.error(f"Failed to build TKB map: {e}")
+        
+        return tkb_map
+    
+    def _get_tkb_for_lop(
+        self, 
+        ma_mon: str, 
+        ten_lop: str, 
+        mongo_tkb_map: Dict, 
+        lhp: Any
+    ) -> List[Dict]:
+        """Get TKB info for a specific class - Priority: MongoDB > PostgreSQL"""
+        tkb_list = []
+        
+        # Try MongoDB first
+        mongo_lop = mongo_tkb_map.get(ma_mon, {}).get(ten_lop)
+        
+        if mongo_lop:
+            # Found in MongoDB - use this data
+            tkb_info = self._format_mongo_tkb(mongo_lop, lhp)
+            if tkb_info:
+                tkb_list.append(tkb_info)
+        else:
+            # Fallback to PostgreSQL if no MongoDB data
+            tkb_list = self._get_tkb_from_postgres(lhp)
+        
+        return tkb_list
+    
+    def _format_mongo_tkb(self, mongo_lop: Dict, lhp: Any) -> Optional[Dict]:
+        """Format MongoDB TKB data to match FE expectations"""
+        try:
+            thu = mongo_lop.get('thu_trong_tuan')
+            tiet_bat_dau = mongo_lop.get('tiet_bat_dau')
+            tiet_ket_thuc = mongo_lop.get('tiet_ket_thuc')
+            phong_hoc_id = mongo_lop.get('phong_hoc_id')
+            
+            # Get dates
+            ngay_bd = mongo_lop.get('ngay_bat_dau')
+            ngay_kt = mongo_lop.get('ngay_ket_thuc')
+            
+            # Format dates
+            if ngay_bd:
+                if hasattr(ngay_bd, 'strftime'):
+                    ngay_bd_str = ngay_bd.strftime("%d/%m/%Y")
+                else:
+                    from datetime import datetime
+                    ngay_bd_dt = datetime.fromisoformat(str(ngay_bd).replace('Z', '+00:00'))
+                    ngay_bd_str = ngay_bd_dt.strftime("%d/%m/%Y")
+            else:
+                ngay_bd_str = ""
+            
+            if ngay_kt:
+                if hasattr(ngay_kt, 'strftime'):
+                    ngay_kt_str = ngay_kt.strftime("%d/%m/%Y")
+                else:
+                    from datetime import datetime
+                    ngay_kt_dt = datetime.fromisoformat(str(ngay_kt).replace('Z', '+00:00'))
+                    ngay_kt_str = ngay_kt_dt.strftime("%d/%m/%Y")
+            else:
+                ngay_kt_str = ""
+            
+            # Get room name
+            phong_text = self._get_phong_name(phong_hoc_id)
+            
+            # Get teacher name
+            gv_text = "Chưa phân công"
+            if lhp.giang_vien and lhp.giang_vien.id:
+                gv_text = lhp.giang_vien.id.ho_ten
+            
+            thu_text = self._get_thu_name(thu)
+            tiet_text = f"{tiet_bat_dau} - {tiet_ket_thuc}" if tiet_bat_dau and tiet_ket_thuc else ""
+            
+            formatted = f"{thu_text}, Tiết({tiet_text}), {phong_text}, {gv_text}\n({ngay_bd_str} -> {ngay_kt_str})"
+            
+            return {
+                "thu": thu,
+                "tiet": tiet_text,
+                "phong": phong_text,
+                "giangVien": gv_text,
+                "ngayBatDau": ngay_bd_str,
+                "ngayKetThuc": ngay_kt_str,
+                "formatted": formatted
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to format MongoDB TKB: {e}")
+            return None
+    
+    def _get_phong_name(self, phong_hoc_id: Optional[str]) -> str:
+        """Get room name from ID"""
+        if not phong_hoc_id:
+            return "TBA"
+        
+        try:
+            from infrastructure.persistence.models import Phong
+            phong = Phong.objects.using('neon').filter(id=phong_hoc_id).first()
+            if phong:
+                return phong.ma_phong
+        except Exception as e:
+            logger.error(f"Failed to get phong name: {e}")
+        
+        return "TBA"
+    
+    def _get_tkb_from_postgres(self, lhp: Any) -> List[Dict]:
+        """Fallback: Get TKB from PostgreSQL lich_hoc_dinh_ky"""
+        tkb_list = []
+        
+        try:
+            for lich in lhp.lichhocdinhky_set.all():
+                thu_text = self._get_thu_name(lich.thu)
+                tiet_text = f"{lich.tiet_bat_dau} - {lich.tiet_ket_thuc}"
+                phong_text = lich.phong.ma_phong if lich.phong else "TBA"
+                gv_text = lhp.giang_vien.id.ho_ten if lhp.giang_vien and lhp.giang_vien.id else "Chưa phân công"
+                ngay_bd = lhp.ngay_bat_dau.strftime("%d/%m/%Y") if lhp.ngay_bat_dau else ""
+                ngay_kt = lhp.ngay_ket_thuc.strftime("%d/%m/%Y") if lhp.ngay_ket_thuc else ""
+                
+                tkb_list.append({
+                    "thu": lich.thu,
+                    "tiet": tiet_text,
+                    "phong": phong_text,
+                    "giangVien": gv_text,
+                    "ngayBatDau": ngay_bd,
+                    "ngayKetThuc": ngay_kt,
+                    "formatted": f"{thu_text}, Tiết({tiet_text}), {phong_text}, {gv_text}\n({ngay_bd} -> {ngay_kt})"
+                })
+        except Exception as e:
+            logger.error(f"Failed to get TKB from PostgreSQL: {e}")
+        
+        return tkb_list
 
     def _get_thu_name(self, thu: int) -> str:
+        """Map thu number to Vietnamese day name"""
         thu_map = {
             1: "Chủ Nhật",
             2: "Thứ Hai",
@@ -88,5 +241,6 @@ class GetDanhSachLopDaDangKyUseCase:
             5: "Thứ Năm",
             6: "Thứ Sáu",
             7: "Thứ Bảy",
+            8: "Chủ Nhật",  # Alternative mapping for Sunday
         }
-        return thu_map.get(thu, "N/A")
+        return thu_map.get(thu, "N/A") if thu else "N/A"

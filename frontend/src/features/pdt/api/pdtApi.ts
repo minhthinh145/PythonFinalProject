@@ -47,6 +47,23 @@ export const pdtApi = {
     },
 
     /**
+     * Thiết lập học kỳ hiện tại với ngày bắt đầu/kết thúc (Legacy API)
+     */
+    setHocKyHienTai: async (
+        data: { id_nien_khoa?: string; id_hoc_ky: string; ngay_bat_dau: string; ngay_ket_thuc: string }
+    ): Promise<ServiceResult<KyPhaseResponseDTO>> => {
+        // Map to the new API format
+        return await fetchJSON("hoc-ky/dates", {
+            method: "PATCH",
+            body: {
+                hocKyId: data.id_hoc_ky,
+                ngayBatDau: data.ngay_bat_dau,
+                ngayKetThuc: data.ngay_ket_thuc,
+            },
+        });
+    },
+
+    /**
      * Bulk upsert phases (PDT only)
      */
     createBulkKyPhase: async (
@@ -57,6 +74,7 @@ export const pdtApi = {
             body: data,
         });
     },
+
 
     /**
      * Lấy tất cả phases theo học kỳ ID (PDT only)
@@ -151,33 +169,34 @@ export const pdtApi = {
     },
 
     /**
-     * Gán phòng cho khoa (PATCH /phong-hoc/assign)
+     * Gán phòng cho khoa (POST /phong-hoc/assign)
+     * BE support cả single string và array
      */
     assignPhongToKhoa: async (
         khoaId: string,
-        data: AssignPhongRequest
+        phongId: string | string[]
     ): Promise<ServiceResult<{ count: number }>> => {
         return await fetchJSON(`pdt/phong-hoc/assign`, {
-            method: "PATCH",
+            method: "POST",
             body: {
                 khoaId,
-                ...data,
+                phongId,
             },
         });
     },
 
     /**
-     * Xóa phòng khỏi khoa (PATCH /phong-hoc/unassign)
+     * Xóa phòng khỏi khoa (POST /phong-hoc/unassign)  
      */
     unassignPhongFromKhoa: async (
         khoaId: string,
-        data: UnassignPhongRequest
+        phongId: string
     ): Promise<ServiceResult<{ count: number }>> => {
         return await fetchJSON(`pdt/phong-hoc/unassign`, {
-            method: "PATCH",
+            method: "POST",
             body: {
                 khoaId,
-                ...data,
+                phongId,
             },
         });
     },
@@ -234,11 +253,21 @@ export const pdtApi = {
     /**
      * Lấy danh sách ngành chưa có chính sách tín chỉ (REQUIRED hocKyId & khoaId)
      */
+    /**
+     * Lấy danh sách ngành chưa có chính sách tín chỉ (REQUIRED hocKyId & khoaId)
+     */
     getDanhSachNganh: async (
         hocKyId: string,
         khoaId: string
     ): Promise<ServiceResult<NganhDTO[]>> => {
         return await fetchJSON(`dm/nganh/chua-co-chinh-sach?hoc_ky_id=${hocKyId}&khoa_id=${khoaId}`);
+    },
+
+    /**
+     * Lấy tất cả danh sách ngành (Danh mục)
+     */
+    getAllNganh: async (): Promise<ServiceResult<NganhDTO[]>> => {
+        return await fetchJSON("dm/nganh");
     },
 
     /**
@@ -330,12 +359,66 @@ export const pdtApi = {
     },
 
     /**
+     * Lấy chi tiết môn học theo ID
+     */
+    getMonHocById: async (id: string): Promise<ServiceResult<any>> => {
+        return await fetchJSON(`pdt/mon-hoc/${id}`);
+    },
+
+    /**
+     * Thêm môn học mới (PDT)
+     */
+    createMonHoc: async (data: {
+        ma_mon: string;
+        ten_mon: string;
+        so_tin_chi: number;
+        khoa_id: string;
+        loai_mon?: string;
+        la_mon_chung?: boolean;
+        thu_tu_hoc?: number;
+        nganh_ids?: string[];
+        dieu_kien?: { mon_lien_quan_id: string; loai: string; bat_buoc: boolean }[];
+    }): Promise<ServiceResult<any>> => {
+        return await fetchJSON("pdt/mon-hoc", {
+            method: "POST",
+            body: data,
+        });
+    },
+
+    /**
+     * Cập nhật môn học (PDT)
+     */
+    updateMonHoc: async (id: string, data: {
+        ma_mon?: string;
+        ten_mon?: string;
+        so_tin_chi?: number;
+        khoa_id?: string;
+        loai_mon?: string;
+        la_mon_chung?: boolean;
+        thu_tu_hoc?: number;
+        nganh_ids?: string[] | null;
+        dieu_kien?: { mon_lien_quan_id: string; loai: string; bat_buoc: boolean }[] | null;
+    }): Promise<ServiceResult<any>> => {
+        return await fetchJSON(`pdt/mon-hoc/${id}`, {
+            method: "PUT",
+            body: data,
+        });
+    },
+
+    /**
      * Xóa môn học (PDT)
      */
     deleteMonHoc: async (id: string): Promise<ServiceResult<null>> => {
         return await fetchJSON(`pdt/mon-hoc/${id}`, {
             method: "DELETE",
         });
+    },
+
+    /**
+     * Lấy danh sách ngành (Danh mục) - tất cả
+     */
+    getDanhMucNganh: async (): Promise<ServiceResult<any[]>> => {
+        return await fetchJSON("dm/nganh");
     },
 
     /**
@@ -346,12 +429,61 @@ export const pdtApi = {
     },
 
     /**
+     * Lấy chi tiết giảng viên theo ID
+     */
+    getGiangVienById: async (id: string): Promise<ServiceResult<any>> => {
+        return await fetchJSON(`pdt/giang-vien/${id}`);
+    },
+
+    /**
+     * Thêm giảng viên mới (PDT)
+     */
+    createGiangVien: async (data: {
+        ten_dang_nhap: string;
+        mat_khau: string;
+        ho_ten: string;
+        khoa_id: string;
+        trinh_do?: string;
+        chuyen_mon?: string;
+        kinh_nghiem_giang_day?: number;
+    }): Promise<ServiceResult<any>> => {
+        return await fetchJSON("pdt/giang-vien", {
+            method: "POST",
+            body: data,
+        });
+    },
+
+    /**
+     * Cập nhật giảng viên (PDT)
+     */
+    updateGiangVien: async (id: string, data: {
+        ho_ten?: string;
+        mat_khau?: string;
+        khoa_id?: string;
+        trinh_do?: string;
+        chuyen_mon?: string;
+        kinh_nghiem_giang_day?: number;
+    }): Promise<ServiceResult<any>> => {
+        return await fetchJSON(`pdt/giang-vien/${id}`, {
+            method: "PUT",
+            body: data,
+        });
+    },
+
+    /**
      * Xóa giảng viên (PDT)
      */
     deleteGiangVien: async (id: string): Promise<ServiceResult<null>> => {
         return await fetchJSON(`pdt/giang-vien/${id}`, {
             method: "DELETE",
         });
+    },
+
+    /**
+     * Lấy danh sách khoa (Danh mục)
+     */
+    getDanhMucKhoa: async (): Promise<ServiceResult<any[]>> => {
+        return await fetchJSON("dm/khoa");
     },
 
     /**
@@ -388,5 +520,39 @@ export const pdtApi = {
         });
 
         return response.data;
+    },
+    /**
+     * Toggle Phase (Demo)
+     */
+    togglePhase: async (data: { hocKyId?: string; phase: string }): Promise<ServiceResult<{ isEnabled: boolean; phase: string }>> => {
+        return await fetchJSON("pdt/ky-phase/toggle", {
+            method: "PATCH",
+            body: data,
+        });
+    },
+
+    /**
+     * Reset Demo Data - Clears all test/demo data while preserving master data
+     * Requires { confirmReset: true } in body
+     */
+    resetDemoData: async (): Promise<ServiceResult<{
+        clearedTables: string[];
+        errors: string[];
+        mongoCleared: boolean;
+        totalCleared: number;
+    }>> => {
+        return await fetchJSON("pdt/demo/reset-data", {
+            method: "POST",
+            body: { confirmReset: true },
+        });
+    },
+
+    /**
+     * Delete Chinh Sach Tin Chi (PDT)
+     */
+    deleteChinhSachTinChi: async (id: string): Promise<ServiceResult<null>> => {
+        return await fetchJSON(`pdt/chinh-sach-tin-chi/${id}`, {
+            method: "DELETE",
+        });
     },
 };

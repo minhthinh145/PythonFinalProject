@@ -36,7 +36,8 @@ class TLKPhongHocDTO:
 @dataclass
 class TLKHocPhanForCreateLopDTO:
     """DTO for Hoc Phan available to create Lop"""
-    id: str
+    id: str  # de_xuat_id - unique key for FE
+    hoc_phan_id: str  # actual hoc_phan.id for creating lop
     ma_hoc_phan: str
     ten_hoc_phan: str
     so_tin_chi: int

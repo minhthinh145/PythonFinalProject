@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useModalContext } from "../hook/ModalContext";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API = import.meta.env.VITE_API_URL || "/api";
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();

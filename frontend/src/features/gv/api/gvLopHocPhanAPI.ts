@@ -31,7 +31,7 @@ export interface GVLopHocPhanDetailDTO {
 }
 
 export interface GVStudentDTO {
-    id: string; // ✅ UUID sinh viên
+    id: string;
     mssv: string;
     hoTen: string;
     lop: string | null;
@@ -42,12 +42,12 @@ export interface GVDocumentDTO {
     id: string;
     ten_tai_lieu: string;
     file_path: string;
-    file_type: string; // ✅ Renamed from mime_type
+    file_type: string;
     created_at?: string;
 }
 
 export interface GVGradeDTO {
-    sinh_vien_id: string; // ✅ UUID sinh viên
+    sinh_vien_id: string;
     diem_so?: number;
 }
 
@@ -58,7 +58,7 @@ export interface CreateDocumentRequest {
 
 export interface UpsertGradesRequest {
     items: {
-        sinh_vien_id: string; // ✅ UUID sinh viên
+        sinh_vien_id: string;
         diem_so: number;
     }[];
 }
@@ -135,7 +135,7 @@ export const gvLopHocPhanAPI = {
     },
 
     /**
-     * ✅ Download file directly (backend streams from S3)
+     * Download file directly (backend streams from S3)
      * @returns Blob for file download
      */
     downloadTaiLieu: async (
@@ -160,9 +160,8 @@ export const gvLopHocPhanAPI = {
 
             const blob = response.data;
 
-            // ✅ Fix: Override MIME type if backend returns generic type
             if (!blob.type || blob.type === "application/octet-stream") {
-                console.warn("⚠️ Backend returned wrong MIME type, fixing...");
+                console.warn("Backend returned wrong MIME type, fixing...");
 
                 const contentDisposition = response.headers["content-disposition"];
                 let fileName = "";
@@ -174,7 +173,7 @@ export const gvLopHocPhanAPI = {
                     }
                 }
 
-                console.log("📄 Detected filename:", fileName);
+                console.log("Detected filename:", fileName);
 
                 let correctType = "application/octet-stream";
 
@@ -192,20 +191,20 @@ export const gvLopHocPhanAPI = {
                     correctType = "text/plain";
                 }
 
-                console.log("✅ Overriding MIME type to:", correctType);
+                console.log("Overriding MIME type to:", correctType);
 
                 return new Blob([blob], { type: correctType });
             }
 
             return blob;
         } catch (error) {
-            console.error("❌ Error downloading file:", error);
+            console.error("Error downloading file:", error);
             return null;
         }
     },
 
     /**
-     * ✅ Get file URL for preview (backend returns blob URL)
+     * Get file URL for preview (backend returns blob URL)
      */
     getPreviewUrl: async (
         lhpId: string,
@@ -215,24 +214,24 @@ export const gvLopHocPhanAPI = {
             const blob = await gvLopHocPhanAPI.downloadTaiLieu(lhpId, docId);
             if (!blob) return null;
 
-            console.log("✅ Creating preview URL from blob:", {
+            console.log("Creating preview URL from blob:", {
                 type: blob.type,
                 size: blob.size,
             });
 
             const url = URL.createObjectURL(blob);
 
-            console.log("✅ Preview URL created:", url);
+            console.log("Preview URL created:", url);
 
             return url;
         } catch (error) {
-            console.error("❌ Error creating preview URL:", error);
+            console.error("Error creating preview URL:", error);
             return null;
         }
     },
 
     /**
-     * ✅ Upload tài liệu lên S3 (multipart/form-data)
+     * Upload tài liệu lên S3 (multipart/form-data)
      */
     uploadTaiLieu: async (
         lhpId: string,
@@ -275,7 +274,7 @@ export const gvLopHocPhanAPI = {
     },
 
     /**
-     * ✅ Delete tài liệu
+     * Delete tài liệu
      */
     deleteTaiLieu: async (
         lhpId: string,

@@ -29,12 +29,16 @@ from infrastructure.persistence.models import (
     GhiDanhHocPhan,
     DeXuatHocPhan,
 )
+from infrastructure.persistence.mongodb_service import MongoDBService
 
 
 class TLKRepository(ITLKRepository):
     """
     Repository implementation for TLK base operations
     """
+    
+    def __init__(self):
+        self.mongo_service = MongoDBService()
     
     def get_khoa_id_by_user(self, user_id: str) -> Optional[str]:
         """Get khoa_id from TLK user"""
@@ -122,10 +126,15 @@ class TLKHocPhanRepository(ITLKHocPhanRepository):
         khoa_id: str
     ) -> List[TLKHocPhanForCreateLopDTO]:
         """
-        Get Hoc Phans that have been approved for creating Lop Hoc Phan
-        Logic: Get approved DeXuatHocPhan entries and join with HocPhan data
+        Get all approved DeXuatHocPhan for creating Lop Hoc Phan.
+        
+        BUSINESS LOGIC (from BE legacy):
+        - Each DeXuat = 1 class with specific GiangVien
+        - Students choose which GV they want -> enroll in that class
+        - Do NOT group by mon_hoc - return ALL approved de_xuat as separate classes
         """
         # Get approved de xuat in this hoc_ky for this khoa
+        # trang_thai='da_duyet_pdt' means PDT has approved
         de_xuats = DeXuatHocPhan.objects.using('neon').select_related(
             'mon_hoc',
             'giang_vien_de_xuat',
@@ -133,25 +142,27 @@ class TLKHocPhanRepository(ITLKHocPhanRepository):
         ).filter(
             hoc_ky_id=hoc_ky_id,
             khoa_id=khoa_id,
-            trang_thai='da_duyet'  # Only approved
-        ).order_by('mon_hoc__ma_mon')
+            trang_thai='da_duyet_pdt'  # PDT approved
+        ).order_by('mon_hoc__ma_mon', 'giang_vien_de_xuat__id__ho_ten')
         
         result = []
+        
         for dx in de_xuats:
-            # Get HocPhan for this mon_hoc and hoc_ky
-            try:
-                hoc_phan = HocPhan.objects.using('neon').get(
-                    mon_hoc_id=dx.mon_hoc_id,
-                    id_hoc_ky_id=hoc_ky_id
-                )
-            except HocPhan.DoesNotExist:
+            # Get HocPhan for this mon_hoc and hoc_ky (use first() to handle duplicates)
+            hoc_phan = HocPhan.objects.using('neon').filter(
+                mon_hoc_id=dx.mon_hoc_id,
+                id_hoc_ky_id=hoc_ky_id
+            ).first()
+            
+            if not hoc_phan:
                 # Skip if no HocPhan created yet
                 continue
             
-            # Count ghi danh sinh vien
+            # Count ghi danh sinh vien for this specific GV's class
+            # Note: GhiDanhHocPhan may need to filter by giang_vien if available
             sv_count = GhiDanhHocPhan.objects.using('neon').filter(
                 hoc_phan_id=hoc_phan.id,
-                trang_thai='DA_GHI_DANH'
+                trang_thai='da_ghi_danh'
             ).count()
             
             # Get giang vien info
@@ -161,10 +172,14 @@ class TLKHocPhanRepository(ITLKHocPhanRepository):
                 gv_id = str(dx.giang_vien_de_xuat.id.id)
                 gv_name = dx.giang_vien_de_xuat.id.ho_ten
             
+            # Use ten_mon from MonHoc as ten_hoc_phan (more reliable than HocPhan.ten_hoc_phan)
+            ten_hoc_phan = dx.mon_hoc.ten_mon if dx.mon_hoc else hoc_phan.ten_hoc_phan
+            
             result.append(TLKHocPhanForCreateLopDTO(
-                id=str(hoc_phan.id),
+                id=str(dx.id),  # de_xuat_id - unique key for FE
+                hoc_phan_id=str(hoc_phan.id),  # actual hoc_phan.id
                 ma_hoc_phan=dx.mon_hoc.ma_mon,
-                ten_hoc_phan=hoc_phan.ten_hoc_phan,
+                ten_hoc_phan=ten_hoc_phan,
                 so_tin_chi=dx.mon_hoc.so_tin_chi,
                 so_sinh_vien_ghi_danh=sv_count,
                 ten_giang_vien=gv_name,
@@ -247,6 +262,9 @@ class TLKThoiKhoaBieuRepository:
     Repository for TKB operations by TLK
     """
     
+    def __init__(self):
+        self.mongo_service = MongoDBService()
+    
     def get_hoc_ky_hien_hanh(self) -> Optional[str]:
         """Get current học kỳ ID"""
         try:
@@ -263,65 +281,26 @@ class TLKThoiKhoaBieuRepository:
         hoc_ky_id: str
     ) -> List[dict]:
         """
-        Get TKB data for multiple học phần
-        Returns list of {maHocPhan, id, danhSachLop}
+        Get TKB data for multiple học phần from MongoDB
+        Returns list of {maHocPhan, id, danhSachLop} with camelCase keys for FE
         """
-        result = []
+        # Get data from MongoDB with camelCase transformation
+        tkb_list = self.mongo_service.get_tkb_by_hoc_phans(ma_hoc_phans, hoc_ky_id, transform_to_camel=True)
         
-        for ma_hp in ma_hoc_phans:
-            # Find HocPhan by ma_mon and hoc_ky
-            try:
-                hoc_phan = HocPhan.objects.using('neon').select_related(
-                    'mon_hoc'
-                ).get(
-                    mon_hoc__ma_mon=ma_hp,
-                    id_hoc_ky_id=hoc_ky_id
-                )
-            except HocPhan.DoesNotExist:
-                continue
+        result = []
+        for tkb_data in tkb_list:
+            ma_hp = tkb_data.get('maHocPhan')  # Now in camelCase from transformer
             
-            # Get all LopHocPhan for this HocPhan
-            lop_hoc_phans = LopHocPhan.objects.using('neon').select_related(
-                'phong_mac_dinh', 'phong_mac_dinh__co_so'
-            ).filter(
-                hoc_phan_id=hoc_phan.id
-            )
-            
-            danh_sach_lop = []
-            for lhp in lop_hoc_phans:
-                # Get schedules
-                schedules = LichHocDinhKy.objects.using('neon').select_related(
-                    'phong', 'phong__co_so'
-                ).filter(
-                    lop_hoc_phan_id=lhp.id
-                )
-                
-                for sch in schedules:
-                    phong_str = None
-                    phong_id = None
-                    if sch.phong:
-                        phong_str = sch.phong.ma_phong
-                        phong_id = str(sch.phong.id)
-                    elif lhp.phong_mac_dinh:
-                        phong_str = lhp.phong_mac_dinh.ma_phong
-                        phong_id = str(lhp.phong_mac_dinh.id)
-                    
-                    danh_sach_lop.append({
-                        'id': str(lhp.id),
-                        'tenLop': lhp.ma_lop,
-                        'phongHoc': phong_str,
-                        'phongHocId': phong_id,
-                        'ngayBatDau': lhp.ngay_bat_dau.isoformat() if lhp.ngay_bat_dau else None,
-                        'ngayKetThuc': lhp.ngay_ket_thuc.isoformat() if lhp.ngay_ket_thuc else None,
-                        'tietBatDau': sch.tiet_bat_dau,
-                        'tietKetThuc': sch.tiet_ket_thuc,
-                        'thuTrongTuan': sch.thu,
-                    })
+            # Get HocPhan ID for response
+            hoc_phan = HocPhan.objects.using('neon').filter(
+                mon_hoc__ma_mon=ma_hp,
+                id_hoc_ky_id=hoc_ky_id
+            ).first()
             
             result.append({
-                'id': str(hoc_phan.id),
+                'id': str(hoc_phan.id) if hoc_phan else None,
                 'maHocPhan': ma_hp,
-                'danhSachLop': danh_sach_lop
+                'danhSachLop': tkb_data.get('danhSachLop', [])  # Also in camelCase
             })
         
         return result
@@ -345,16 +324,36 @@ class TLKThoiKhoaBieuRepository:
         Returns:
             {success: bool, message: str, created_count: int}
         """
+        import logging
+        logging.info(f"🔵 xep_thoi_khoa_bieu called: ma_hoc_phan={ma_hoc_phan}, hoc_ky_id={hoc_ky_id}, len(danh_sach_lop)={len(danh_sach_lop)}")
+        
+        # Step 1: Find MonHoc by ma_mon
         try:
-            # Find HocPhan
+            mon_hoc = MonHoc.objects.using('neon').get(ma_mon=ma_hoc_phan)
+        except MonHoc.DoesNotExist:
+            return {'success': False, 'message': f'Môn học {ma_hoc_phan} không tồn tại', 'created_count': 0}
+        
+        # Step 2: Find or Create HocPhan
+        try:
             hoc_phan = HocPhan.objects.using('neon').select_related('mon_hoc').get(
-                mon_hoc__ma_mon=ma_hoc_phan,
+                mon_hoc_id=mon_hoc.id,
                 id_hoc_ky_id=hoc_ky_id
             )
         except HocPhan.DoesNotExist:
-            return {'success': False, 'message': f'Học phần {ma_hoc_phan} không tồn tại trong học kỳ này', 'created_count': 0}
+            # Auto-create HocPhan if not exists (matching BE legacy logic)
+            hoc_phan = HocPhan(
+                id=uuid.uuid4(),
+                mon_hoc_id=mon_hoc.id,
+                ten_hoc_phan=mon_hoc.id,  # Same as legacy: ten_hoc_phan = mon_hoc_id
+                trang_thai_mo=True,
+                id_hoc_ky_id=hoc_ky_id,
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc),
+            )
+            hoc_phan.save(using='neon')
         
         created_count = 0
+        processed_count = 0  # Track all processed schedules
         
         for lop_data in danh_sach_lop:
             try:
@@ -374,6 +373,15 @@ class TLKThoiKhoaBieuRepository:
                     ).first()
                 
                 if not lop:
+                    # Parse dates from ISO format to YYYY-MM-DD
+                    ngay_bat_dau = lop_data.get('ngayBatDau')
+                    ngay_ket_thuc = lop_data.get('ngayKetThuc')
+                    
+                    if ngay_bat_dau and isinstance(ngay_bat_dau, str):
+                        ngay_bat_dau = ngay_bat_dau.split('T')[0]  # Extract YYYY-MM-DD from ISO datetime
+                    if ngay_ket_thuc and isinstance(ngay_ket_thuc, str):
+                        ngay_ket_thuc = ngay_ket_thuc.split('T')[0]
+                    
                     # Create new LopHocPhan
                     lop = LopHocPhan(
                         id=uuid.uuid4(),
@@ -383,45 +391,39 @@ class TLKThoiKhoaBieuRepository:
                         so_luong_toi_da=50,  # Default
                         so_luong_hien_tai=0,
                         phong_mac_dinh_id=lop_data.get('phongHocId'),
-                        trang_thai_lop='chua_mo',
-                        ngay_bat_dau=lop_data.get('ngayBatDau'),
-                        ngay_ket_thuc=lop_data.get('ngayKetThuc'),
+                        trang_thai_lop='dang_mo',  # Valid values: dang_mo, dong, huy
+                        ngay_bat_dau=ngay_bat_dau,
+                        ngay_ket_thuc=ngay_ket_thuc,
                         created_at=datetime.now(timezone.utc),
                         updated_at=datetime.now(timezone.utc),
                     )
                     lop.save(using='neon')
+                    created_count += 1
                 
-                # Create/Update LichHocDinhKy
-                thu = lop_data.get('thuTrongTuan')
-                tiet_bat_dau = lop_data.get('tietBatDau')
-                tiet_ket_thuc = lop_data.get('tietKetThuc')
+                # NOTE: Lịch học KHÔNG lưu vào PostgreSQL table lich_hoc_dinh_ky
+                # Chỉ lưu vào MongoDB (xem logic save_tkb_mon_hoc bên dưới)
                 
-                if thu and tiet_bat_dau and tiet_ket_thuc:
-                    # Check if schedule exists
-                    existing = LichHocDinhKy.objects.using('neon').filter(
-                        lop_hoc_phan_id=lop.id,
-                        thu=thu,
-                        tiet_bat_dau=tiet_bat_dau,
-                        tiet_ket_thuc=tiet_ket_thuc
-                    ).first()
-                    
-                    if not existing:
-                        lich = LichHocDinhKy(
-                            id=uuid.uuid4(),
-                            lop_hoc_phan_id=lop.id,
-                            thu=thu,
-                            tiet_bat_dau=tiet_bat_dau,
-                            tiet_ket_thuc=tiet_ket_thuc,
-                            phong_id=lop_data.get('phongHocId'),
-                        )
-                        lich.save(using='neon')
-                
-                created_count += 1
+                processed_count += 1
                 
             except Exception as e:
                 import logging
                 logging.error(f"Error creating lop: {e}")
                 continue
+        
+        # Save TKB to MongoDB (PRIMARY storage for schedules)
+        # ALWAYS save MongoDB even if LopHocPhan already exists (we're adding schedules)
+        if processed_count > 0:
+            import logging
+            logging.info(f"Saving {processed_count} schedule(s) to MongoDB (created {created_count} new classes)...")
+            try:
+                self.mongo_service.save_tkb_mon_hoc(
+                    ma_hoc_phan=ma_hoc_phan,
+                    hoc_ky_id=hoc_ky_id,
+                    danh_sach_lop=danh_sach_lop
+                )
+                logging.info(f"✅ Successfully saved TKB to MongoDB")
+            except Exception as e:
+                logging.error(f"❌ Failed to save TKB to MongoDB: {e}")
         
         return {
             'success': True,

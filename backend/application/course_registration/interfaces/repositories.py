@@ -51,6 +51,16 @@ class IDangKyHocPhanRepository(ABC):
         pass
         
     @abstractmethod
+    def delete(self, id: str) -> None:
+        """Delete a DangKyHocPhan record by ID"""
+        pass
+        
+    @abstractmethod
+    def delete(self, id: str) -> None:
+        """Delete a DangKyHocPhan record by ID"""
+        pass
+        
+    @abstractmethod
     def update_lop_hoc_phan(self, id: str, new_lop_hoc_phan_id: str) -> None:
         pass
 

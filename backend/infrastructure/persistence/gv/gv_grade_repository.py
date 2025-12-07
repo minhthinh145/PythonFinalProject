@@ -62,6 +62,9 @@ class GVGradeRepository(IGVGradeRepository):
                     sinh_vien_id = grade_data['sinh_vien_id']
                     diem_so = grade_data['diem_so']
                     
+                    # Determine status based on grade (>= 4.0 is passing)
+                    status = 'dat' if (diem_so is not None and diem_so >= 4.0) else 'khong_dat'
+                    
                     # Upsert using get_or_create + update
                     ket_qua, created = KetQuaHocPhan.objects.using('neon').get_or_create(
                         sinh_vien_id=sinh_vien_id,
@@ -71,7 +74,7 @@ class GVGradeRepository(IGVGradeRepository):
                             'id': uuid.uuid4(),
                             'lop_hoc_phan_id': lhp_id,
                             'diem_so': diem_so,
-                            'trang_thai': 'DA_NHAP',
+                            'trang_thai': status,
                         }
                     )
                     
@@ -84,7 +87,9 @@ class GVGradeRepository(IGVGradeRepository):
             return True
             
         except Exception as e:
+            import traceback
             print(f"Error upserting grades: {e}")
+            traceback.print_exc()
             return False
     
     def validate_students_in_lhp(
@@ -99,7 +104,7 @@ class GVGradeRepository(IGVGradeRepository):
         registered_count = DangKyHocPhan.objects.using('neon').filter(
             lop_hoc_phan__id=lhp_id,
             sinh_vien__id__id__in=sinh_vien_ids,  # SinhVien.id is FK to Users.id
-            trang_thai__in=['DANG_KY', 'DA_DUYET']
+            trang_thai__in=['da_dang_ky', 'dang_ky', 'da_duyet']
         ).count()
         
         return registered_count == len(sinh_vien_ids)

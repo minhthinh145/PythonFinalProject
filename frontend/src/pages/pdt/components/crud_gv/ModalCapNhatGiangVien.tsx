@@ -1,17 +1,9 @@
 // ModalCapNhatGiangVien.tsx
 import React, { useEffect, useState } from "react";
 import { useModalContext } from "../../../../hook/ModalContext";
+import { pdtApi } from "../../../../features/pdt/api/pdtApi";
 import "../../../../styles/reset.css";
 import "../../../../styles/menu.css";
-
-const API3 = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-const withToken3 = (init: RequestInit = {}) => {
-  const headers = new Headers(init.headers || {});
-  const token = localStorage.getItem("token");
-  if (token) headers.set("Authorization", `Bearer ${token}`);
-  headers.set("Content-Type", "application/json");
-  return { ...init, headers };
-};
 
 type PropsEdit = {
   id: string;
@@ -57,24 +49,23 @@ const ModalCapNhatGiangVien: React.FC<PropsEdit> = ({
     (async () => {
       try {
         const [detailRes, khoaRes] = await Promise.all([
-          fetch(`${API3}/pdt/giang-vien/${id}`, withToken3()),
-          fetch(`${API3}/dm/khoa`, withToken3()),
+          pdtApi.getGiangVienById(id),
+          pdtApi.getDanhMucKhoa(),
         ]);
-        const djson = await detailRes.json();
-        const kjson = await khoaRes.json();
 
-        console.log("[GV Edit] detail:", djson);
-        console.log("[GV Edit] khoa:", kjson);
+        console.log("[GV Edit] detail:", detailRes);
+        console.log("[GV Edit] khoa:", khoaRes);
 
-        // ✅ Parse detail an toàn (data | message)
-        const d: Detail | null = (djson?.data ?? djson?.message ?? null) as any;
+        // Parse detail
+        const d: Detail | null = detailRes.isSuccess
+          ? (detailRes.data as any)
+          : null;
 
         if (d) {
           setDetail(d);
           setForm({
             ho_ten: d.users?.ho_ten || "",
             mat_khau: "",
-            // ưu tiên d.khoa_id; fallback d.khoa?.id nếu backend chỉ join
             khoa_id: d.khoa_id || d.khoa?.id || "",
             trinh_do: d.trinh_do || "",
             chuyen_mon: d.chuyen_mon || "",
@@ -84,11 +75,15 @@ const ModalCapNhatGiangVien: React.FC<PropsEdit> = ({
           openNotify?.("Không tải được dữ liệu giảng viên", "error");
         }
 
-        // ✅ Parse danh sách khoa từ message (không phải data)
-        const khoaData =
-          kjson?.message ?? kjson?.data ?? kjson?.items ?? kjson ?? [];
-        const safeKhoa = Array.isArray(khoaData) ? khoaData : [];
-        setKhoaList(safeKhoa);
+        // Parse khoa list
+        if (khoaRes.isSuccess && Array.isArray(khoaRes.data)) {
+          // Map camelCase to snake_case if needed
+          const mapped = khoaRes.data.map((k: any) => ({
+            id: k.id,
+            ten_khoa: k.tenKhoa || k.ten_khoa,
+          }));
+          setKhoaList(mapped);
+        }
       } catch (e) {
         console.error("[GV Edit] load failed:", e);
         openNotify?.("Lỗi khi tải dữ liệu", "error");
@@ -117,17 +112,13 @@ const ModalCapNhatGiangVien: React.FC<PropsEdit> = ({
     if (form.mat_khau) payload.mat_khau = form.mat_khau;
 
     try {
-      const res = await fetch(
-        `${API3}/pdt/giang-vien/${id}`,
-        withToken3({ method: "PUT", body: JSON.stringify(payload) })
-      );
-      const json = await res.json();
-      if (json.isSuccess) {
+      const res = await pdtApi.updateGiangVien(id, payload);
+      if (res.isSuccess) {
         openNotify?.("Cập nhật giảng viên thành công", "success");
         onUpdated?.();
         onClose();
       } else {
-        openNotify?.(json.message || "Cập nhật thất bại", "error");
+        openNotify?.(res.message || "Cập nhật thất bại", "error");
       }
     } catch {
       openNotify?.("Không thể gọi API", "error");

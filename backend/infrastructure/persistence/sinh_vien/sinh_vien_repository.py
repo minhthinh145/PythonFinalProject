@@ -13,15 +13,14 @@ class SinhVienRepository(ISinhVienRepository):
     
     def get_by_id(self, id: str) -> Optional[SinhVienEntity]:
         """
-        Get student by ID
+        Get student by ID (User ID - which is also SinhVien.id)
         """
         try:
             # Join with Users, Nganh, Khoa for full details
             sinh_vien = SinhVien.objects.using('neon').select_related(
-                'id', # Users
+                'id',  # User (OneToOne)
                 'nganh',
-                'khoa',
-                'nganh__khoa'
+                'khoa'
             ).get(id=id)
             
             return self._to_entity(sinh_vien)
@@ -48,28 +47,25 @@ class SinhVienRepository(ISinhVienRepository):
         """
         Convert Django model to Domain Entity
         """
-        # Get user info from OneToOne relation
+        # Get user info from OneToOne relation (id)
         user = model.id
         
         # Get related names safely
         ten_nganh = model.nganh.ten_nganh if model.nganh else None
         ten_khoa = model.khoa.ten_khoa if model.khoa else None
         
-        # If nganh has khoa, prefer that one? 
-        # Logic from legacy: sinhVien.nganh_hoc?.ten_nganh
-        
         return SinhVienEntity(
-            id=str(model.id.id),
+            id=str(model.id.id),  # model.id.id because id is a Users OneToOne
             ma_so_sinh_vien=model.ma_so_sinh_vien,
-            ho_ten=user.ho_ten,
-            email=user.email,
-            khoa_id=str(model.khoa.id),
-            nganh_id=str(model.nganh.id) if model.nganh else None,
+            ho_ten=user.ho_ten if user else "",
+            email=user.email if user else "",
+            khoa_id=str(model.khoa_id) if model.khoa_id else None,
+            nganh_id=str(model.nganh_id) if model.nganh_id else None,
             lop=model.lop,
             khoa_hoc=model.khoa_hoc,
             ngay_nhap_hoc=model.ngay_nhap_hoc,
             ten_khoa=ten_khoa,
             ten_nganh=ten_nganh,
-            trang_thai_hoat_dong=user.tai_khoan.trang_thai_hoat_dong if user.tai_khoan else None,
-            tai_khoan_id=str(user.tai_khoan.id) if user.tai_khoan else None
+            trang_thai_hoat_dong=None,
+            tai_khoan_id=None
         )
