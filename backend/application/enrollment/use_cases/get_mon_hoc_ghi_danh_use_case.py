@@ -40,24 +40,54 @@ class GetMonHocGhiDanhUseCase:
         hoc_phan_list = self.hoc_phan_repo.find_all_open(target_hoc_ky_id)
         
         # Map to DTO
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        logger.info(f"[GetMonHocGhiDanhUseCase] Processing {len(hoc_phan_list)} hoc_phan records")
+        
         data = []
         for hp in hoc_phan_list:
-            # Handle relationship access safely (assuming Django models or similar objects)
-            mon_hoc = hp.mon_hoc
-            de_xuat_list = mon_hoc.dexuathocphan_set.all() if hasattr(mon_hoc, 'dexuathocphan_set') else []
-            de_xuat = de_xuat_list[0] if de_xuat_list else None
-            
-            ten_giang_vien = "Chưa có giảng viên"
-            if de_xuat and de_xuat.giang_vien_de_xuat and de_xuat.giang_vien_de_xuat.id:
-                ten_giang_vien = de_xuat.giang_vien_de_xuat.id.ho_ten
+            try:
+                logger.info(f"[GetMonHocGhiDanhUseCase] Processing hp.id={hp.id}, ten={hp.ten_hoc_phan}")
                 
-            data.append({
-                'id': str(hp.id),
-                'maMonHoc': mon_hoc.ma_mon if mon_hoc else "",
-                'tenMonHoc': mon_hoc.ten_mon if mon_hoc else "",
-                'soTinChi': mon_hoc.so_tin_chi if mon_hoc else 0,
-                'tenKhoa': mon_hoc.khoa.ten_khoa if mon_hoc and mon_hoc.khoa else "",
-                'tenGiangVien': ten_giang_vien
-            })
+                # Handle relationship access safely
+                mon_hoc = hp.mon_hoc
+                logger.info(f"[GetMonHocGhiDanhUseCase] mon_hoc={mon_hoc.id if mon_hoc else None}, ten_mon={mon_hoc.ten_mon if mon_hoc else None}")
+                
+                # Query correct de_xuat: same mon_hoc + hoc_ky + approved by PDT
+                de_xuat = mon_hoc.dexuathocphan_set.filter(
+                    hoc_ky_id=hp.id_hoc_ky_id,  # Same semester as HocPhan
+                    trang_thai='da_duyet_pdt'   # Only approved ones
+                ).order_by('-created_at').first() if mon_hoc else None
+                logger.info(f"[GetMonHocGhiDanhUseCase] de_xuat found: {de_xuat.id if de_xuat else None}")
+                
+                ten_giang_vien = "Chưa có giảng viên"
+                try:
+                    # Access giang_vien_de_xuat may throw DoesNotExist if GV record was deleted
+                    if de_xuat:
+                        gv = de_xuat.giang_vien_de_xuat  # This line throws the error!
+                        if gv and gv.id:
+                            ten_giang_vien = gv.id.ho_ten
+                except Exception as e:
+                    logger.warning(f"[GetMonHocGhiDanhUseCase] GiangVien error: {e}")
+                    # Continue with default value
+                    
+                data.append({
+                    'id': str(hp.id),
+                    'maMonHoc': mon_hoc.ma_mon if mon_hoc else "",
+                    'tenMonHoc': mon_hoc.ten_mon if mon_hoc else "",
+                    'soTinChi': mon_hoc.so_tin_chi if mon_hoc else 0,
+                    'tenKhoa': mon_hoc.khoa.ten_khoa if mon_hoc and mon_hoc.khoa else "",
+                    'tenGiangVien': ten_giang_vien
+                })
+                logger.info(f"[GetMonHocGhiDanhUseCase] Added to result: {mon_hoc.ten_mon if mon_hoc else 'N/A'}")
+            except Exception as e:
+                # Skip this hoc_phan if any error occurs
+                logger.error(f"[GetMonHocGhiDanhUseCase] Error processing hp.id={hp.id}: {e}")
+                import traceback
+                traceback.print_exc()
+                continue
+        
+        logger.info(f"[GetMonHocGhiDanhUseCase] Final result count: {len(data)}")
             
         return ServiceResult.ok(data, "Lấy danh sách môn học ghi danh thành công")
