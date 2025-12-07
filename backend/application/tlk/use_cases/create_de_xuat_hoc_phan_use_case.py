@@ -51,7 +51,7 @@ class CreateDeXuatHocPhanUseCase:
         # 1. Get khoa_id from TLK user
         khoa_id = self.tlk_repo.get_khoa_id_by_user(user_id)
         if not khoa_id:
-            return ServiceResult.failure("Không tìm thấy thông tin khoa của trợ lý khoa")
+            return ServiceResult.fail("Không tìm thấy thông tin khoa của trợ lý khoa")
         
         # 2. Get hoc_ky_id if not provided
         if not hoc_ky_id:
@@ -60,7 +60,7 @@ class CreateDeXuatHocPhanUseCase:
             hoc_ky_id = tkb_repo.get_hoc_ky_hien_hanh()
             
             if not hoc_ky_id:
-                return ServiceResult.failure("Không tìm thấy học kỳ hiện hành")
+                return ServiceResult.fail("Không tìm thấy học kỳ hiện hành")
         
         # 3. Validate mon_hoc belongs to khoa
         # (For now, we trust frontend sends valid mon_hoc_id)
@@ -76,9 +76,9 @@ class CreateDeXuatHocPhanUseCase:
         )
         
         if success:
-            return ServiceResult.success(
+            return ServiceResult.ok(
                 message="Đã tạo đề xuất học phần thành công",
                 data=None
             )
         else:
-            return ServiceResult.failure("Không thể tạo đề xuất học phần")
+            return ServiceResult.fail("Không thể tạo đề xuất học phần")

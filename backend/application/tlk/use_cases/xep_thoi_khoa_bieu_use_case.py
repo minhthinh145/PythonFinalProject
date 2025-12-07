@@ -59,17 +59,17 @@ class XepThoiKhoaBieuUseCase:
         # 1. Validate TLK user
         khoa_id = self.tlk_repo.get_khoa_id_by_user(user_id)
         if not khoa_id:
-            return ServiceResult.failure("Không tìm thấy thông tin khoa của trợ lý khoa")
+            return ServiceResult.fail("Không tìm thấy thông tin khoa của trợ lý khoa")
         
         # 2. Validate request
         if not request.ma_hoc_phan:
-            return ServiceResult.failure("Mã học phần không được rỗng")
+            return ServiceResult.fail("Mã học phần không được rỗng")
         
         if not request.hoc_ky_id:
-            return ServiceResult.failure("Học kỳ ID không được rỗng")
+            return ServiceResult.fail("Học kỳ ID không được rỗng")
         
         if not request.danh_sach_lop:
-            return ServiceResult.failure("Danh sách lớp không được rỗng")
+            return ServiceResult.fail("Danh sách lớp không được rỗng")
         
         # 3. Transform danh_sach_lop from camelCase to snake_case
         transformed_lop = []
@@ -97,12 +97,12 @@ class XepThoiKhoaBieuUseCase:
             # Optionally cache to MongoDB
             self._cache_to_mongodb(request.ma_hoc_phan, request.hoc_ky_id, transformed_lop)
             
-            return ServiceResult.success(
+            return ServiceResult.ok(
                 message=result['message'],
                 data={'created_count': result['created_count']}
             )
         else:
-            return ServiceResult.failure(result['message'])
+            return ServiceResult.fail(result['message'])
     
     def _cache_to_mongodb(self, ma_hoc_phan: str, hoc_ky_id: str, danh_sach_lop: List[dict]):
         """Cache TKB to MongoDB for faster reads"""

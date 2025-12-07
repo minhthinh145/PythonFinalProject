@@ -29,7 +29,7 @@ class GetDeXuatHocPhanUseCase:
         # 1. Get khoa_id from TLK user
         khoa_id = self.tlk_repo.get_khoa_id_by_user(user_id)
         if not khoa_id:
-            return ServiceResult.failure("Không tìm thấy thông tin khoa của trợ lý khoa")
+            return ServiceResult.fail("Không tìm thấy thông tin khoa của trợ lý khoa")
         
         # 2. Get de xuat list
         de_xuats = self.de_xuat_repo.get_de_xuat_by_khoa(khoa_id, hoc_ky_id)
@@ -47,7 +47,7 @@ class GetDeXuatHocPhanUseCase:
             for dx in de_xuats
         ]
         
-        return ServiceResult.success(
+        return ServiceResult.ok(
             message=f"Đã tải {len(data)} đề xuất học phần",
             data=data
         )
