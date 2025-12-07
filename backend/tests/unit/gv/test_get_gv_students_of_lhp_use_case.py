@@ -42,14 +42,14 @@ class TestGetGVStudentsOfLHPUseCase:
             GVStudentDTO(
                 id="sv-001",
                 mssv="2021001",
-                hoTen="Nguyen Van A",
+                ho_ten="Nguyen Van A",
                 lop="K21-CNTT",
                 email="nva@student.edu"
             ),
             GVStudentDTO(
                 id="sv-002",
                 mssv="2021002",
-                hoTen="Tran Thi B",
+                ho_ten="Tran Thi B",
                 lop="K21-CNTT",
                 email="ttb@student.edu"
             )
@@ -62,10 +62,10 @@ class TestGetGVStudentsOfLHPUseCase:
         
         # Assert
         assert result.success is True
-        assert "sinhVien" in result.data
-        assert len(result.data["sinhVien"]) == 2
-        assert result.data["sinhVien"][0]["mssv"] == "2021001"
-        assert result.data["sinhVien"][0]["hoTen"] == "Nguyen Van A"
+        assert isinstance(result.data, list)
+        assert len(result.data) == 2
+        assert result.data[0]["mssv"] == "2021001"
+        assert result.data[0]["ho_ten"] == "Nguyen Van A"
     
     def test_execute_empty_list_when_no_students(self, use_case, mock_repo):
         """
@@ -84,7 +84,7 @@ class TestGetGVStudentsOfLHPUseCase:
         
         # Assert
         assert result.success is True
-        assert result.data["sinhVien"] == []
+        assert result.data == []
     
     def test_execute_forbidden_when_gv_not_assigned(self, use_case, mock_repo):
         """
