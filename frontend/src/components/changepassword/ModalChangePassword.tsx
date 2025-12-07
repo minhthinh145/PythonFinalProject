@@ -3,7 +3,7 @@ import "./modal-change-password.css";
 import { useAppSelector } from "../../app/store";
 import { selectAuth } from "../../features/auth/authSlice";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API = import.meta.env.VITE_API_URL || "/api";
 
 type Props = {
   isOpen: boolean;

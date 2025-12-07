@@ -32,7 +32,6 @@ export const useGVLopHocPhanDetail = (lhpId: string) => {
         }
     };
 
-    // ✅ Load students - Backend MUST return `id` field
     const loadStudents = async () => {
         try {
             const result = await gvLopHocPhanAPI.getStudents(lhpId);
@@ -136,7 +135,6 @@ export const useGVLopHocPhanDetail = (lhpId: string) => {
             "application/zip",
         ];
 
-        // ✅ Validate files
         const invalidFiles = filesWithNames.filter(
             (item) =>
                 item.file.size > MAX_SIZE || !ALLOWED_TYPES.includes(item.file.type)
@@ -163,7 +161,7 @@ export const useGVLopHocPhanDetail = (lhpId: string) => {
                 const result = await gvLopHocPhanAPI.uploadTaiLieu(
                     lhpId,
                     file,
-                    name, // ✅ Use custom name
+                    name,
                     (percent) => {
                         setUploadProgress((prev) => ({ ...prev, [fileId]: percent }));
                     }
@@ -225,12 +223,11 @@ export const useGVLopHocPhanDetail = (lhpId: string) => {
         }
     };
 
-    // ✅ Save grades - Send UUID, not MSSV
     const saveGrades = async () => {
         const items = Object.entries(grades)
             .filter(([, v]) => v !== "")
             .map(([sinh_vien_id, diem_so]) => ({
-                sinh_vien_id, // ✅ This should be UUID from `student.id`
+                sinh_vien_id,
                 diem_so: Number(diem_so),
             }));
 
@@ -258,7 +255,6 @@ export const useGVLopHocPhanDetail = (lhpId: string) => {
         }
     };
 
-    // ✅ Get document URL for preview (via backend proxy)
     const getDocumentUrl = async (docId: string): Promise<string | null> => {
         try {
             const url = await gvLopHocPhanAPI.getPreviewUrl(lhpId, docId);

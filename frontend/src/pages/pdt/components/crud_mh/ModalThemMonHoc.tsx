@@ -3,15 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import "../../../../styles/reset.css";
 import "../../../../styles/menu.css";
 import { useModalContext } from "../../../../hook/ModalContext";
-
-const API2 = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-const withToken2 = (init: RequestInit = {}) => {
-  const headers = new Headers(init.headers || {});
-  const token = localStorage.getItem("token");
-  if (token) headers.set("Authorization", `Bearer ${token}`);
-  headers.set("Content-Type", "application/json");
-  return { ...init, headers };
-};
+import { pdtApi } from "../../../../features/pdt/api/pdtApi";
 
 type PropsAdd = {
   isOpen: boolean;
@@ -53,49 +45,49 @@ const ModalThemMonHoc: React.FC<PropsAdd> = ({
     if (!isOpen) return;
     (async () => {
       try {
-        const [khoaRes, nganhRes, monRes] = await Promise.all([
-          fetch(`${API2}/dm/khoa`, withToken2()),
-          fetch(`${API2}/dm/nganh`, withToken2()),
-          fetch(`${API2}/pdt/mon-hoc?page=1&pageSize=10000`, withToken2()),
+        const [kRes, nRes, mRes] = await Promise.all([
+          pdtApi.getDanhMucKhoa(),
+          pdtApi.getDanhMucNganh(),
+          pdtApi.getMonHoc(),
         ]);
 
-        const [kjson, njson, mjson] = [
-          await khoaRes.json(),
-          await nganhRes.json(),
-          await monRes.json(),
-        ];
+        console.log("[ModalThemMonHoc] khoa:", kRes);
+        console.log("[ModalThemMonHoc] nganh:", nRes);
 
-        // ✅ Khoa / Ngành nằm trong `message` (theo log bạn gửi)
-        const khoaData =
-          kjson?.message ??
-          kjson?.data ??
-          kjson?.items ??
-          (Array.isArray(kjson) ? kjson : []);
-        const nganhData =
-          njson?.message ??
-          njson?.data ??
-          njson?.items ??
-          (Array.isArray(njson) ? njson : []);
+        // Parse khoa list - map camelCase to snake_case
+        if (kRes.isSuccess && Array.isArray(kRes.data)) {
+          setKhoaList(
+            kRes.data.map((k: any) => ({
+              id: k.id,
+              ten_khoa: k.tenKhoa || k.ten_khoa,
+            }))
+          );
+        } else {
+          setKhoaList([]);
+        }
 
-        setKhoaList(Array.isArray(khoaData) ? khoaData : []);
-        setNganhList(Array.isArray(nganhData) ? nganhData : []);
+        // Parse nganh list - map camelCase to snake_case
+        if (nRes.isSuccess && Array.isArray(nRes.data)) {
+          setNganhList(
+            nRes.data.map((n: any) => ({
+              id: n.id,
+              ten_nganh: n.tenNganh || n.ten_nganh,
+              khoa_id: n.khoaId || n.khoa_id,
+            }))
+          );
+        } else {
+          setNganhList([]);
+        }
 
-        // ✅ Môn học: hỗ trợ cả data.items | message | ...
-        const monArray =
-          mjson?.data?.items ??
-          mjson?.message?.items ??
-          mjson?.message ??
-          mjson?.data ??
-          mjson?.items ??
-          (Array.isArray(mjson) ? mjson : []);
-        const options: MonHocOption[] = (
-          Array.isArray(monArray) ? monArray : []
-        ).map((x: any) => ({
-          id: String(x.id),
-          ma_mon: String(x.ma_mon ?? ""),
-          ten_mon: String(x.ten_mon ?? ""),
-        }));
-        setAllMonHoc(options);
+        // Parse mon hoc list
+        if (mRes.isSuccess && mRes.data?.items) {
+          const options: MonHocOption[] = mRes.data.items.map((x: any) => ({
+            id: String(x.id),
+            ma_mon: String(x.ma_mon || x.maMon || ""),
+            ten_mon: String(x.ten_mon || x.tenMon || ""),
+          }));
+          setAllMonHoc(options);
+        }
       } catch (e) {
         console.error("[MonHoc] load danh mục fail:", e);
         openNotify?.("Không thể tải danh mục Khoa/Ngành/Môn", "error");
@@ -164,7 +156,7 @@ const ModalThemMonHoc: React.FC<PropsAdd> = ({
       return;
     }
 
-    const payload: any = {
+    const payload = {
       ma_mon: form.ma_mon,
       ten_mon: form.ten_mon,
       so_tin_chi: Number(form.so_tin_chi),
@@ -183,12 +175,8 @@ const ModalThemMonHoc: React.FC<PropsAdd> = ({
     };
 
     try {
-      const res = await fetch(
-        `${API2}/pdt/mon-hoc`,
-        withToken2({ method: "POST", body: JSON.stringify(payload) })
-      );
-      const json = await res.json();
-      if (json.isSuccess) {
+      const res = await pdtApi.createMonHoc(payload);
+      if (res.isSuccess) {
         openNotify?.("Thêm môn học thành công", "success");
         onCreated?.();
         onClose();
@@ -204,7 +192,7 @@ const ModalThemMonHoc: React.FC<PropsAdd> = ({
           nganh_ids: [],
         });
         setDkList([]);
-      } else openNotify?.(json.message || "Thêm thất bại", "error");
+      } else openNotify?.(res.message || "Thêm thất bại", "error");
     } catch {
       openNotify?.("Không thể gọi API", "error");
     }

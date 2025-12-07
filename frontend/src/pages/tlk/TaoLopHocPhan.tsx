@@ -51,7 +51,7 @@ export default function TaoLopHocPhan() {
   const [selectedNienKhoa, setSelectedNienKhoa] = useState<string>("");
   const [selectedHocKyId, setSelectedHocKyId] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [filtered, setFiltered] = useState(hocPhans);
+  const [filtered, setFiltered] = useState<typeof hocPhans>([]);
   const [selected, setSelected] = useState<Record<string, SelectedConfig>>({});
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 50;
@@ -63,9 +63,7 @@ export default function TaoLopHocPhan() {
     if (hocKyHienHanh?.maHocKy && hocKyNienKhoas.length > 0) {
       // Tìm niên khóa chứa học kỳ hiện hành
       for (const nk of hocKyNienKhoas) {
-        const foundHK = nk.hocKy.find(
-          (hk) => hk.id === hocKyHienHanh.maHocKy
-        );
+        const foundHK = nk.hocKy.find((hk) => hk.id === hocKyHienHanh.maHocKy);
         if (foundHK) {
           setSelectedNienKhoa(nk.nienKhoaId);
           setSelectedHocKyId(foundHK.id);
@@ -93,12 +91,13 @@ export default function TaoLopHocPhan() {
 
   // Filter data
   useEffect(() => {
+    const dataArray = Array.isArray(hocPhans) ? hocPhans : [];
     if (!searchQuery.trim()) {
-      setFiltered(hocPhans);
+      setFiltered(dataArray);
     } else {
       const q = searchQuery.trim().toLowerCase();
       setFiltered(
-        hocPhans.filter(
+        dataArray.filter(
           (i) =>
             i.maHocPhan?.toLowerCase().includes(q) ||
             i.tenHocPhan?.toLowerCase().includes(q) ||
@@ -112,8 +111,12 @@ export default function TaoLopHocPhan() {
 
   // Tính toán paging trước
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentData = filtered.slice(startIndex, startIndex + itemsPerPage);
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const filteredArray = Array.isArray(filtered) ? filtered : [];
+  const currentData = filteredArray.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+  const totalPages = Math.ceil(filteredArray.length / itemsPerPage);
 
   // Lấy giangVienId từ học phần được chọn trong modal
   const giangVienId = useMemo(() => {
@@ -124,7 +127,9 @@ export default function TaoLopHocPhan() {
     return undefined;
   }, [currentData]);
 
-  const currentNK = hocKyNienKhoas.find((nk) => nk.nienKhoaId === selectedNienKhoa);
+  const currentNK = hocKyNienKhoas.find(
+    (nk) => nk.nienKhoaId === selectedNienKhoa
+  );
   const currentHK = currentNK?.hocKy.find((hk) => hk.id === selectedHocKyId);
 
   const currentSemester = {
@@ -209,8 +214,6 @@ export default function TaoLopHocPhan() {
     if (!cfg.ngayHoc?.length) return "Chưa chọn ngày học";
     return null;
   };
-
-
 
   const handleTKBSuccess = () => {
     if (selectedHocKyId) {

@@ -124,3 +124,81 @@ class GetDanhSachKhoaView(APIView):
         return Response(result, status=200)
 
 
+class UpdateHocKyDatesView(APIView):
+    """
+    PATCH /api/hoc-ky/dates
+    Body: { hocKyId, ngayBatDau, ngayKetThuc }
+    """
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        import logging
+        import json
+        logger = logging.getLogger(__name__)
+        
+        data = request.data
+        logger.info(f"UpdateHocKyDates raw request.data: {data}")
+        
+        # Handle case where JSON is sent as form-urlencoded (key is JSON string)
+        if isinstance(data, dict) and len(data) == 1:
+            first_key = list(data.keys())[0]
+            if first_key.startswith('{') and first_key.endswith('}'):
+                try:
+                    data = json.loads(first_key)
+                    logger.info(f"Parsed JSON from key: {data}")
+                except json.JSONDecodeError:
+                    pass
+        
+        # Support both camelCase and snake_case
+        hoc_ky_id = data.get('hocKyId') or data.get('hoc_ky_id')
+        ngay_bat_dau = data.get('ngayBatDau') or data.get('ngay_bat_dau')
+        ngay_ket_thuc = data.get('ngayKetThuc') or data.get('ngay_ket_thuc')
+        
+        logger.info(f"Parsed: hoc_ky_id={hoc_ky_id}, ngay_bat_dau={ngay_bat_dau}, ngay_ket_thuc={ngay_ket_thuc}")
+        
+        if not hoc_ky_id:
+            return Response({
+                "isSuccess": False,
+                "message": f"Thiếu hocKyId",
+                "errorCode": "MISSING_PARAM"
+            }, status=400)
+        
+        try:
+            from infrastructure.persistence.models import HocKy
+            from django.utils import timezone
+            
+            hoc_ky = HocKy.objects.using('neon').filter(id=hoc_ky_id).first()
+            
+            if not hoc_ky:
+                return Response({
+                    "isSuccess": False,
+                    "message": "Không tìm thấy học kỳ",
+                    "errorCode": "NOT_FOUND"
+                }, status=404)
+            
+            # Update dates if provided
+            if ngay_bat_dau:
+                hoc_ky.ngay_bat_dau = ngay_bat_dau
+            if ngay_ket_thuc:
+                hoc_ky.ngay_ket_thuc = ngay_ket_thuc
+            
+            hoc_ky.updated_at = timezone.now()
+            hoc_ky.save(using='neon')
+            
+            return Response({
+                "isSuccess": True,
+                "message": "Cập nhật ngày học kỳ thành công",
+                "data": {
+                    "id": str(hoc_ky.id),
+                    "tenHocKy": hoc_ky.ten_hoc_ky,
+                    "ngayBatDau": str(hoc_ky.ngay_bat_dau) if hoc_ky.ngay_bat_dau else None,
+                    "ngayKetThuc": str(hoc_ky.ngay_ket_thuc) if hoc_ky.ngay_ket_thuc else None
+                }
+            }, status=200)
+            
+        except Exception as e:
+            return Response({
+                "isSuccess": False,
+                "message": f"Lỗi: {str(e)}",
+                "errorCode": "INTERNAL_ERROR"
+            }, status=500)

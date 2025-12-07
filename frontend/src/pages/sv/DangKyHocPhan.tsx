@@ -135,8 +135,8 @@ export default function DangKyHocPhan() {
 
   const handleDangKyLop = async (lopId: string) => {
     const result = await dangKy({
-      lop_hoc_phan_id: lopId,
-      hoc_ky_id: hocKyId,
+      lopHocPhanId: lopId,
+      hocKyId: hocKyId,
     });
 
     if (result.isSuccess) {

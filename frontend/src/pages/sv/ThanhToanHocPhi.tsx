@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import "../../styles/reset.css";
 import "../../styles/menu.css";
-import { useHocPhi, useCreatePayment } from "../../features/sv/hooks";
+import {
+  useHocPhi,
+  useCreatePayment,
+  useSinhVienInfo,
+} from "../../features/sv/hooks";
 import { useModalContext } from "../../hook/ModalContext";
 import PaymentModal from "./components/payment/PaymentModal";
 import { getStudentInfoFromJWT } from "../../utils/jwtUtils";
@@ -20,7 +24,20 @@ export default function ThanhToanHocPhi() {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  const studentInfo = getStudentInfoFromJWT();
+  // ✅ Try to get from API first, fallback to JWT
+  const { data: apiSinhVienInfo } = useSinhVienInfo();
+  const jwtStudentInfo = getStudentInfoFromJWT();
+
+  const studentInfo = apiSinhVienInfo
+    ? {
+        id: apiSinhVienInfo.id,
+        mssv: apiSinhVienInfo.maSoSinhVien,
+        hoTen: apiSinhVienInfo.hoTen,
+        lop: apiSinhVienInfo.lop || "N/A",
+        nganh: apiSinhVienInfo.tenNganh || "N/A",
+        role: "",
+      }
+    : jwtStudentInfo;
 
   const { data, loading: loadingData } = useHocPhi(selectedHocKyId);
 

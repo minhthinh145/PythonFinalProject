@@ -155,8 +155,8 @@ export interface MonHocDaGhiDanh {
 }
 
 export interface DangKyHocPhanRequest {
-    lop_hoc_phan_id: string;
-    hoc_ky_id: string;
+    lopHocPhanId: string;
+    hocKyId: string;
 }
 
 

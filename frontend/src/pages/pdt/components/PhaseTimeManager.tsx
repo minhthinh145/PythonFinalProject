@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { PhaseTimeConfigDTO } from "../../../features/pdt/types/pdtTypes";
+import { ResetDemoDataButton } from "./ResetDemoDataButton";
 
 interface Props {
   ghiDanhTime: PhaseTimeConfigDTO | null;
@@ -200,6 +201,15 @@ export default function PhaseTimeManager({
 
       {renderPhaseRow("ghi_danh", "📝 Phase Ghi Danh", ghiDanhTime)}
       {renderPhaseRow("dang_ky", "📚 Phase Đăng Ký Học Phần", dangKyTime)}
+
+      {/* Demo Tools Section */}
+      <div style={{ marginTop: "32px" }}>
+        <h4 style={{ marginBottom: "12px", color: "#f59e0b" }}>
+          🛠️ Demo Tools
+        </h4>
+        <ResetDemoDataButton onResetComplete={() => window.location.reload()} />
+      </div>
     </div>
   );
 }
+

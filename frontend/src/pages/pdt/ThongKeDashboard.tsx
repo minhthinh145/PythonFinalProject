@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import "../../styles/reset.css";
 import "../../styles/menu.css";
 import { useModalContext } from "../../hook/ModalContext";
 import HocKySelector from "../../components/HocKySelector";
 import { useDanhSachKhoa } from "../../features/pdt/hooks";
+import { useDmNganh } from "../../features/pdt/hooks/useDmNganh";
 import {
   useBaoCaoOverview,
   useBaoCaoDangKyTheoKhoa,
@@ -18,97 +19,12 @@ import {
   TaiChinhChart,
 } from "./components/charts";
 
-/* ========= Types ========= */
-type Khoa = { id: string; ten_khoa: string };
-type Nganh = { id: string; ten_nganh: string; khoa_id: string };
-
-type HocKy = { id: string; ten_hoc_ky: string; ma_hoc_ky?: string };
-type NienKhoa = { id: string; ten_nien_khoa: string; hoc_kys: HocKy[] };
-
-type OverviewPayload = {
-  svUnique: number;
-  soDangKy: number; // ✅ Changed from soDK
-  soLopHocPhan: number; // ✅ Changed from soLHP
-  taiChinh: { thuc_thu: number; ky_vong: number };
-  ketLuan: string;
-};
-
-type DKTheoKhoaRow = { ten_khoa: string; so_dang_ky: number };
-type DKTheoNganhRow = { ten_nganh: string; so_dang_ky: number };
-type TaiGiangVienRow = { ho_ten: string; so_lop: number };
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-
 /* ========= Utils ========= */
 const currency = (v: number) =>
   (isFinite(v) ? v : 0).toLocaleString("vi-VN", {
     style: "currency",
     currency: "VND",
   });
-
-const safeJson = async (res: Response) => {
-  const ct = res.headers.get("content-type") || "";
-  if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    throw new Error(
-      `${res.status} ${res.statusText} ${txt?.slice(0, 120) ?? ""}`
-    );
-  }
-  if (!ct.includes("application/json")) {
-    const txt = await res.text().catch(() => "");
-    throw new Error(`Invalid JSON: ${txt?.slice(0, 120) ?? ""}`);
-  }
-  return res.json();
-};
-
-/** Chuẩn hoá nhiều dạng payload /pdt/hoc-ky-nien-khoa về dạng NienKhoa[] */
-function normalizeNienKhoa(raw: any): NienKhoa[] {
-  const data = raw?.data ?? raw ?? [];
-  if (Array.isArray(data) && data.length && Array.isArray(data[0]?.hoc_kys)) {
-    return data.map((nk: any) => ({
-      id: nk.id,
-      ten_nien_khoa: nk.ten_nien_khoa ?? nk.ten ?? "",
-      hoc_kys: (nk.hoc_kys || []).map((hk: any) => ({
-        id: hk.id,
-        ten_hoc_ky: hk.ten_hoc_ky ?? `${hk.ma_hoc_ky ?? ""}`.trim(),
-        ma_hoc_ky: hk.ma_hoc_ky,
-      })),
-    }));
-  }
-  if (
-    Array.isArray(data) &&
-    data.length &&
-    (data[0]?.id_nien_khoa || data[0]?.nien_khoa_id)
-  ) {
-    const m = new Map<string, NienKhoa>();
-    for (const hk of data) {
-      const nkId = hk.id_nien_khoa ?? hk.nien_khoa_id;
-      const nkName = hk.ten_nien_khoa ?? hk.nien_khoa?.ten_nien_khoa ?? "";
-      if (!m.has(nkId))
-        m.set(nkId, { id: nkId, ten_nien_khoa: nkName, hoc_kys: [] });
-      m.get(nkId)!.hoc_kys.push({
-        id: hk.id,
-        ten_hoc_ky: hk.ten_hoc_ky ?? `${hk.ma_hoc_ky ?? ""}`.trim(),
-        ma_hoc_ky: hk.ma_hoc_ky,
-      });
-    }
-    return Array.from(m.values());
-  }
-  if (Array.isArray(data)) {
-    return [
-      {
-        id: "all",
-        ten_nien_khoa: "Tất cả niên khóa",
-        hoc_kys: data.map((hk: any) => ({
-          id: hk.id,
-          ten_hoc_ky: hk.ten_hoc_ky ?? `${hk.ma_hoc_ky ?? ""}`.trim(),
-          ma_hoc_ky: hk.ma_hoc_ky,
-        })),
-      },
-    ];
-  }
-  return [];
-}
 
 /** Lấy PNG DataURL từ phần tử SVG của Recharts để gửi vào PDF */
 async function getChartPNGFromContainer(
@@ -208,6 +124,8 @@ export default function BaoCaoThongKe() {
 
   // ✅ Custom hooks
   const { data: khoas, loading: loadingKhoa } = useDanhSachKhoa();
+  const { data: nganhs, loading: loadingNganh } = useDmNganh(); // ✅ Use new hook
+
   const {
     data: overview,
     loading: loadingOverview,
@@ -230,13 +148,12 @@ export default function BaoCaoThongKe() {
   } = useBaoCaoTaiGiangVien();
   const { loading: exporting, exportExcel, exportPDF } = useBaoCaoExport();
 
-  const [nganhs, setNganhs] = useState<Nganh[]>([]);
   const [hocKyId, setHocKyId] = useState<string>("");
   const [khoaId, setKhoaId] = useState<string>("");
   const [nganhId, setNganhId] = useState<string>("");
 
   const filteredNganhs = useMemo(
-    () => (khoaId ? nganhs.filter((n) => n.khoa_id === khoaId) : nganhs),
+    () => (khoaId ? nganhs.filter((n) => n.khoaId === khoaId) : nganhs),
     [nganhs, khoaId]
   );
 
@@ -245,22 +162,6 @@ export default function BaoCaoThongKe() {
   const refNganh = useRef<HTMLDivElement | null>(null);
   const refGV = useRef<HTMLDivElement | null>(null);
   const refFinance = useRef<HTMLDivElement | null>(null);
-
-  const loadStatic = async () => {
-    try {
-      const API = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-      const nRes = await fetch(`${API}/dm/nganh`);
-      const nJSON = await nRes.json();
-      if (nJSON?.isSuccess) setNganhs(nJSON.data || []);
-    } catch (e: any) {
-      console.error(e);
-      openNotify({ message: `Lỗi tải danh mục: ${e.message}`, type: "error" });
-    }
-  };
-
-  useEffect(() => {
-    loadStatic();
-  }, []);
 
   const loadReports = async () => {
     if (!hocKyId) {
@@ -425,7 +326,7 @@ export default function BaoCaoThongKe() {
             <option value="">Tất cả ngành</option>
             {filteredNganhs.map((n) => (
               <option key={n.id} value={n.id}>
-                {n.ten_nganh}
+                {n.tenNganh}
               </option>
             ))}
           </select>

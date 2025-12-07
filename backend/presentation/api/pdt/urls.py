@@ -10,6 +10,7 @@ from .room_views import (
 )
 from .tuition_views import TuitionPolicyView, CalculateTuitionView
 from .internal_management_views import SinhVienView, MonHocView, GiangVienView
+from .demo_views import TogglePhaseView, ResetDemoDataView
 
 urlpatterns = [
     path('quan-ly-hoc-ky/hoc-ky-hien-hanh', SetHocKyHienHanhView.as_view(), name='set-hoc-ky-hien-hanh'),
@@ -27,7 +28,7 @@ urlpatterns = [
     path('phong-hoc/assign', AssignRoomView.as_view(), name='assign-room'),
     path('phong-hoc/unassign', UnassignRoomView.as_view(), name='unassign-room'),
     path('chinh-sach-tin-chi', TuitionPolicyView.as_view(), name='tuition-policy-list-create'),
-    path('chinh-sach-tin-chi/<str:id>', TuitionPolicyView.as_view(), name='tuition-policy-update'),
+    path('chinh-sach-tin-chi/<str:id>', TuitionPolicyView.as_view(), name='tuition-policy-update-delete'),
     path('hoc-phi/tinh-toan-hang-loat', CalculateTuitionView.as_view(), name='calculate-tuition-bulk'),
     
     # Internal Management (CRUD)
@@ -37,4 +38,10 @@ urlpatterns = [
     path('mon-hoc/<str:id>', MonHocView.as_view(), name='delete-mon-hoc'),
     path('giang-vien', GiangVienView.as_view(), name='manage-giang-vien'),
     path('giang-vien/<str:id>', GiangVienView.as_view(), name='delete-giang-vien'),
+    
+    # Demo Tools
+    path('demo/toggle-phase', TogglePhaseView.as_view(), name='demo-toggle-phase'),
+    path('demo/reset-data', ResetDemoDataView.as_view(), name='demo-reset-data'),
+    path('ky-phase/toggle', TogglePhaseView.as_view(), name='ky-phase-toggle'), # Alias for Frontend
 ]
+

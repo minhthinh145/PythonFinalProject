@@ -21,7 +21,14 @@ export const useDanhSachNganh = (hocKyId: string, khoaId: string) => {
             try {
                 const result = await pdtApi.getDanhSachNganh(hocKyId, khoaId);
                 if (result.isSuccess && result.data) {
-                    setData(result.data);
+                    // Map snake_case from API to camelCase for NganhDTO
+                    const mapped = result.data.map((n: any) => ({
+                        id: n.id,
+                        maNganh: n.maNganh || n.ma_nganh,
+                        tenNganh: n.tenNganh || n.ten_nganh,
+                        khoaId: n.khoaId || n.khoa_id,
+                    }));
+                    setData(mapped);
                 } else {
                     setData([]);
                 }

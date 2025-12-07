@@ -20,7 +20,8 @@ export interface PhongHocDTO {
 }
 
 export interface HocPhanForCreateLopDTO {
-    id: string;
+    id: string;  // de_xuat_id - unique key
+    hocPhanId: string;  // actual hoc_phan.id for creating lop
     maHocPhan: string;
     tenHocPhan: string;
     soTinChi: number;

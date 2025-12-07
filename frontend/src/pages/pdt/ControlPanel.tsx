@@ -1,6 +1,8 @@
 // src/pages/pdt/ControlPanel.tsx
 import React, { useState } from "react";
 import { useModalContext } from "../../hook/ModalContext";
+import { useTogglePhase } from "../../features/pdt/hooks/useTogglePhase";
+import { useResetDemoData } from "../../features/pdt/hooks/useResetDemoData";
 import "../../styles/reset.css";
 import "../../styles/menu.css";
 
@@ -18,7 +20,7 @@ const DEFAULT_STATUSES = [
   { key: "binh_thuong", label: "Bình thường" },
 ];
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
 
 export default function ControlPanel({
   statuses = DEFAULT_STATUSES,
@@ -26,54 +28,66 @@ export default function ControlPanel({
   onReset,
 }: ControlPanelProps) {
   const { openNotify } = useModalContext();
-  const [loading, setLoading] = useState(false);
+  const { toggle, loading } = useTogglePhase();
+  const { resetData, loading: resetLoading } = useResetDemoData();
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
-  // ✅ Toggle phase - gọi API trực tiếp
-  const handleTogglePhase = async (phase: string) => {
-    setLoading(true);
+  // ✅ Toggle phase - gọi API qua hook
+  const handleTogglePhase = async (phaseKey: string) => {
+    // Map frontend keys to backend enums (legacy values)
+    const phaseMapping: Record<string, string> = {
+      de_xuat_phe_duyet: "de_xuat_phe_duyet",
+      ghi_danh: "ghi_danh",
+      sap_xep_tkb: "sap_xep_tkb",
+      dang_ky_hoc_phan: "dang_ky_hoc_phan",
+      binh_thuong: "binh_thuong",
+    };
 
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE}/pdt/ky-phase/toggle`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-        body: JSON.stringify({ phase }),
+    const backendPhase = phaseMapping[phaseKey] || phaseKey;
+
+    const result = await toggle(backendPhase);
+
+    if (result.isSuccess) {
+      const status = result.data?.isEnabled ? "BẬT" : "TẮT";
+      const statusColor = result.data?.isEnabled ? "success" : "warning";
+
+      openNotify({
+        message: `✅ Đã ${status} phase: ${result.data?.phase}`,
+        type: statusColor,
       });
 
-      const json = await response.json();
-
-      if (json.isSuccess) {
-        const status = json.data?.isEnabled ? "BẬT" : "TẮT";
-        const statusColor = json.data?.isEnabled ? "success" : "warning";
-
-        openNotify({
-          message: `✅ Đã ${status} phase: ${json.data?.phase}`,
-          type: statusColor,
-        });
-
-        // ✅ Call parent callback if provided
-        onSet?.(phase);
-      } else {
-        openNotify({
-          message: `❌ ${json.message || "Không thể toggle phase"}`,
-          type: "error",
-        });
-      }
-    } catch (error: any) {
-      console.error("❌ Toggle phase error:", error);
+      // ✅ Call parent callback if provided
+      onSet?.(phaseKey);
+    } else {
       openNotify({
-        message: `❌ Lỗi: ${error.message || "Không thể kết nối server"}`,
+        message: `❌ ${result.message || "Không thể toggle phase"}`,
         type: "error",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleReset = () => (onReset ? onReset() : console.log("RESET"));
+  // ✅ Reset demo data - gọi API thực sự
+  const handleReset = async () => {
+    const result = await resetData();
+    
+    if (result.isSuccess && result.data) {
+      openNotify({
+        message: `✅ Reset thành công ${result.data.totalCleared} bảng dữ liệu!`,
+        type: "success",
+      });
+      
+      // Call parent callback and reload
+      onReset?.();
+      window.location.reload();
+    } else {
+      openNotify({
+        message: `❌ ${result.message || "Không thể reset data"}`,
+        type: "error",
+      });
+    }
+    
+    setShowResetConfirm(false);
+  };
 
   return (
     <section className="main__body">
@@ -110,16 +124,66 @@ export default function ControlPanel({
           </div>
         ))}
 
-        {/* Footer */}
-        <div className="cp-footer">
-          <button
-            type="button"
-            className="btn-cancel h__40__w__100"
-            onClick={handleReset}
-            disabled={loading}
-          >
-            Reset
-          </button>
+        {/* Footer - Reset Button */}
+        <div className="cp-footer" style={{ marginTop: 16 }}>
+          {!showResetConfirm ? (
+            <button
+              type="button"
+              className="btn-cancel h__40__w__100"
+              onClick={() => setShowResetConfirm(true)}
+              disabled={resetLoading}
+              style={{ background: "#f59e0b", color: "white" }}
+            >
+              🔄 Reset Demo Data
+            </button>
+          ) : (
+            <div style={{ 
+              padding: 16, 
+              background: "#fff3cd", 
+              borderRadius: 8,
+              border: "1px solid #ffc107"
+            }}>
+              <p style={{ marginBottom: 12, color: "#92400e" }}>
+                ⚠️ <strong>Cảnh báo:</strong> Xóa toàn bộ dữ liệu demo?
+                <br />
+                <em style={{ fontSize: 13 }}>
+                  (Giữ: users, môn học, khoa, phòng. Xóa: đăng ký, học phí, TKB...)
+                </em>
+              </p>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  disabled={resetLoading}
+                  style={{ 
+                    padding: "8px 16px", 
+                    background: "#dc2626", 
+                    color: "white",
+                    border: "none",
+                    borderRadius: 6,
+                    cursor: "pointer"
+                  }}
+                >
+                  {resetLoading ? "Đang reset..." : "✅ Xác nhận Reset"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowResetConfirm(false)}
+                  disabled={resetLoading}
+                  style={{ 
+                    padding: "8px 16px", 
+                    background: "#6b7280", 
+                    color: "white",
+                    border: "none",
+                    borderRadius: 6,
+                    cursor: "pointer"
+                  }}
+                >
+                  ❌ Hủy
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ✅ Note */}
@@ -131,3 +195,4 @@ export default function ControlPanel({
     </section>
   );
 }
+
