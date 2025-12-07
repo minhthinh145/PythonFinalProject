@@ -33,7 +33,7 @@ class IDeXuatHocPhanRepository(ABC):
         pass
 
     @abstractmethod
-    def reject_proposal(self, proposal_id: str, reason: str) -> bool:
+    def reject_proposal(self, proposal_id: str) -> bool:
         pass
 
 class IPhongHocRepository(ABC):
@@ -50,7 +50,17 @@ class IPhongHocRepository(ABC):
         pass
 
     @abstractmethod
+    def batch_assign_to_khoa(self, phong_ids: list, khoa_id: str) -> int:
+        """Batch assign multiple rooms to khoa. Returns count of updated rooms."""
+        pass
+
+    @abstractmethod
     def unassign_from_khoa(self, phong_id: str) -> bool:
+        pass
+
+    @abstractmethod
+    def batch_unassign_from_khoa(self, phong_ids: list) -> int:
+        """Batch unassign multiple rooms from khoa. Returns count of updated rooms."""
         pass
 
 class IChinhSachHocPhiRepository(ABC):

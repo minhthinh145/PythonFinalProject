@@ -50,15 +50,28 @@ class AssignPhongToKhoaUseCase:
     def __init__(self, phong_repo: IPhongHocRepository):
         self.phong_repo = phong_repo
 
-    def execute(self, phong_id: str, khoa_id: str) -> ServiceResult:
+    def execute(self, phong_ids, khoa_id: str) -> ServiceResult:
+        """
+        Assign rooms to khoa.
+        phong_ids: can be a single string or list of strings
+        """
         try:
-            if not phong_id or not khoa_id:
+            if not phong_ids or not khoa_id:
                 return ServiceResult.fail("Thiếu thông tin", error_code="MISSING_PARAMS")
             
-            success = self.phong_repo.assign_to_khoa(phong_id, khoa_id)
-            if success:
-                return ServiceResult.ok(None, "Gán phòng thành công")
-            return ServiceResult.fail("Gán phòng thất bại", error_code="FAILED")
+            # Support cả single và batch
+            if isinstance(phong_ids, str):
+                # Single room
+                success = self.phong_repo.assign_to_khoa(phong_ids, khoa_id)
+                if success:
+                    return ServiceResult.ok({'count': 1}, "Gán phòng thành công")
+                return ServiceResult.fail("Gán phòng thất bại", error_code="FAILED")
+            else:
+                # Batch rooms
+                count = self.phong_repo.batch_assign_to_khoa(phong_ids, khoa_id)
+                if count > 0:
+                    return ServiceResult.ok({'count': count}, f"Đã gán {count} phòng thành công")
+                return ServiceResult.fail("Không có phòng nào được gán", error_code="FAILED")
         except Exception as e:
             return ServiceResult.fail(str(e))
 
@@ -66,14 +79,27 @@ class UnassignPhongFromKhoaUseCase:
     def __init__(self, phong_repo: IPhongHocRepository):
         self.phong_repo = phong_repo
 
-    def execute(self, phong_id: str) -> ServiceResult:
+    def execute(self, phong_ids) -> ServiceResult:
+        """
+        Unassign rooms from khoa.
+        phong_ids: can be a single string or list of strings
+        """
         try:
-            if not phong_id:
+            if not phong_ids:
                 return ServiceResult.fail("Thiếu thông tin", error_code="MISSING_PARAMS")
             
-            success = self.phong_repo.unassign_from_khoa(phong_id)
-            if success:
-                return ServiceResult.ok(None, "Hủy gán phòng thành công")
-            return ServiceResult.fail("Hủy gán phòng thất bại", error_code="FAILED")
+            # Support both single and batch
+            if isinstance(phong_ids, str):
+                # Single room
+                success = self.phong_repo.unassign_from_khoa(phong_ids)
+                if success:
+                    return ServiceResult.ok({'count': 1}, "Hủy gán phòng thành công")
+                return ServiceResult.fail("Hủy gán phòng thất bại", error_code="FAILED")
+            else:
+                # Batch rooms
+                count = self.phong_repo.batch_unassign_from_khoa(phong_ids)
+                if count > 0:
+                    return ServiceResult.ok({'count': count}, f"Đã hủy gán {count} phòng thành công")
+                return ServiceResult.fail("Không có phòng nào được hủy gán", error_code="FAILED")
         except Exception as e:
             return ServiceResult.fail(str(e))

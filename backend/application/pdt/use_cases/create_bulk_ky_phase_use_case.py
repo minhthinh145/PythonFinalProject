@@ -5,6 +5,35 @@ from core.types import ServiceResult
 from application.pdt.interfaces.repositories import IKyPhaseRepository, IHocKyRepository
 from application.enrollment.interfaces.repositories import IDotDangKyRepository
 
+
+def parse_datetime(dt_str: str) -> datetime:
+    """
+    Parse datetime string with multiple format support.
+    Handles: ISO format with timezone, datetime string, date-only string.
+    """
+    if not dt_str:
+        raise ValueError("Empty datetime string")
+    
+    # Remove trailing 'Z' if present (UTC marker)
+    dt_str = dt_str.replace('Z', '').replace('z', '')
+    
+    # Try multiple formats
+    formats = [
+        '%Y-%m-%dT%H:%M:%S.%f',  # ISO with milliseconds
+        '%Y-%m-%dT%H:%M:%S',      # ISO without milliseconds
+        '%Y-%m-%d %H:%M:%S',      # Standard datetime
+        '%Y-%m-%d',               # Date only
+    ]
+    
+    for fmt in formats:
+        try:
+            return datetime.strptime(dt_str, fmt)
+        except ValueError:
+            continue
+    
+    raise ValueError(f"Cannot parse datetime: {dt_str}")
+
+
 class CreateBulkKyPhaseUseCase:
     def __init__(self, 
                  ky_phase_repo: IKyPhaseRepository,
@@ -28,10 +57,10 @@ class CreateBulkKyPhaseUseCase:
              return ServiceResult.fail("Danh sách phases rỗng", error_code="MISSING_PARAMS")
 
         try:
-            hoc_ky_start_at = datetime.strptime(hoc_ky_start_at_str, '%Y-%m-%d')
-            hoc_ky_end_at = datetime.strptime(hoc_ky_end_at_str, '%Y-%m-%d')
-        except ValueError:
-             return ServiceResult.fail("Định dạng ngày không hợp lệ (YYYY-MM-DD)", error_code="INVALID_DATE_FORMAT")
+            hoc_ky_start_at = parse_datetime(hoc_ky_start_at_str)
+            hoc_ky_end_at = parse_datetime(hoc_ky_end_at_str)
+        except ValueError as e:
+             return ServiceResult.fail(f"Định dạng ngày không hợp lệ: {e}", error_code="INVALID_DATE_FORMAT")
 
         if hoc_ky_start_at >= hoc_ky_end_at:
             return ServiceResult.fail("Thời gian bắt đầu học kỳ phải trước thời gian kết thúc", error_code="INVALID_TIME_RANGE")
@@ -67,8 +96,8 @@ class CreateBulkKyPhaseUseCase:
                 "hoc_ky_id": hoc_ky_id,
                 "loai_dot": "ghi_danh",
                 "is_check_toan_truong": True,
-                "thoi_gian_bat_dau": datetime.strptime(ghi_danh_phase.get('startAt'), '%Y-%m-%d'),
-                "thoi_gian_ket_thuc": datetime.strptime(ghi_danh_phase.get('endAt'), '%Y-%m-%d'),
+                "thoi_gian_bat_dau": parse_datetime(ghi_danh_phase.get('startAt')),
+                "thoi_gian_ket_thuc": parse_datetime(ghi_danh_phase.get('endAt')),
                 "gioi_han_tin_chi": 50,
                 "khoa_id": None
             })
@@ -78,10 +107,11 @@ class CreateBulkKyPhaseUseCase:
                 "hoc_ky_id": hoc_ky_id,
                 "loai_dot": "dang_ky",
                 "is_check_toan_truong": True,
-                "thoi_gian_bat_dau": datetime.strptime(dang_ky_phase.get('startAt'), '%Y-%m-%d'),
-                "thoi_gian_ket_thuc": datetime.strptime(dang_ky_phase.get('endAt'), '%Y-%m-%d'),
+                "thoi_gian_bat_dau": parse_datetime(dang_ky_phase.get('startAt')),
+                "thoi_gian_ket_thuc": parse_datetime(dang_ky_phase.get('endAt')),
                 "gioi_han_tin_chi": 9999,
                 "khoa_id": None
             })
 
         return ServiceResult.ok(created_phases)
+
