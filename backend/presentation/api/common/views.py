@@ -84,3 +84,82 @@ class GetDanhSachNganhView(APIView):
         result = ServiceResult.ok(data, f"Lấy thành công {len(data)} ngành")
         
         return Response(result.to_dict(), status=200)
+
+
+class GetDanhSachKhoaView(APIView):
+    """
+    GET /api/dm/khoa
+    
+    Get list of faculties/departments
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        from infrastructure.persistence.models import Khoa
+        from core.types import ServiceResult
+        
+        try:
+            khoas = Khoa.objects.using('neon').all().order_by('ten_khoa')
+            
+            data = [{
+                'id': str(k.id),
+                'tenKhoa': k.ten_khoa,
+                'maKhoa': k.ma_khoa if hasattr(k, 'ma_khoa') else None
+            } for k in khoas]
+            
+            result = ServiceResult.ok(data, f"Lấy thành công {len(data)} khoa")
+            return Response(result.to_dict(), status=200)
+        except Exception as e:
+            result = ServiceResult.fail(str(e))
+            return Response(result.to_dict(), status=500)
+
+
+class GetNganhChuaCoChinhSachView(APIView):
+    """
+    GET /api/dm/nganh/chua-co-chinh-sach?hoc_ky_id={}&khoa_id={}
+    
+    Get list of majors/programs that don't have credit policy for the given semester
+    Used in the form to add new credit policies
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        from infrastructure.persistence.models import NganhHoc, ChinhSachTinChi
+        from core.types import ServiceResult
+        
+        hoc_ky_id = request.query_params.get('hoc_ky_id')
+        khoa_id = request.query_params.get('khoa_id')
+        
+        if not hoc_ky_id:
+            result = ServiceResult.fail("Thiếu học kỳ ID")
+            return Response(result.to_dict(), status=400)
+        
+        if not khoa_id:
+            result = ServiceResult.fail("Thiếu khoa ID")
+            return Response(result.to_dict(), status=400)
+        
+        try:
+            # Get list of nganh_ids that already have policy in this hoc_ky
+            existing_policy_nganh_ids = ChinhSachTinChi.objects.using('neon').filter(
+                hoc_ky_id=hoc_ky_id
+            ).values_list('nganh_id', flat=True)
+            
+            # Get ngành thuộc khoa mà KHÔNG có chính sách trong học kỳ này
+            nganh_list = NganhHoc.objects.using('neon').filter(
+                khoa_id=khoa_id
+            ).exclude(
+                id__in=existing_policy_nganh_ids
+            ).order_by('ten_nganh')
+            
+            data = [{
+                'id': str(n.id),
+                'ma_nganh': n.ma_nganh,
+                'ten_nganh': n.ten_nganh,
+                'khoa_id': str(n.khoa_id) if n.khoa_id else None
+            } for n in nganh_list]
+            
+            result = ServiceResult.ok(data, f"Lấy thành công {len(data)} ngành chưa có chính sách")
+            return Response(result.to_dict(), status=200)
+        except Exception as e:
+            result = ServiceResult.fail(str(e))
+            return Response(result.to_dict(), status=500)

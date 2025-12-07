@@ -1,6 +1,7 @@
 """
 Presentation Layer - Course Registration API Views
 """
+from datetime import datetime
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -140,18 +141,21 @@ class HuyDangKyLopHocPhanView(APIView):
     POST /api/sv/huy-dang-ky-hoc-phan
     
     Cancel course registration
+    Body: {"lop_hoc_phan_id": "uuid"} or {"lopHocPhanId": "uuid"}
+    hoc_ky_id is optional - will use hoc_ky_hien_hanh if not provided
     """
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
-        lop_hoc_phan_id = request.data.get('lopHocPhanId')
-        hoc_ky_id = request.data.get('hocKyId')
+        # Accept both snake_case and camelCase
+        lop_hoc_phan_id = request.data.get('lop_hoc_phan_id') or request.data.get('lopHocPhanId')
+        hoc_ky_id = request.data.get('hoc_ky_id') or request.data.get('hocKyId')  # Optional
         
-        if not lop_hoc_phan_id or not hoc_ky_id:
+        if not lop_hoc_phan_id:
             return Response({
                 "success": False,
-                "message": "Thiếu thông tin hủy đăng ký (lopHocPhanId, hocKyId)",
-                "errorCode": "MISSING_PARAM"
+                "message": "Thiếu lop_hoc_phan_id hoặc lopHocPhanId",
+                "errorCode": "MISSING_LOP_HOC_PHAN_ID"
             }, status=400)
             
         use_case = HuyDangKyHocPhanUseCase(
@@ -163,6 +167,7 @@ class HuyDangKyLopHocPhanView(APIView):
             SinhVienRepository()
         )
         
+        # hoc_ky_id is optional - use case will get hoc_ky_hien_hanh if not provided
         result = use_case.execute(str(request.user.id), lop_hoc_phan_id, hoc_ky_id)
         
         return Response(result.to_dict(), status=result.status_code or 200)
@@ -176,14 +181,15 @@ class ChuyenLopHocPhanView(APIView):
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
-        lop_cu_id = request.data.get('lopCuId')
-        lop_moi_id = request.data.get('lopMoiId')
-        hoc_ky_id = request.data.get('hocKyId')
+        # Accept both camelCase and snake_case
+        lop_cu_id = request.data.get('lop_hoc_phan_id_cu') or request.data.get('lopCuId') or request.data.get('lop_cu_id')
+        lop_moi_id = request.data.get('lop_hoc_phan_id_moi') or request.data.get('lopMoiId') or request.data.get('lop_moi_id')
+        hoc_ky_id = request.data.get('hoc_ky_id') or request.data.get('hocKyId')
         
-        if not lop_cu_id or not lop_moi_id or not hoc_ky_id:
+        if not lop_cu_id or not lop_moi_id:
             return Response({
                 "success": False,
-                "message": "Thiếu thông tin chuyển lớp (lopCuId, lopMoiId, hocKyId)",
+                "message": "Thiếu thông tin chuyển lớp (lop_hoc_phan_id_cu, lop_hoc_phan_id_moi)",
                 "errorCode": "MISSING_PARAM"
             }, status=400)
             
@@ -196,6 +202,7 @@ class ChuyenLopHocPhanView(APIView):
             SinhVienRepository()
         )
         
+        # hoc_ky_id is optional - use case will get hoc_ky_hien_hanh if not provided
         result = use_case.execute(str(request.user.id), lop_cu_id, lop_moi_id, hoc_ky_id)
         
         return Response(result.to_dict(), status=result.status_code or 200)
@@ -205,17 +212,19 @@ class GetLopChuaDangKyByMonHocView(APIView):
     GET /api/sv/lop-hoc-phan/mon-hoc
     
     Get list of classes for a subject that student hasn't registered for (for switching)
+    Accepts mon_hoc_id as either ma_mon (e.g., 'COMP1325') or UUID
     """
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
+        # Accept monHocId/mon_hoc_id - can be ma_mon (string) or UUID
         mon_hoc_id = request.query_params.get('monHocId') or request.query_params.get('mon_hoc_id')
         hoc_ky_id = request.query_params.get('hocKyId') or request.query_params.get('hoc_ky_id')
         
         if not mon_hoc_id or not hoc_ky_id:
             return Response({
                 "success": False,
-                "message": "Thiếu thông tin (monHocId, hocKyId)",
+                "message": "Thiếu thông tin (monHocId/mon_hoc_id, hocKyId/hoc_ky_id)",
                 "errorCode": "MISSING_PARAM"
             }, status=400)
             
@@ -261,9 +270,14 @@ class GetTKBWeeklyView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
+        import logging
+        logger = logging.getLogger(__name__)
+        
         hoc_ky_id = request.query_params.get('hocKyId') or request.query_params.get('hoc_ky_id')
         date_start_str = request.query_params.get('dateStart') or request.query_params.get('date_start')
         date_end_str = request.query_params.get('dateEnd') or request.query_params.get('date_end')
+        
+        logger.info(f"🔍 TKB Weekly: user_id={request.user.id}, hoc_ky_id={hoc_ky_id}, dates={date_start_str} to {date_end_str}")
         
         if not hoc_ky_id or not date_start_str or not date_end_str:
             return Response({
@@ -282,9 +296,30 @@ class GetTKBWeeklyView(APIView):
                 "errorCode": "INVALID_DATE"
             }, status=400)
 
+        # Get sinh_vien_id from user
+        # request.user is UserWrapper, need to extract the actual UUID string
+        # SinhVien.id is OneToOne to Users.id
+        from infrastructure.persistence.models import SinhVien
+        user_id = str(request.user)  # UserWrapper.__str__ returns str(self._user.id)
+        sinh_vien = SinhVien.objects.using('neon').filter(
+            id=user_id
+        ).first()
+        
+        logger.info(f"🔍 SinhVien lookup: user_id={request.user.id} -> sinh_vien={sinh_vien.id_id if sinh_vien else 'NOT FOUND'}")
+        
+        if not sinh_vien:
+            return Response({
+                "isSuccess": False,
+                "message": "Không tìm thấy thông tin sinh viên",
+                "data": [],
+                "errorCode": "NOT_FOUND"
+            }, status=200)
+
         use_case = GetTKBWeeklyUseCase(DangKyHocPhanRepository())
         
-        result = use_case.execute(str(request.user.id), hoc_ky_id, date_start, date_end)
+        result = use_case.execute(str(sinh_vien.pk), hoc_ky_id, date_start, date_end)
+        
+        logger.info(f"🔍 TKB Result: success={result.success}, data_count={len(result.data) if result.data else 0}")
         
         return Response(result.to_dict(), status=result.status_code or 200)
 

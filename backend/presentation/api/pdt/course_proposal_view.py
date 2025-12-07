@@ -22,10 +22,9 @@ class CourseProposalView(APIView):
             from application.pdt.use_cases.tu_choi_de_xuat_hoc_phan_use_case import TuChoiDeXuatHocPhanUseCase
             
             proposal_id = request.data.get('id')
-            reason = request.data.get('lyDo') # Expecting 'lyDo' from FE
             
             use_case = TuChoiDeXuatHocPhanUseCase(DeXuatHocPhanRepository())
-            result = use_case.execute(proposal_id, reason)
+            result = use_case.execute(proposal_id)
             return Response(result.to_dict(), status=result.status_code or 200)
         else:
             # Default to approve
