@@ -4,6 +4,7 @@ from application.course_registration.interfaces import (
     ILopHocPhanRepository,
     IDangKyHocPhanRepository
 )
+from infrastructure.persistence.models import MonHoc
 
 class GetLopChuaDangKyByMonHocUseCase:
     def __init__(
@@ -14,12 +15,25 @@ class GetLopChuaDangKyByMonHocUseCase:
         self.lop_hoc_phan_repo = lop_hoc_phan_repo
         self.dang_ky_hp_repo = dang_ky_hp_repo
 
-    def execute(self, sinh_vien_id: str, mon_hoc_id: str, hoc_ky_id: str) -> ServiceResult:
-        if not sinh_vien_id or not mon_hoc_id or not hoc_ky_id:
+    def execute(self, sinh_vien_id: str, ma_mon_or_id: str, hoc_ky_id: str) -> ServiceResult:
+        if not sinh_vien_id or not ma_mon_or_id or not hoc_ky_id:
             return ServiceResult.fail(
                 "Thiếu thông tin (sinh viên, môn học, học kỳ)", 
                 error_code="MISSING_PARAMS"
             )
+
+        # Convert ma_mon to mon_hoc_id if needed
+        try:
+            # Try to find by ma_mon first (common case from FE)
+            mon_hoc = MonHoc.objects.using('neon').filter(ma_mon=ma_mon_or_id).first()
+            if mon_hoc:
+                mon_hoc_id = str(mon_hoc.id)
+            else:
+                # Fallback: treat as UUID directly
+                mon_hoc_id = ma_mon_or_id
+        except Exception:
+            # If any error, treat as UUID
+            mon_hoc_id = ma_mon_or_id
 
         # 1. Get all classes for this subject in this semester
         all_classes = self.lop_hoc_phan_repo.get_by_mon_hoc_and_hoc_ky(mon_hoc_id, hoc_ky_id)
@@ -29,13 +43,6 @@ class GetLopChuaDangKyByMonHocUseCase:
             sinh_vien_id, mon_hoc_id, hoc_ky_id
         )
         registered_class_ids = {str(reg.lop_hoc_phan.id) if hasattr(reg, 'lop_hoc_phan') else str(reg.id) for reg in registered_classes}
-        # Note: registered_classes returns DangKyHocPhan objects, which have lop_hoc_phan relation.
-        # But in test mock, we might return LopHocPhan objects directly if not careful.
-        # Let's adjust logic to be safe.
-        
-        # Actually, let's look at the repo implementation:
-        # get_registered_classes_by_subject returns List[DangKyHocPhan]
-        # So we need reg.lop_hoc_phan.id
         
         registered_lhp_ids = set()
         for reg in registered_classes:
@@ -58,7 +65,7 @@ class GetLopChuaDangKyByMonHocUseCase:
                 "soLuongHienTai": lhp.so_luong_hien_tai,
                 "soLuongToiDa": lhp.so_luong_toi_da,
                 "trangThai": "con_cho" if (lhp.so_luong_hien_tai or 0) < (lhp.so_luong_toi_da or 50) else "day",
-                "giangVien": lhp.giang_vien.ho_ten if lhp.giang_vien else "Chưa phân công",
+                "giangVien": lhp.giang_vien.id.ho_ten if (lhp.giang_vien and hasattr(lhp.giang_vien, 'id')) else "Chưa phân công",
                 "tkb": []
             }
             

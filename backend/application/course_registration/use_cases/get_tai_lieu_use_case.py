@@ -28,7 +28,7 @@ class GetTaiLieuByLopHocPhanUseCase:
             
             tai_lieus = self.tai_lieu_repo.find_by_lop_hoc_phan(lop_hoc_phan_id)
             
-            s3_base_url = os.getenv("AWS_S3_BASE_URL", "https://hcmue-tailieu-hoctap-20251029.s3.ap-southeast-2.amazonaws.com")
+            s3_base_url = os.getenv("AWS_S3_BASE_URL")
             
             result = []
             for tl in tai_lieus:
@@ -62,7 +62,7 @@ class GetLopDaDangKyWithTaiLieuUseCase:
             # 1. Get registered classes
             dang_kys = self.dang_ky_repo.find_by_sinh_vien_and_hoc_ky(sinh_vien_id, hoc_ky_id)
             
-            s3_base_url = os.getenv("AWS_S3_BASE_URL", "https://hcmue-tailieu-hoctap-20251029.s3.ap-southeast-2.amazonaws.com")
+            s3_base_url = os.getenv("AWS_S3_BASE_URL")
             
             result = []
             for dk in dang_kys:

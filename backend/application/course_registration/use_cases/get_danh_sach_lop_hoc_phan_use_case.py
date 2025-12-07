@@ -123,8 +123,8 @@ class GetDanhSachLopHocPhanUseCase:
             return tkb_map
         
         try:
-            # Get all TKB for this semester
-            all_tkb = self.mongo_service.get_tkb_by_hoc_ky(hoc_ky_id)
+            # Get all TKB for this semester (keep snake_case for internal processing)
+            all_tkb = self.mongo_service.get_tkb_by_hoc_ky(hoc_ky_id, transform_to_camel=False)
             
             for tkb_doc in all_tkb:
                 ma_hoc_phan = tkb_doc.get('ma_hoc_phan')
@@ -134,11 +134,10 @@ class GetDanhSachLopHocPhanUseCase:
                     tkb_map[ma_hoc_phan] = {}
                 
                 for lop in danh_sach_lop:
-                    # Support both camelCase and snake_case
-                    ten_lop = lop.get('tenLop') or lop.get('ten_lop')
+                    # MongoDB now uses snake_case internally
+                    ten_lop = lop.get('ten_lop')
                     if ten_lop:
-                        # Normalize to a consistent format
-                        tkb_map[ma_hoc_phan][ten_lop] = self._normalize_lop_data(lop)
+                        tkb_map[ma_hoc_phan][ten_lop] = lop  # Store raw snake_case data
             
             logger.debug(f"Built TKB map with {len(tkb_map)} môn học")
             
@@ -146,21 +145,6 @@ class GetDanhSachLopHocPhanUseCase:
             logger.error(f"Failed to build TKB map: {e}")
         
         return tkb_map
-    
-    def _normalize_lop_data(self, lop: Dict) -> Dict:
-        """
-        Normalize lop data to consistent format (camelCase)
-        Handles both snake_case and camelCase from MongoDB
-        """
-        return {
-            'tenLop': lop.get('tenLop') or lop.get('ten_lop'),
-            'phongHocId': lop.get('phongHocId') or lop.get('phong_hoc_id'),
-            'ngayBatDau': lop.get('ngayBatDau') or lop.get('ngay_bat_dau'),
-            'ngayKetThuc': lop.get('ngayKetThuc') or lop.get('ngay_ket_thuc'),
-            'tietBatDau': lop.get('tietBatDau') or lop.get('tiet_bat_dau'),
-            'tietKetThuc': lop.get('tietKetThuc') or lop.get('tiet_ket_thuc'),
-            'thuTrongTuan': lop.get('thuTrongTuan') or lop.get('thu_trong_tuan'),
-        }
     
     def _get_tkb_for_lop(
         self, 
@@ -193,18 +177,18 @@ class GetDanhSachLopHocPhanUseCase:
         """
         Format MongoDB TKB data to match FE expectations
         
-        MongoDB fields:
-        - tenLop, phongHocId, ngayBatDau, ngayKetThuc, tietBatDau, tietKetThuc, thuTrongTuan
+        MongoDB fields (snake_case):
+        - ten_lop, phong_hoc_id, ngay_bat_dau, ngay_ket_thuc, tiet_bat_dau, tiet_ket_thuc, thu_trong_tuan
         """
         try:
-            thu = mongo_lop.get('thuTrongTuan')
-            tiet_bat_dau = mongo_lop.get('tietBatDau')
-            tiet_ket_thuc = mongo_lop.get('tietKetThuc')
-            phong_hoc_id = mongo_lop.get('phongHocId')
+            thu = mongo_lop.get('thu_trong_tuan')
+            tiet_bat_dau = mongo_lop.get('tiet_bat_dau')
+            tiet_ket_thuc = mongo_lop.get('tiet_ket_thuc')
+            phong_hoc_id = mongo_lop.get('phong_hoc_id')
             
             # Get dates
-            ngay_bd = mongo_lop.get('ngayBatDau')
-            ngay_kt = mongo_lop.get('ngayKetThuc')
+            ngay_bd = mongo_lop.get('ngay_bat_dau')
+            ngay_kt = mongo_lop.get('ngay_ket_thuc')
             
             # Format dates
             if ngay_bd:
@@ -260,12 +244,12 @@ class GetDanhSachLopHocPhanUseCase:
             return "TBA"
         
         try:
-            from core.models import Phong
-            phong = Phong.objects.filter(id=phong_hoc_id).first()
+            from infrastructure.persistence.models import Phong
+            phong = Phong.objects.using('neon').filter(id=phong_hoc_id).first()
             if phong:
                 return phong.ma_phong
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"Failed to get phong name: {e}")
         
         return "TBA"
     
@@ -300,6 +284,7 @@ class GetDanhSachLopHocPhanUseCase:
         return tkb_list
 
     def _get_thu_name(self, thu: int) -> str:
+        """Map thu number to Vietnamese day name"""
         thu_map = {
             1: "Chủ Nhật",
             2: "Thứ Hai",
@@ -308,5 +293,6 @@ class GetDanhSachLopHocPhanUseCase:
             5: "Thứ Năm",
             6: "Thứ Sáu",
             7: "Thứ Bảy",
+            8: "Chủ Nhật",  # Alternative mapping for Sunday
         }
         return thu_map.get(thu, "N/A") if thu else "N/A"

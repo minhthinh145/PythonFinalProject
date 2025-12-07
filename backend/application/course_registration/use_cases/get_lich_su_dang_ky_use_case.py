@@ -72,10 +72,16 @@ class GetLichSuDangKyUseCase:
                 }
 
                 # Get lop_hoc_phan and mon_hoc info
-                dang_ky = getattr(detail, 'dang_ky_hoc_phan', None) or getattr(detail, 'dangKyHocPhan', None)
+                # Wrap in try-except to handle deleted DangKyHocPhan references
+                dang_ky = None
                 lhp = None
-                if dang_ky:
-                    lhp = getattr(dang_ky, 'lop_hoc_phan', None) or getattr(dang_ky, 'lopHocPhan', None)
+                try:
+                    dang_ky = getattr(detail, 'dang_ky_hoc_phan', None) or getattr(detail, 'dangKyHocPhan', None)
+                    if dang_ky:
+                        lhp = getattr(dang_ky, 'lop_hoc_phan', None) or getattr(dang_ky, 'lopHocPhan', None)
+                except Exception:
+                    # DangKyHocPhan or LopHocPhan was deleted, continue with empty info
+                    pass
 
                 if lhp:
                     item["lopHocPhan"]["maLop"] = getattr(lhp, 'ma_lop', None) or getattr(lhp, 'maLop', '') or ''
