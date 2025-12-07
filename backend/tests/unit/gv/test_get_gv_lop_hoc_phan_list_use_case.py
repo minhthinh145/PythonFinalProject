@@ -68,10 +68,10 @@ class TestGetGVLopHocPhanListUseCase:
         
         # Assert
         assert result.success is True
-        assert "lopHocPhan" in result.data
-        assert len(result.data["lopHocPhan"]) == 2
-        assert result.data["lopHocPhan"][0]["maLop"] == "LHP001"
-        assert result.data["lopHocPhan"][0]["hocPhan"]["tenHocPhan"] == "Lập trình Python"
+        assert isinstance(result.data, list)
+        assert len(result.data) == 2
+        assert result.data[0]["ma_lop"] == "LHP001"
+        assert result.data[0]["hoc_phan"]["ten_hoc_phan"] == "Lập trình Python"
         mock_repo.get_lop_hoc_phan_by_gv.assert_called_once_with(gv_user_id, hoc_ky_id)
     
     def test_execute_empty_list_when_no_lhp(self, use_case, mock_repo):
@@ -90,7 +90,7 @@ class TestGetGVLopHocPhanListUseCase:
         
         # Assert
         assert result.success is True
-        assert result.data["lopHocPhan"] == []
+        assert result.data == []
     
     def test_execute_without_hoc_ky_id(self, use_case, mock_repo):
         """

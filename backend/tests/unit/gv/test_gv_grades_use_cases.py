@@ -56,11 +56,11 @@ class TestGetGVGradesUseCase:
         
         # Assert
         assert result.success is True
-        assert "diem" in result.data
-        assert len(result.data["diem"]) == 3
-        assert result.data["diem"][0]["sinhVienId"] == "sv-001"
-        assert result.data["diem"][0]["diemSo"] == 8.5
-        assert result.data["diem"][2]["diemSo"] is None  # Not graded
+        assert isinstance(result.data, list)
+        assert len(result.data) == 3
+        assert result.data[0]["sinh_vien_id"] == "sv-001"
+        assert result.data[0]["diem_so"] == 8.5
+        assert result.data[2]["diem_so"] is None  # Not graded
         mock_lhp_repo.verify_gv_owns_lhp.assert_called_once_with(lhp_id, gv_user_id)
     
     def test_execute_forbidden_when_gv_not_assigned(self, use_case, mock_lhp_repo, mock_grade_repo):
@@ -124,8 +124,8 @@ class TestUpsertGVGradesUseCase:
         gv_user_id = "gv-user-123"
         lhp_id = "lhp-001"
         grades_input = [
-            {"sinhVienId": "sv-001", "diemSo": 8.5},
-            {"sinhVienId": "sv-002", "diemSo": 9.0},
+            {"sinh_vien_id": "sv-001", "diem_so": 8.5},
+            {"sinh_vien_id": "sv-002", "diem_so": 9.0},
         ]
         mock_lhp_repo.verify_gv_owns_lhp.return_value = True
         mock_grade_repo.validate_students_in_lhp.return_value = True
@@ -164,7 +164,7 @@ class TestUpsertGVGradesUseCase:
         gv_user_id = "gv-user-123"
         lhp_id = "lhp-001"
         grades_input = [
-            {"sinhVienId": "sv-not-in-lhp", "diemSo": 8.5},
+            {"sinh_vien_id": "sv-not-in-lhp", "diem_so": 8.5},
         ]
         mock_lhp_repo.verify_gv_owns_lhp.return_value = True
         mock_grade_repo.validate_students_in_lhp.return_value = False
@@ -186,7 +186,7 @@ class TestUpsertGVGradesUseCase:
         gv_user_id = "gv-user-123"
         lhp_id = "lhp-001"
         grades_input = [
-            {"sinhVienId": "sv-001", "diemSo": 15.0},  # Invalid: > 10
+            {"sinh_vien_id": "sv-001", "diem_so": 15.0},  # Invalid: > 10
         ]
         mock_lhp_repo.verify_gv_owns_lhp.return_value = True
         
@@ -207,7 +207,7 @@ class TestUpsertGVGradesUseCase:
         gv_user_id = "gv-user-123"
         lhp_id = "lhp-001"
         grades_input = [
-            {"sinhVienId": "sv-001", "diemSo": -1.0},  # Invalid: < 0
+            {"sinh_vien_id": "sv-001", "diem_so": -1.0},  # Invalid: < 0
         ]
         mock_lhp_repo.verify_gv_owns_lhp.return_value = True
         
@@ -228,7 +228,7 @@ class TestUpsertGVGradesUseCase:
         gv_user_id = "gv-user-123"
         lhp_id = "lhp-001"
         grades_input = [
-            {"sinhVienId": "sv-001", "diemSo": None},  # Clear grade
+            {"sinh_vien_id": "sv-001", "diem_so": None},  # Clear grade
         ]
         mock_lhp_repo.verify_gv_owns_lhp.return_value = True
         mock_grade_repo.validate_students_in_lhp.return_value = True

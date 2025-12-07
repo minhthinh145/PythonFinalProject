@@ -54,8 +54,8 @@ class TestGetGVLopHocPhanDetailUseCase:
         # Assert
         assert result.success is True
         assert result.data["id"] == "lhp-001"
-        assert result.data["maLop"] == "LHP001"
-        assert result.data["hocPhan"]["tenHocPhan"] == "Lập trình Python"
+        assert result.data["ma_lop"] == "LHP001"
+        assert result.data["hoc_phan"]["ten_hoc_phan"] == "Lập trình Python"
         mock_repo.get_lop_hoc_phan_detail.assert_called_once_with(lhp_id, gv_user_id)
     
     def test_execute_not_found_when_lhp_not_exists(self, use_case, mock_repo):
