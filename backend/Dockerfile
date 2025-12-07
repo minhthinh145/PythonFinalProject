@@ -29,6 +29,6 @@ COPY . .
 # Expose port
 EXPOSE 8000
 
-# Run migrations and start server
-CMD python manage.py migrate && \
-    python manage.py runserver 0.0.0.0:8000
+# Start server with gunicorn (production-ready)
+# NOTE: Migrations are NOT run automatically - DB is managed separately
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "120", "DKHPHCMUE.wsgi:application"]
