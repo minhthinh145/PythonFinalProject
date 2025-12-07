@@ -35,24 +35,25 @@ class GetGVLopHocPhanListUseCase:
                 self._map_to_response(lhp) for lhp in lhp_list
             ]
             
-            return ServiceResult.ok({"lopHocPhan": response_list})
+            # Return array directly - FE expects result.data to be array
+            return ServiceResult.ok(response_list)
             
         except Exception as e:
             return ServiceResult.fail(str(e))
     
     def _map_to_response(self, lhp: GVLopHocPhanDTO) -> Dict[str, Any]:
-        """Map DTO to camelCase response"""
+        """Map DTO to snake_case response (matches FE types)"""
         return {
             "id": lhp.id,
-            "maLop": lhp.ma_lop,
-            "soLuongHienTai": lhp.so_luong_hien_tai,
-            "soLuongToiDa": lhp.so_luong_toi_da,
-            "hocPhan": {
-                "tenHocPhan": lhp.hoc_phan.get("ten_hoc_phan"),
-                "monHoc": {
-                    "maMon": lhp.hoc_phan.get("mon_hoc", {}).get("ma_mon"),
-                    "tenMon": lhp.hoc_phan.get("mon_hoc", {}).get("ten_mon"),
-                    "soTinChi": lhp.hoc_phan.get("mon_hoc", {}).get("so_tin_chi"),
+            "ma_lop": lhp.ma_lop,
+            "so_luong_hien_tai": lhp.so_luong_hien_tai,
+            "so_luong_toi_da": lhp.so_luong_toi_da,
+            "hoc_phan": {
+                "ten_hoc_phan": lhp.hoc_phan.get("ten_hoc_phan"),
+                "mon_hoc": {
+                    "ma_mon": lhp.hoc_phan.get("mon_hoc", {}).get("ma_mon"),
+                    "ten_mon": lhp.hoc_phan.get("mon_hoc", {}).get("ten_mon"),
+                    "so_tin_chi": lhp.hoc_phan.get("mon_hoc", {}).get("so_tin_chi"),
                 }
             }
         }

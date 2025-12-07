@@ -37,17 +37,18 @@ class GetGVStudentsOfLHPUseCase:
                 self._map_to_response(student) for student in (students or [])
             ]
             
-            return ServiceResult.ok({"sinhVien": response_list})
+            # Return array directly - FE expects result.data to be array
+            return ServiceResult.ok(response_list)
             
         except Exception as e:
             return ServiceResult.fail(str(e))
     
     def _map_to_response(self, student: GVStudentDTO) -> Dict[str, Any]:
-        """Map DTO to camelCase response"""
+        """Map DTO to camelCase response for frontend"""
         return {
             "id": student.id,
             "mssv": student.mssv,
-            "hoTen": student.hoTen,
+            "hoTen": student.ho_ten,
             "lop": student.lop,
             "email": student.email,
         }

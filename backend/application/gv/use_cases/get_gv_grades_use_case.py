@@ -42,14 +42,15 @@ class GetGVGradesUseCase:
                 self._map_to_response(grade) for grade in grades
             ]
             
-            return ServiceResult.ok({"diem": response_list})
+            # Return array directly - FE expects result.data to be array
+            return ServiceResult.ok(response_list)
             
         except Exception as e:
             return ServiceResult.fail(str(e))
     
     def _map_to_response(self, grade: GVGradeDTO) -> Dict[str, Any]:
-        """Map DTO to camelCase response"""
+        """Map DTO to snake_case response (matches FE types)"""
         return {
-            "sinhVienId": grade.sinh_vien_id,
-            "diemSo": grade.diem_so,
+            "sinh_vien_id": grade.sinh_vien_id,
+            "diem_so": grade.diem_so,
         }

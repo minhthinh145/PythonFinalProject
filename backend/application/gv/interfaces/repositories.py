@@ -34,7 +34,7 @@ class GVStudentDTO:
     """DTO for student in class - map 1-1 với frontend GVStudentDTO"""
     id: str  # UUID sinh viên
     mssv: str
-    hoTen: str
+    ho_ten: str
     lop: Optional[str]
     email: str
 
@@ -53,7 +53,8 @@ class GVTKBItemDTO:
     ma_lop: str
     ten_mon: str
     ma_mon: str
-    phong: Optional[str]
+    phong_id: Optional[str]
+    ma_phong: Optional[str]
     thu: int
     tiet_bat_dau: int
     tiet_ket_thuc: int
