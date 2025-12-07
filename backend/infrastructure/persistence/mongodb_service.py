@@ -5,8 +5,79 @@ Used for TKB caching and document storage
 from typing import Optional, Dict, Any, List
 from decouple import config
 import logging
+import re
 
 logger = logging.getLogger(__name__)
+
+
+def camel_to_snake(camel_str: str) -> str:
+    """Convert camelCase to snake_case"""
+    import re
+    # Insert underscore before uppercase letters and convert to lowercase
+    return re.sub(r'(?<!^)(?=[A-Z])', '_', camel_str).lower()
+
+
+def dict_camel_to_snake(data: Dict) -> Dict:
+    """Convert all dict keys from camelCase to snake_case"""
+    if not isinstance(data, dict):
+        return data
+    
+    result = {}
+    for key, value in data.items():
+        # Skip MongoDB _id field
+        if key == '_id':
+            result[key] = value
+            continue
+        
+        # Convert key to snake_case
+        new_key = camel_to_snake(key)
+        
+        # Recursively convert nested dicts and lists
+        if isinstance(value, dict):
+            result[new_key] = dict_camel_to_snake(value)
+        elif isinstance(value, list):
+            result[new_key] = [
+                dict_camel_to_snake(item) if isinstance(item, dict) else item
+                for item in value
+            ]
+        else:
+            result[new_key] = value
+    
+    return result
+
+
+def snake_to_camel(snake_str: str) -> str:
+    """Convert snake_case to camelCase"""
+    components = snake_str.split('_')
+    return components[0] + ''.join(x.title() for x in components[1:])
+
+
+def dict_snake_to_camel(data: Dict) -> Dict:
+    """Convert all dict keys from snake_case to camelCase"""
+    if not isinstance(data, dict):
+        return data
+    
+    result = {}
+    for key, value in data.items():
+        # Skip MongoDB _id field
+        if key == '_id':
+            continue
+        
+        # Convert key to camelCase
+        new_key = snake_to_camel(key) if '_' in key else key
+        
+        # Recursively convert nested dicts and lists
+        if isinstance(value, dict):
+            result[new_key] = dict_snake_to_camel(value)
+        elif isinstance(value, list):
+            result[new_key] = [
+                dict_snake_to_camel(item) if isinstance(item, dict) else item
+                for item in value
+            ]
+        else:
+            result[new_key] = value
+    
+    return result
 
 # Lazy-load pymongo to avoid import errors if not installed
 _mongo_client = None
@@ -166,9 +237,14 @@ class MongoDBService:
     
     TKB_COLLECTION = 'thoi_khoa_bieu_mon_hoc'
     
-    def get_tkb_by_ma_hoc_phan_and_hoc_ky(self, ma_hoc_phan: str, hoc_ky_id: str) -> Optional[Dict]:
+    def get_tkb_by_ma_hoc_phan_and_hoc_ky(self, ma_hoc_phan: str, hoc_ky_id: str, transform_to_camel: bool = True) -> Optional[Dict]:
         """
         Get TKB for a specific môn học in a học kỳ
+        
+        Args:
+            ma_hoc_phan: Mã học phần
+            hoc_ky_id: Học kỳ ID
+            transform_to_camel: If True, convert snake_case keys to camelCase for FE
         """
         if not self.is_available:
             return None
@@ -181,16 +257,23 @@ class MongoDBService:
                 'hoc_ky_id': hoc_ky_id
             })
             
+            if doc and transform_to_camel:
+                return dict_snake_to_camel(doc)
             return doc
             
         except Exception as e:
             logger.error(f"Failed to get TKB by ma_hoc_phan: {e}")
             return None
     
-    def get_tkb_by_hoc_phans(self, ma_hoc_phans: List[str], hoc_ky_id: str) -> List[Dict]:
+    def get_tkb_by_hoc_phans(self, ma_hoc_phans: List[str], hoc_ky_id: str, transform_to_camel: bool = True) -> List[Dict]:
         """
         Get TKB data for multiple học phần
         Used by SV to view class schedules
+        
+        Args:
+            ma_hoc_phans: List of mã học phần
+            hoc_ky_id: Học kỳ ID
+            transform_to_camel: If True, convert snake_case keys to camelCase for FE
         """
         if not self.is_available:
             return []
@@ -203,16 +286,23 @@ class MongoDBService:
                 'hoc_ky_id': hoc_ky_id
             })
             
-            return list(cursor)
+            results = list(cursor)
+            if transform_to_camel:
+                return [dict_snake_to_camel(doc) for doc in results]
+            return results
             
         except Exception as e:
             logger.error(f"Failed to get TKB by hoc phans: {e}")
             return []
     
-    def get_tkb_by_hoc_ky(self, hoc_ky_id: str) -> List[Dict]:
+    def get_tkb_by_hoc_ky(self, hoc_ky_id: str, transform_to_camel: bool = True) -> List[Dict]:
         """
         Get all TKB for a học kỳ
         Used by TLK to view all schedules
+        
+        Args:
+            hoc_ky_id: Học kỳ ID
+            transform_to_camel: If True, convert snake_case keys to camelCase for FE
         """
         if not self.is_available:
             return []
@@ -224,6 +314,11 @@ class MongoDBService:
                 'hoc_ky_id': hoc_ky_id
             }).sort('ma_hoc_phan', 1)
             
+            results = list(cursor)
+            if transform_to_camel:
+                return [dict_snake_to_camel(doc) for doc in results]
+            return results
+            
             return list(cursor)
             
         except Exception as e:
@@ -234,6 +329,12 @@ class MongoDBService:
         """
         Save TKB for a học phần (when TLK creates schedule)
         Stores in MongoDB for fast retrieval
+        MERGES schedule entries - same class (tenLop) can have multiple sessions (different days/times)
+        
+        Args:
+            ma_hoc_phan: Mã học phần
+            hoc_ky_id: Học kỳ ID
+            danh_sach_lop: List from FE (camelCase keys) - will be converted to snake_case
         """
         if not self.is_available:
             logger.warning("MongoDB not available, will use PostgreSQL only")
@@ -242,18 +343,58 @@ class MongoDBService:
         try:
             collection = self.db[self.TKB_COLLECTION]
             
+            # Convert input from camelCase to snake_case for MongoDB storage
+            # Also add unique ID to each session if not present
+            import uuid
+            danh_sach_lop_snake = []
+            for lop in danh_sach_lop:
+                lop_snake = dict_camel_to_snake(lop)
+                # Add ID if not present (for FE tracking)
+                if 'id' not in lop_snake or not lop_snake['id']:
+                    lop_snake['id'] = str(uuid.uuid4())
+                danh_sach_lop_snake.append(lop_snake)
+            
+            # Get existing data to merge
+            existing = collection.find_one({
+                'ma_hoc_phan': ma_hoc_phan,
+                'hoc_ky_id': hoc_ky_id
+            })
+            
+            if existing and 'danhSachLop' in existing:
+                # Merge: append new sessions, avoid exact duplicates
+                # Each lop can have multiple sessions (T2, T3, T5...)
+                existing_list = existing['danhSachLop']
+                
+                for new_lop in danh_sach_lop_snake:
+                    # Check if this exact session already exists (both in snake_case now)
+                    is_duplicate = any(
+                        ex.get('ten_lop') == new_lop.get('ten_lop') and
+                        ex.get('thu_trong_tuan') == new_lop.get('thu_trong_tuan') and
+                        ex.get('tiet_bat_dau') == new_lop.get('tiet_bat_dau') and
+                        ex.get('tiet_ket_thuc') == new_lop.get('tiet_ket_thuc') and
+                        ex.get('phong_hoc_id') == new_lop.get('phong_hoc_id')
+                        for ex in existing_list
+                    )
+                    
+                    if not is_duplicate:
+                        existing_list.append(new_lop)
+                
+                merged_lops = existing_list
+            else:
+                merged_lops = danh_sach_lop_snake
+            
             result = collection.update_one(
                 {'ma_hoc_phan': ma_hoc_phan, 'hoc_ky_id': hoc_ky_id},
                 {
                     '$set': {
-                        'danhSachLop': danh_sach_lop,
+                        'danhSachLop': merged_lops,
                         'updated_at': self._get_current_time()
                     }
                 },
                 upsert=True
             )
             
-            logger.info(f"✅ TKB saved for {ma_hoc_phan} in HK {hoc_ky_id}")
+            logger.info(f"✅ TKB saved for {ma_hoc_phan} in HK {hoc_ky_id} (total {len(merged_lops)} sessions)")
             return True
             
         except Exception as e:

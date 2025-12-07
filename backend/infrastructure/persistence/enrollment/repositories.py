@@ -15,10 +15,41 @@ from infrastructure.persistence.models import (
 )
 import uuid
 
+
+def parse_datetime(dt_str: str) -> datetime:
+    """
+    Parse datetime string with multiple format support.
+    Handles: ISO format with timezone, datetime string, date-only string.
+    """
+    if not dt_str:
+        raise ValueError("Empty datetime string")
+    
+    # Remove trailing 'Z' if present (UTC marker)
+    dt_str = dt_str.replace('Z', '').replace('z', '')
+    
+    # Try multiple formats
+    formats = [
+        '%Y-%m-%dT%H:%M:%S.%f',  # ISO with milliseconds
+        '%Y-%m-%dT%H:%M:%S',      # ISO without milliseconds
+        '%Y-%m-%d %H:%M:%S',      # Standard datetime
+        '%Y-%m-%d',               # Date only
+    ]
+    
+    for fmt in formats:
+        try:
+            return datetime.strptime(dt_str, fmt)
+        except ValueError:
+            continue
+    
+    raise ValueError(f"Cannot parse datetime: {dt_str}")
+
+
 class HocKyRepository(IHocKyRepository):
     def get_current_hoc_ky(self) -> Optional[HocKy]:
         try:
-            return HocKy.objects.using('neon').filter(trang_thai_hien_tai=True).first()
+            return HocKy.objects.using('neon').filter(
+                trang_thai_hien_tai=True
+            ).first()
         except Exception:
             return None
 
@@ -30,6 +61,14 @@ class HocKyRepository(IHocKyRepository):
             ngay_bat_dau=start_at,
             ngay_ket_thuc=end_at
         )
+
+    def find_by_id(self, hoc_ky_id: str) -> Optional[HocKy]:
+        try:
+            return HocKy.objects.using('neon').filter(
+                id=hoc_ky_id
+            ).first()
+        except Exception:
+            return None
 
 class KyPhaseRepository(IKyPhaseRepository):
     def get_current_phase(self, hoc_ky_id: str) -> Optional[KyPhase]:
@@ -49,9 +88,9 @@ class KyPhaseRepository(IKyPhaseRepository):
         new_phases = []
         result_data = []
         for p in phases:
-            # Parse dates
-            start_at = datetime.strptime(p.get('ngayBatDau'), '%Y-%m-%d') if p.get('ngayBatDau') else None
-            end_at = datetime.strptime(p.get('ngayKetThuc'), '%Y-%m-%d') if p.get('ngayKetThuc') else None
+            # Parse dates using flexible parser
+            start_at = parse_datetime(p.get('ngayBatDau')) if p.get('ngayBatDau') else None
+            end_at = parse_datetime(p.get('ngayKetThuc')) if p.get('ngayKetThuc') else None
 
             phase = KyPhase.objects.using('neon').create(
                 id=uuid.uuid4(),
@@ -123,7 +162,12 @@ class DotDangKyRepository(IDotDangKyRepository):
         return list(DotDangKy.objects.using('neon').filter(
             hoc_ky_id=hoc_ky_id,
             loai_dot=loai_dot
-        ).order_by('thoi_gian_bat_dau'))
+        ).select_related('khoa').order_by('thoi_gian_bat_dau'))
+
+    def find_by_hoc_ky(self, hoc_ky_id: str) -> List[DotDangKy]:
+        return list(DotDangKy.objects.using('neon').filter(
+            hoc_ky_id=hoc_ky_id
+        ).select_related('khoa').order_by('thoi_gian_bat_dau'))
 
     def update(self, id: str, data: dict) -> Optional[DotDangKy]:
         try:
@@ -135,15 +179,41 @@ class DotDangKyRepository(IDotDangKyRepository):
         except DotDangKy.DoesNotExist:
             return None
 
+    def delete(self, id: str) -> bool:
+        try:
+            dot = DotDangKy.objects.using('neon').get(id=id)
+            dot.delete(using='neon')
+            return True
+        except DotDangKy.DoesNotExist:
+            return False
+
 class HocPhanRepository(IHocPhanRepository):
     def find_all_open(self, hoc_ky_id: str) -> List[HocPhan]:
-        return list(HocPhan.objects.using('neon').filter(
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        logger.info(f"[find_all_open] Querying HocPhan for hoc_ky_id={hoc_ky_id}")
+        
+        # First, let's see all HocPhan for this hoc_ky
+        all_for_hk = HocPhan.objects.using('neon').filter(id_hoc_ky_id=hoc_ky_id)
+        logger.info(f"[find_all_open] Total HocPhan for this hoc_ky: {all_for_hk.count()}")
+        for hp in all_for_hk:
+            logger.info(f"[find_all_open] HocPhan: id={hp.id}, ten={hp.ten_hoc_phan}, trang_thai_mo={hp.trang_thai_mo}")
+        
+        # Now filter by trang_thai_mo=True
+        result = list(HocPhan.objects.using('neon').filter(
             id_hoc_ky_id=hoc_ky_id,
             trang_thai_mo=True
         ).select_related(
             'mon_hoc', 
             'mon_hoc__khoa'
         ))
+        
+        logger.info(f"[find_all_open] After filter trang_thai_mo=True: {len(result)} records")
+        for hp in result:
+            logger.info(f"[find_all_open] Result: id={hp.id}, ten={hp.ten_hoc_phan}, mon_hoc_id={hp.mon_hoc_id}")
+        
+        return result
         
     def find_by_id(self, id: str) -> Optional[HocPhan]:
         try:

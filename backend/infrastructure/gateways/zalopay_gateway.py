@@ -18,19 +18,21 @@ class ZaloPayGateway(IPaymentGateway):
         self.key1 = os.getenv("ZALOPAY_KEY1", "")
         self.key2 = os.getenv("ZALOPAY_KEY2", "")
         self.endpoint = os.getenv("ZALOPAY_ENDPOINT", "https://sb-openapi.zalopay.vn")
-    
+        self.callurl = os.getenv("UNIFIED_IPN_URL")
     def create_payment(self, request: CreatePaymentRequest) -> CreatePaymentResponse:
         app_time = int(datetime.now().timestamp() * 1000)
         trans_id = int(datetime.now().timestamp()) % 1000000
         
-        # ZaloPay app_trans_id format: yyMMdd_transId
+        # ZaloPay app_trans_id format: yyMMd
+        # d_transId
         app_trans_id = f"{datetime.now().strftime('%y%m%d')}_{trans_id}"
         
         sinh_vien_id = request.metadata.get("sinhVienId", "UNKNOWN") if request.metadata else "UNKNOWN"
         
+        # ZaloPay embed_data - exactly matching legacy TypeScript implementation
         embed_data = json.dumps({
             "redirecturl": request.redirect_url,
-            "merchant_order_id": f"ORDER_{app_time}_{sinh_vien_id[:8]}"
+            "merchant_order_id": f"ORDER_{app_time}_{sinh_vien_id[:8] if len(sinh_vien_id) > 8 else sinh_vien_id}"
         })
         
         items = json.dumps([{
@@ -58,9 +60,12 @@ class ZaloPayGateway(IPaymentGateway):
             "embed_data": embed_data,
             "description": request.order_info,
             "bank_code": "",
-            "callback_url": request.ipn_url,
-            "mac": mac
+            "callback_url": self.callurl,
+            "mac": mac  # Required for ZaloPay signature
         }
+        # Debug logging
+        print(f"[ZALOPAY] Request payload: {json.dumps(payload, indent=2)}")
+        print(f"[ZALOPAY] Redirect URL in embed_data: {request.redirect_url}")
         
         response = requests.post(
             f"{self.endpoint}/v2/create",
@@ -69,6 +74,7 @@ class ZaloPayGateway(IPaymentGateway):
         )
         
         result = response.json()
+        print(f"[ZALOPAY] Response: {json.dumps(result, indent=2)}")
         
         if result.get("return_code") != 1:
             raise Exception(f"ZaloPay error: {result.get('return_message', 'Unknown error')}")

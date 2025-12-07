@@ -81,13 +81,14 @@ class GVLopHocPhanRepository(IGVLopHocPhanRepository):
         """
         Get registered students of a LopHocPhan
         """
-        # Get students from DangKyHocPhan with status != 'DA_HUY'
+        # Get students from DangKyHocPhan with active status
+        # Note: DB uses lowercase values: 'da_dang_ky', 'dang_ky', etc.
         dang_ky_list = DangKyHocPhan.objects.using('neon').select_related(
             'sinh_vien',
             'sinh_vien__id',  # Users table
         ).filter(
             lop_hoc_phan__id=lhp_id,
-            trang_thai__in=['DANG_KY', 'DA_DUYET']  # Active registrations
+            trang_thai__in=['da_dang_ky', 'dang_ky', 'da_duyet']  # Active registrations (lowercase)
         )
         
         result = []
@@ -98,7 +99,7 @@ class GVLopHocPhanRepository(IGVLopHocPhanRepository):
             result.append(GVStudentDTO(
                 id=str(sv.id.id),  # Users.id is UUID
                 mssv=sv.ma_so_sinh_vien,
-                hoTen=user.ho_ten,
+                ho_ten=user.ho_ten,
                 lop=sv.lop,
                 email=user.email,
             ))
@@ -119,13 +120,16 @@ class GVLopHocPhanRepository(IGVLopHocPhanRepository):
         hoc_phan = lhp.hoc_phan
         mon_hoc = hoc_phan.mon_hoc if hoc_phan else None
         
+        # Use mon_hoc.ten_mon as ten_hoc_phan (DB may have incorrect data)
+        ten_hoc_phan = mon_hoc.ten_mon if mon_hoc else (hoc_phan.ten_hoc_phan if hoc_phan else None)
+        
         return GVLopHocPhanDTO(
             id=str(lhp.id),
             ma_lop=lhp.ma_lop,
             so_luong_hien_tai=lhp.so_luong_hien_tai,
             so_luong_toi_da=lhp.so_luong_toi_da,
             hoc_phan={
-                "ten_hoc_phan": hoc_phan.ten_hoc_phan if hoc_phan else None,
+                "ten_hoc_phan": ten_hoc_phan,
                 "mon_hoc": {
                     "ma_mon": mon_hoc.ma_mon if mon_hoc else None,
                     "ten_mon": mon_hoc.ten_mon if mon_hoc else None,
@@ -139,11 +143,14 @@ class GVLopHocPhanRepository(IGVLopHocPhanRepository):
         hoc_phan = lhp.hoc_phan
         mon_hoc = hoc_phan.mon_hoc if hoc_phan else None
         
+        # Use mon_hoc.ten_mon as ten_hoc_phan (DB may have incorrect data)
+        ten_hoc_phan = mon_hoc.ten_mon if mon_hoc else (hoc_phan.ten_hoc_phan if hoc_phan else None)
+        
         return GVLopHocPhanDetailDTO(
             id=str(lhp.id),
             ma_lop=lhp.ma_lop,
             hoc_phan={
-                "ten_hoc_phan": hoc_phan.ten_hoc_phan if hoc_phan else None,
+                "ten_hoc_phan": ten_hoc_phan,
                 "mon_hoc": {
                     "ma_mon": mon_hoc.ma_mon if mon_hoc else None,
                     "ten_mon": mon_hoc.ten_mon if mon_hoc else None,

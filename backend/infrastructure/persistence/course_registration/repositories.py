@@ -118,6 +118,10 @@ class DangKyHocPhanRepository(IDangKyHocPhanRepository):
     def update_status(self, id: str, status: str) -> None:
         DangKyHocPhan.objects.using('neon').filter(id=id).update(trang_thai=status)
 
+    def delete(self, id: str) -> None:
+        """Delete DangKyHocPhan record - history is tracked in lich_su_dang_ky"""
+        DangKyHocPhan.objects.using('neon').filter(id=id).delete()
+
     def update_lop_hoc_phan(self, id: str, new_lop_hoc_phan_id: str) -> None:
         DangKyHocPhan.objects.using('neon').filter(id=id).update(lop_hoc_phan_id=new_lop_hoc_phan_id)
 

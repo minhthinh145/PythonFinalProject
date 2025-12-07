@@ -287,7 +287,7 @@ class LichHocDinhKy(models.Model):
     tuan_ket_thuc = models.IntegerField(blank=True, null=True)
     gio_bat_dau = models.TimeField(blank=True, null=True)
     gio_ket_thuc = models.TimeField(blank=True, null=True)
-    tiet_range = models.TextField(blank=True, null=True)  # This field type is a guess.
+    # tiet_range is a PostgreSQL GENERATED column - DO NOT include in model to prevent Django from trying to set it
 
     class Meta:
         managed = False
