@@ -173,7 +173,6 @@ export default function TKBSidebar({
                     (p) => p.id === selectedPhongId
                   );
 
-                  console.log("Selected phong:", selectedPhong); // ✅ Debug
 
                   onUpdateInstance(selectedInstance.id, {
                     phongHocId: selectedPhongId,

@@ -72,8 +72,6 @@ const ModalCapNhatMonHoc: React.FC<PropsEdit> = ({ id, isOpen, onClose }) => {
           pdtApi.getMonHoc(),
         ]);
 
-        console.log("[MonHoc Edit] detail:", dRes);
-        console.log("[MonHoc Edit] khoa:", kRes);
 
         if (dRes.isSuccess && dRes.data) {
           const d: Detail = dRes.data;

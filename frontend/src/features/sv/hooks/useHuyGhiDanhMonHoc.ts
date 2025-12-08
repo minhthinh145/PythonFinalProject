@@ -23,14 +23,12 @@ export const useHuyGhiDanhMonHoc = () => {
         setLoading(true);
 
         try {
-            console.log("🗑️ Hủy ghi danh:", ghiDanhIds);
 
             const result = await svApi.huyGhiDanhMonHoc({ ghiDanhIds });
 
             if (result.isSuccess) {
                 const successCount = ghiDanhIds.length;
 
-                console.log(`✅ Hủy thành công ${successCount} môn học`);
 
                 openNotify({
                     message: `✅ Đã hủy ghi danh ${successCount} môn học`,
@@ -39,7 +37,6 @@ export const useHuyGhiDanhMonHoc = () => {
 
                 return successCount;
             } else {
-                console.log("❌ Hủy thất bại:", result.message);
 
                 openNotify({
                     message: result.message || "Không thể hủy ghi danh",

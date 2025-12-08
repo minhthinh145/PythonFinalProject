@@ -18,14 +18,12 @@ export const useTinhHocPhiHangLoat = () => {
         setLoading(true);
 
         try {
-            console.log("🧮 Tính học phí hàng loạt cho học kỳ:", hocKyId);
 
             const result = await pdtApi.tinhHocPhiHangLoat({ hoc_ky_id: hocKyId });
 
             if (result.isSuccess && result.data) {
                 const { successCount, totalProcessed, failedCount, errors } = result.data;
 
-                console.log("✅ Kết quả:", result.data);
 
                 // ✅ Show success notification
                 openNotify({

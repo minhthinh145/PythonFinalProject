@@ -63,7 +63,6 @@ function LoginPage() {
         matKhau: password,
       }).unwrap();
 
-      console.log("Login Response:", res);
 
       if (!res.isSuccess) {
         throw new Error(res.message || "Đăng nhập thất bại");

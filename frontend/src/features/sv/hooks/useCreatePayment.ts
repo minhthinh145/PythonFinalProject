@@ -13,7 +13,6 @@ export const useCreatePayment = () => {
             const result = await svApi.createPayment(data);
 
             if (result.isSuccess && result.data) {
-                console.log("✅ Payment created:", result.data);
                 return { success: true, data: result.data };
             } else {
                 // ✅ Handle specific error codes

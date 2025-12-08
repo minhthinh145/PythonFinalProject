@@ -48,8 +48,6 @@ export const ModalThemSinhVien: React.FC<Props> = ({
 
   // ✅ Debug log
   useEffect(() => {
-    console.log("🔍 [Modal] Ngành list:", danhSachNganh);
-    console.log("🔍 [Modal] Loading:", loadingNganh);
   }, [danhSachNganh, loadingNganh]);
 
   const [excelFile, setExcelFile] = useState<File | null>(null);

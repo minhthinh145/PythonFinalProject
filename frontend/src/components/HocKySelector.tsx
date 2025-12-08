@@ -5,7 +5,7 @@ import type { HocKyItemDTO } from "../features/common/types";
 interface HocKySelectorProps {
   onHocKyChange: (hocKyId: string) => void;
   disabled?: boolean;
-  autoSelectCurrent?: boolean; // ✅ Option to auto-select học kỳ hiện hành
+  autoSelectCurrent?: boolean;
 }
 
 export default function HocKySelector({
@@ -19,7 +19,6 @@ export default function HocKySelector({
   const [selectedNienKhoa, setSelectedNienKhoa] = useState<string>("");
   const [selectedHocKyId, setSelectedHocKyId] = useState<string>("");
 
-  // ✅ FIX: Track if we've already auto-selected to prevent infinite loop
   const hasAutoSelected = useRef(false);
 
   const flatHocKys = useMemo(() => {
@@ -32,12 +31,9 @@ export default function HocKySelector({
     return result;
   }, [hocKyNienKhoas]);
 
-  // ✅ Auto-select học kỳ hiện hành ONLY ONCE
   useEffect(() => {
-    // ✅ Guard: Skip if already auto-selected
     if (hasAutoSelected.current) return;
 
-    // ✅ Guard: Skip if not ready
     if (
       loadingHienHanh ||
       loadingHocKy ||
@@ -47,20 +43,18 @@ export default function HocKySelector({
       return;
     }
 
-    // ✅ Guard: Skip if autoSelectCurrent is false
     if (!autoSelectCurrent) {
-      hasAutoSelected.current = true; // Mark as checked
+      hasAutoSelected.current = true; 
       return;
     }
 
     const hkHienHanh = flatHocKys.find((hk) => hk.id === hocKyHienHanh.id);
 
     if (hkHienHanh) {
-      console.log("✅ [HocKySelector] Auto-selecting:", hkHienHanh.tenHocKy);
       setSelectedNienKhoa(hkHienHanh.tenNienKhoa);
       setSelectedHocKyId(hkHienHanh.id);
       onHocKyChange(hkHienHanh.id);
-      hasAutoSelected.current = true; // ✅ Mark as done
+      hasAutoSelected.current = true;
     }
   }, [
     hocKyHienHanh,
@@ -68,9 +62,8 @@ export default function HocKySelector({
     loadingHienHanh,
     loadingHocKy,
     autoSelectCurrent,
-  ]); // ✅ Remove onHocKyChange
+  ]);
 
-  // ✅ Reset học kỳ khi đổi niên khóa
   useEffect(() => {
     setSelectedHocKyId("");
   }, [selectedNienKhoa]);
@@ -83,7 +76,6 @@ export default function HocKySelector({
     [flatHocKys, selectedNienKhoa]
   );
 
-  // ✅ Manual selection handler
   const handleHocKyChange = (hocKyId: string) => {
     setSelectedHocKyId(hocKyId);
     onHocKyChange(hocKyId);

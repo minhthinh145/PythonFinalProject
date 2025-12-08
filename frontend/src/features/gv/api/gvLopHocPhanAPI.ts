@@ -150,14 +150,6 @@ export const gvLopHocPhanAPI = {
                 }
             );
 
-            console.log("📦 Download response:", {
-                status: response.status,
-                headers: response.headers,
-                contentType: response.headers["content-type"],
-                blobSize: response.data.size,
-                blobType: response.data.type,
-            });
-
             const blob = response.data;
 
             if (!blob.type || blob.type === "application/octet-stream") {
@@ -173,7 +165,6 @@ export const gvLopHocPhanAPI = {
                     }
                 }
 
-                console.log("Detected filename:", fileName);
 
                 let correctType = "application/octet-stream";
 
@@ -191,7 +182,6 @@ export const gvLopHocPhanAPI = {
                     correctType = "text/plain";
                 }
 
-                console.log("Overriding MIME type to:", correctType);
 
                 return new Blob([blob], { type: correctType });
             }
@@ -214,18 +204,11 @@ export const gvLopHocPhanAPI = {
             const blob = await gvLopHocPhanAPI.downloadTaiLieu(lhpId, docId);
             if (!blob) return null;
 
-            console.log("Creating preview URL from blob:", {
-                type: blob.type,
-                size: blob.size,
-            });
-
             const url = URL.createObjectURL(blob);
 
-            console.log("Preview URL created:", url);
 
             return url;
         } catch (error) {
-            console.error("Error creating preview URL:", error);
             return null;
         }
     },

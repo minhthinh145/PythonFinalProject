@@ -51,8 +51,6 @@ const ModalThemMonHoc: React.FC<PropsAdd> = ({
           pdtApi.getMonHoc(),
         ]);
 
-        console.log("[ModalThemMonHoc] khoa:", kRes);
-        console.log("[ModalThemMonHoc] nganh:", nRes);
 
         // Parse khoa list - map camelCase to snake_case
         if (kRes.isSuccess && Array.isArray(kRes.data)) {

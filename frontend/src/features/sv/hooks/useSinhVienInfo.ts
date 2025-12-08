@@ -37,7 +37,6 @@ export const useSinhVienInfo = () => {
                     }
                 }
             } catch (error) {
-                console.log("Info: Failed to fetch sinh vien info");
             } finally {
                 setLoading(false);
             }

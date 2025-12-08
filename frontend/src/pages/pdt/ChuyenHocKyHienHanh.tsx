@@ -120,7 +120,6 @@ export default function ChuyenHocKyHienHanh() {
     endDate: string
   ) => {
     // TODO: Call API to update phase time
-    console.log("Update phase time:", { phaseType, startDate, endDate });
 
     openNotify({
       message: `API chỉnh thời gian ${

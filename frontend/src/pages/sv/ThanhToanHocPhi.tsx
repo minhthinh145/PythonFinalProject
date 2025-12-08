@@ -43,7 +43,6 @@ export default function ThanhToanHocPhi() {
 
   // ✅ Handle payment submission with provider
   const handlePaymentSubmit = async (method: string, hocKyId: string) => {
-    console.log("💳 Payment method:", method);
 
     // ✅ Map FE method ID to BE provider
     const providerMap: Record<string, "momo" | "vnpay" | "zalopay"> = {
@@ -64,7 +63,6 @@ export default function ThanhToanHocPhi() {
 
     // ✅ REMOVE restriction - allow all payment methods
     // All providers are now enabled - Backend will handle routing
-    console.log(
       `🚀 Processing payment with provider: ${provider.toUpperCase()}`
     );
 
@@ -78,7 +76,6 @@ export default function ThanhToanHocPhi() {
       setShowPaymentModal(false);
 
       // ✅ Log redirect URL for debugging
-      console.log(
         `🔗 Redirecting to ${provider.toUpperCase()}:`,
         result.data.payUrl
       );

@@ -11,11 +11,9 @@ export const useCreateBulkKyPhase = () => {
         setError(null);
 
         try {
-            console.log("🚀 Creating bulk ky phase with:", request);
 
             const result = await pdtApi.createBulkKyPhase(request);
 
-            console.log("📦 API response:", result);
 
             if (result.isSuccess) {
                 return {

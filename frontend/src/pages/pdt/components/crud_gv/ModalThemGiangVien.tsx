@@ -35,7 +35,6 @@ const ModalThemGiangVien: React.FC<PropsAdd> = ({
     (async () => {
       try {
         const res = await pdtApi.getDanhMucKhoa();
-        console.log("📦 [ModalGV] Response:", res);
 
         if (res.isSuccess && Array.isArray(res.data)) {
           // Map camelCase to snake_case if needed

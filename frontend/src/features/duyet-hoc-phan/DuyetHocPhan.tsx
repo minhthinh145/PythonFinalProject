@@ -80,7 +80,7 @@ export default function DuyetHocPhan({
   const isActionEnabled = (role: Role, tt: string): boolean => {
     if (role === "tro_ly_khoa") return false;
     if (role === "truong_khoa") return tt === "cho_duyet";
-    if (role === "phong_dao_tao") return tt === "da_duyet_tk"; // ✅ Fix type
+    if (role === "phong_dao_tao") return tt === "da_duyet_tk";
     return false;
   };
 
@@ -90,7 +90,6 @@ export default function DuyetHocPhan({
     if (storedUser) {
       try {
         const user: StoredUser = JSON.parse(storedUser);
-        console.log("user in local", user);
         setUserRole(user.loaiTaiKhoan ?? "");
       } catch {
         setUserRole("");

@@ -26,16 +26,12 @@ export const useGhiDanhMonHoc = () => {
         try {
             for (const monHocId of monHocIds) {
                 try {
-                    console.log(`📝 Ghi danh môn: ${monHocId}`);
 
                     const result = await svApi.ghiDanhMonHoc({ monHocId });
-                    console.log(result);
                     if (result.isSuccess) {
                         successCount++;
-                        console.log(`✅ Success: ${monHocId}`);
                     } else {
                         errors.push(result.message);
-                        console.log(`❌ Failed: ${monHocId} - ${result.message}`);
                     }
                 } catch (err: any) {
                     errors.push(err.message || `Lỗi môn ${monHocId}`);
@@ -79,14 +75,12 @@ export const useGhiDanhMonHoc = () => {
         setLoading(true);
 
         try {
-            console.log("🗑️ Hủy ghi danh:", ghiDanhIds);
 
             const result = await svApi.huyGhiDanhMonHoc({ ghiDanhIds });
 
             if (result.isSuccess) {
                 const successCount = ghiDanhIds.length;
 
-                console.log(`✅ Hủy thành công ${successCount} môn học`);
 
                 openNotify({
                     message: `✅ Đã hủy ghi danh ${successCount} môn học`,
@@ -95,7 +89,6 @@ export const useGhiDanhMonHoc = () => {
 
                 return successCount;
             } else {
-                console.log("❌ Hủy thất bại:", result.message);
 
                 openNotify({
                     message: result.message || "Không thể hủy ghi danh",

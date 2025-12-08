@@ -25,7 +25,6 @@ export const useGetDotGhiDanhByHocKy = (hocKyId: string) => {
                     (dot) => dot.loaiDot === "ghi_danh"
                 );
 
-                console.log("📦 Đợt ghi danh fetched:", ghiDanhDots);
                 setData(ghiDanhDots);
             } else {
                 setError(result.message || "Không thể lấy đợt ghi danh");

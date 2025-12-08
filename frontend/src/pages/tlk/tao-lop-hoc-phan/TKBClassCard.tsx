@@ -14,7 +14,6 @@ export default function TKBClassCard({
   isForSinhVien = false,
 }: Props) {
   // ✅ Debug
-  console.log("Instance in card:", {
     id: instance.id,
     phongHocId: instance.phongHocId,
     tenPhongHoc: instance.tenPhongHoc,

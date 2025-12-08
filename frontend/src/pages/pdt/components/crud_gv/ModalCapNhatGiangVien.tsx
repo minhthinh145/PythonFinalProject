@@ -53,8 +53,6 @@ const ModalCapNhatGiangVien: React.FC<PropsEdit> = ({
           pdtApi.getDanhMucKhoa(),
         ]);
 
-        console.log("[GV Edit] detail:", detailRes);
-        console.log("[GV Edit] khoa:", khoaRes);
 
         // Parse detail
         const d: Detail | null = detailRes.isSuccess

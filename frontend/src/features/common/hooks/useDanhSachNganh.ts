@@ -2,9 +2,6 @@ import { useState, useEffect } from "react";
 import { commonApi } from "../api/commonApi";
 import type { NganhDTO } from "../types";
 
-/**
- * ✅ Hook lấy danh sách ngành (có thể filter theo khoaId)
- */
 export const useDanhSachNganh = (khoaId?: string) => {
     const [data, setData] = useState<NganhDTO[]>([]);
     const [loading, setLoading] = useState(false);
@@ -18,10 +15,7 @@ export const useDanhSachNganh = (khoaId?: string) => {
             try {
                 const result = await commonApi.getDanhSachNganh(khoaId);
 
-                console.log("📦 [useDanhSachNganh] API response:", result); // ✅ Debug
-
                 if (result.isSuccess && result.data) {
-                    console.log("✅ [useDanhSachNganh] Data:", result.data); // ✅ Debug
                     setData(result.data);
                 } else {
                     setError(result.message || "Không thể lấy danh sách ngành");
@@ -38,7 +32,7 @@ export const useDanhSachNganh = (khoaId?: string) => {
         };
 
         fetchData();
-    }, [khoaId]); // ✅ Re-fetch when khoaId changes
+    }, [khoaId]);
 
     return { data, loading, error };
 };

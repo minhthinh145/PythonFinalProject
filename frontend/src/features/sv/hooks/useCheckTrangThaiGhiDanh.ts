@@ -12,18 +12,14 @@ export const useCheckTrangThaiGhiDanh = () => {
         setError(null);
 
         try {
-            console.log("🔍 Checking trạng thái ghi danh...");
 
             const result = await svApi.checkTrangThaiGhiDanh();
 
-            console.log("📦 Check result:", result);
 
             if (result.isSuccess) {
-                console.log("✅ Sinh viên được phép ghi danh");
                 setCanGhiDanh(true);
                 setMessage(result.message || "Đang trong thời gian ghi danh");
             } else {
-                console.log("❌ Sinh viên không được phép ghi danh");
                 setCanGhiDanh(false);
                 setMessage(result.message || "Không trong thời gian ghi danh");
                 setError(result.message);

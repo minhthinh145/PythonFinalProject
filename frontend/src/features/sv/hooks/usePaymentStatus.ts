@@ -30,7 +30,6 @@ export const usePaymentStatus = (
         const checkStatus = async () => {
             attempts++;
 
-            console.log(`🔍 Polling payment status (${attempts}/${maxAttempts})...`);
 
             try {
                 const result = await svApi.getPaymentStatus(orderId);
@@ -38,7 +37,6 @@ export const usePaymentStatus = (
                 if (result.isSuccess && result.data) {
                     const currentStatus = result.data.status;
 
-                    console.log(`📦 Payment status: ${currentStatus}`);
 
                     setStatus(result.data);
 
@@ -48,7 +46,6 @@ export const usePaymentStatus = (
                         currentStatus === "failed" ||
                         currentStatus === "cancelled"
                     ) {
-                        console.log("✅ Final status reached");
                         clearInterval(intervalId);
                         setLoading(false);
                         return true; // ✅ Signal success
@@ -87,7 +84,6 @@ export const usePaymentStatus = (
         };
 
         // ✅ Add initial delay before first poll
-        console.log(`⏳ Waiting ${initialDelay}ms before polling...`);
         initialTimeoutId = setTimeout(startPolling, initialDelay);
 
         // ✅ Cleanup

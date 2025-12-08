@@ -1,5 +1,4 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "dkhp-frontend",
   "compatibility_date": "2025-12-07",
   "assets": {

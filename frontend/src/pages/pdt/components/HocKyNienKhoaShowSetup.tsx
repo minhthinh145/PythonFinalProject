@@ -41,7 +41,6 @@ export function HocKyNienKhoaShowSetup({
   onChangeEnd,
   onSubmit,
 }: HocKyNienKhoaShowSetupProps) {
-  console.log("🔍 [HocKyNienKhoaShowSetup] Render with:", {
     selectedNienKhoa,
     selectedHocKy,
     hocKyNienKhoasLength: hocKyNienKhoas.length,
@@ -51,7 +50,6 @@ export function HocKyNienKhoaShowSetup({
     (nk) => nk.nienKhoaId === selectedNienKhoa
   );
 
-  console.log(
     "🔍 [HocKyNienKhoaShowSetup] selectedNienKhoaObj:",
     selectedNienKhoaObj
   );
@@ -65,7 +63,6 @@ export function HocKyNienKhoaShowSetup({
           className="form__select"
           value={selectedNienKhoa}
           onChange={(e) => {
-            console.log("🔍 [Select] Niên khóa changed to:", e.target.value);
             onChangeNienKhoa(e.target.value);
           }}
           disabled={loadingHocKy || submitting}
@@ -86,7 +83,6 @@ export function HocKyNienKhoaShowSetup({
           className="form__select"
           value={selectedHocKy}
           onChange={(e) => {
-            console.log("🔍 [Select] Học kỳ changed to:", e.target.value);
             onChangeHocKy(e.target.value);
           }}
           disabled={!selectedNienKhoa || loadingHocKy || submitting}

@@ -30,7 +30,6 @@ export const getStudentInfoFromJWT = () => {
         }
 
         const payload = JSON.parse(atob(parts[1]));
-        console.log("JWT Payload:", payload);
 
         return {
             id: payload.sub || "",

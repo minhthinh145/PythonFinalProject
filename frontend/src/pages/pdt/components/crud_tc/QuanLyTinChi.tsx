@@ -89,22 +89,18 @@ export default function QuanLyTinChi() {
     // ✅ Cần cả 2 data
     if (!hocKyHienHanh || flatHocKys.length === 0) return;
 
-    console.log(
       "✅ [QuanLyTinChi] Auto-selecting học kỳ hiện hành:",
       hocKyHienHanh
     );
-    console.log("✅ [QuanLyTinChi] Flat học kỳ:", flatHocKys);
 
     // ✅ Tìm học kỳ trong flatHocKys
     const foundHocKy = flatHocKys.find((hk) => hk.id === hocKyHienHanh.id);
 
     if (foundHocKy) {
-      console.log("✅ [QuanLyTinChi] Found học kỳ:", foundHocKy);
 
       setSelectedNienKhoa(foundHocKy.tenNienKhoa);
       setForm((f) => ({ ...f, hocKyId: foundHocKy.id }));
 
-      console.log("✅ [QuanLyTinChi] Auto-selected:", {
         nienKhoa: foundHocKy.tenNienKhoa,
         hocKyId: foundHocKy.id,
       });

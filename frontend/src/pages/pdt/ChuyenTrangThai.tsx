@@ -90,8 +90,6 @@ export default function ChuyenTrangThai() {
   useEffect(() => {
     if (!hocKyHienHanh || hocKyNienKhoas.length === 0) return;
 
-    console.log("✅ [ChuyenTrangThai] hocKyHienHanh:", hocKyHienHanh);
-    console.log("✅ [ChuyenTrangThai] hocKyNienKhoas:", hocKyNienKhoas);
 
     // ✅ Tìm niên khóa chứa học kỳ này
     const foundNienKhoa = hocKyNienKhoas.find((nk) =>
@@ -118,8 +116,6 @@ export default function ChuyenTrangThai() {
       return;
     }
 
-    console.log("✅ [ChuyenTrangThai] Found niên khóa:", foundNienKhoa);
-    console.log("✅ [ChuyenTrangThai] Found học kỳ:", foundHocKy);
 
     // ✅ Set niên khóa
     setSelectedNienKhoa(foundNienKhoa.nienKhoaId);
@@ -154,10 +150,6 @@ export default function ChuyenTrangThai() {
 
   // ✅ Load phases từ API khi có selectedHocKyId
   useEffect(() => {
-    console.log("🔄 [ChuyenTrangThai] useEffect for phasesData triggered");
-    console.log("📦 selectedHocKyId:", selectedHocKyId);
-    console.log("📦 phasesData:", phasesData);
-    console.log(
       "📦 phasesData type:",
       Array.isArray(phasesData) ? "Array" : typeof phasesData
     );
@@ -173,13 +165,11 @@ export default function ChuyenTrangThai() {
       phasesData?.phases || (Array.isArray(phasesData) ? phasesData : []);
 
     if (!phases || phases.length === 0) {
-      console.log("⚠️ [ChuyenTrangThai] No phases data, using empty");
       setPhaseTimes(getEmptyPhaseTimes());
       setCurrentPhase("");
       return;
     }
 
-    console.log("✅ [ChuyenTrangThai] Loading phases:", phases);
 
     const newPhaseTimes: Record<string, PhaseTime> = getEmptyPhaseTimes();
 
@@ -191,7 +181,6 @@ export default function ChuyenTrangThai() {
       };
     });
 
-    console.log("✅ [ChuyenTrangThai] New phase times:", newPhaseTimes);
     setPhaseTimes(newPhaseTimes);
 
     // ✅ Xác định phase hiện tại
@@ -203,13 +192,11 @@ export default function ChuyenTrangThai() {
     });
 
     if (currentPhaseItem) {
-      console.log(
         "✅ [ChuyenTrangThai] Current phase:",
         currentPhaseItem.phase
       );
       setCurrentPhase(currentPhaseItem.phase);
     } else {
-      console.log("⚠️ [ChuyenTrangThai] No active phase");
       setCurrentPhase("");
     }
   }, [phasesData, selectedHocKyId]);
@@ -256,12 +243,10 @@ export default function ChuyenTrangThai() {
       ngayBatDau: semesterStart,
       ngayKetThuc: semesterEnd,
     };
-    console.log("📤 Sending date payload:", datePayload);
 
     // ✅ Step 1: Update ngày bắt đầu/kết thúc trước
     const updateDateResult = await updateHocKyDate(datePayload);
 
-    console.log("📥 Date update result:", updateDateResult);
 
     if (!updateDateResult.isSuccess) {
       setSemesterMessage(
@@ -395,7 +380,6 @@ export default function ChuyenTrangThai() {
     );
     const hocKy = nienKhoa?.hocKy.find((hk) => hk.id === selectedHocKyId);
 
-    console.log("🔍 Found học kỳ:", hocKy);
 
     if (hocKy) {
       // ✅ WORKAROUND: Chỉ set nếu BE đã gửi, không thì để user tự nhập
@@ -406,7 +390,6 @@ export default function ChuyenTrangThai() {
         ? new Date(hocKy.ngayKetThuc).toISOString().split("T")[0]
         : semesterEnd; // ✅ Giữ giá trị cũ nếu không có từ BE
 
-      console.log("📅 Setting dates:", { startDate, endDate });
 
       setSemesterStart(startDate);
       setSemesterEnd(endDate);
@@ -450,7 +433,6 @@ export default function ChuyenTrangThai() {
     end: string
   ) => {
     // TODO: Call API to update phase time
-    console.log("Update phase time:", { phaseType, start, end });
 
     openNotify({
       message: `API chỉnh thời gian ${

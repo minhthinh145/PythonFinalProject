@@ -55,12 +55,10 @@ export const useGVLopHocPhanDetail = (lhpId: string) => {
         }
     };
 
-    // ✅ Load grades - Use UUID as key
     const loadGrades = async () => {
         try {
             const result = await gvLopHocPhanAPI.getGrades(lhpId);
 
-            console.log("📦 Grades API response:", result);
 
             if (result.isSuccess && result.data) {
                 const map: Record<string, number | ""> = {};

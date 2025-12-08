@@ -23,7 +23,6 @@ export default function TaiLieuPreviewModal({
   const isImage = fileType.includes("image");
   const isDoc = fileType.includes("word") || fileType.includes("msword");
 
-  console.log("📄 Preview modal opened:", {
     fileName: document.ten_tai_lieu,
     fileUrl,
     fileType: document.file_type,

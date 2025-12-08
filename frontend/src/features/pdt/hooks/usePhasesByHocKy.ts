@@ -12,7 +12,6 @@ export const usePhasesByHocKy = (hocKyId: string | null) => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        console.log("🔄 usePhasesByHocKy triggered, hocKyId:", hocKyId); // ✅ Thêm log
 
         if (!hocKyId) {
             setData(null);
@@ -26,10 +25,8 @@ export const usePhasesByHocKy = (hocKyId: string | null) => {
             try {
                 const result = await pdtApi.getPhasesByHocKy(hocKyId);
 
-                console.log("📡 API response:", result); // ✅ Thêm log
 
                 if (result.isSuccess && result.data) {
-                    console.log("✅ Setting data:", result.data); // ✅ Thêm log
                     setData(result.data);
                 } else {
                     setError(result.message || "Không thể lấy phases");
