@@ -28,6 +28,7 @@ export default function PaymentResult() {
     if (!orderId) {
       console.error("❌ No orderId found in URL params");
     } else {
+      console.log(
         "📦 Query params:",
         Object.fromEntries(searchParams.entries())
       );

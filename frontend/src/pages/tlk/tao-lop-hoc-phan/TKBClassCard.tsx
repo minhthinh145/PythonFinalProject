@@ -13,11 +13,6 @@ export default function TKBClassCard({
   isComplete,
   isForSinhVien = false,
 }: Props) {
-  // ✅ Debug
-    id: instance.id,
-    phongHocId: instance.phongHocId,
-    tenPhongHoc: instance.tenPhongHoc,
-  });
 
   const hasAnyInfo =
     instance.tietBatDau ||

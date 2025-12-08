@@ -89,9 +89,6 @@ export default function QuanLyTinChi() {
     // ✅ Cần cả 2 data
     if (!hocKyHienHanh || flatHocKys.length === 0) return;
 
-      "✅ [QuanLyTinChi] Auto-selecting học kỳ hiện hành:",
-      hocKyHienHanh
-    );
 
     // ✅ Tìm học kỳ trong flatHocKys
     const foundHocKy = flatHocKys.find((hk) => hk.id === hocKyHienHanh.id);
@@ -100,12 +97,9 @@ export default function QuanLyTinChi() {
 
       setSelectedNienKhoa(foundHocKy.tenNienKhoa);
       setForm((f) => ({ ...f, hocKyId: foundHocKy.id }));
-
-        nienKhoa: foundHocKy.tenNienKhoa,
-        hocKyId: foundHocKy.id,
-      });
+      
     } else {
-      console.warn("⚠️ [QuanLyTinChi] Không tìm thấy học kỳ trong flatHocKys");
+      // Không tìm thấy học kỳ
     }
   }, [
     hocKyHienHanh,

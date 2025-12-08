@@ -61,10 +61,7 @@ export default function ThanhToanHocPhi() {
       return;
     }
 
-    // ✅ REMOVE restriction - allow all payment methods
     // All providers are now enabled - Backend will handle routing
-      `🚀 Processing payment with provider: ${provider.toUpperCase()}`
-    );
 
     // ✅ Call API with provider
     const result = await createPayment({
@@ -75,10 +72,7 @@ export default function ThanhToanHocPhi() {
     if (result.success && result.data) {
       setShowPaymentModal(false);
 
-      // ✅ Log redirect URL for debugging
-        `🔗 Redirecting to ${provider.toUpperCase()}:`,
-        result.data.payUrl
-      );
+      // Redirect to payment gateway
 
       window.location.href = result.data.payUrl;
     }

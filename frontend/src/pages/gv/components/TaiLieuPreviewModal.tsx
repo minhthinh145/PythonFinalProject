@@ -23,13 +23,6 @@ export default function TaiLieuPreviewModal({
   const isImage = fileType.includes("image");
   const isDoc = fileType.includes("word") || fileType.includes("msword");
 
-    fileName: document.ten_tai_lieu,
-    fileUrl,
-    fileType: document.file_type,
-    isPDF,
-    isImage,
-    isDoc,
-  });
 
   return (
     <div className="preview-overlay" onClick={onClose}>
