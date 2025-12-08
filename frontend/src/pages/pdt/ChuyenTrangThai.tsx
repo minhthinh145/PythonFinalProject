@@ -43,7 +43,6 @@ const PHASE_ORDER: string[] = [
   "binh_thuong",
 ];
 
-// ✅ MOVE HERE - Define helper function BEFORE component
 const getEmptyPhaseTimes = (): Record<string, PhaseTime> => {
   return PHASE_ORDER.reduce((acc, phase) => {
     acc[phase] = { start: "", end: "" };
@@ -54,20 +53,17 @@ const getEmptyPhaseTimes = (): Record<string, PhaseTime> => {
 export default function ChuyenTrangThai() {
   const { openNotify } = useModalContext();
 
-  // ✅ Dùng hooks
   const { data: hocKyNienKhoas, loading: loadingHocKy } = useHocKyNienKhoa();
   const { setHocKyHienTai, loading: submittingHocKy } = useSetHocKyHienTai();
   const { createBulkKyPhase, loading: submittingPhase } =
     useCreateBulkKyPhase();
   const { updateDotGhiDanh, loading: ghiDanhLoading } = useUpdateDotGhiDanh();
-  const { updateHocKyDate, loading: updatingHocKyDate } = useUpdateHocKyDate(); // ✅ Add new hook
+  const { updateHocKyDate, loading: updatingHocKyDate } = useUpdateHocKyDate(); 
 
-  // ✅ THÊM: Lấy học kỳ hiện hành để auto-select
   const { data: hocKyHienHanh, loading: loadingHienHanh } = useHocKyHienHanh();
 
   const [selectedHocKyId, setSelectedHocKyId] = useState<string>("");
 
-  // ✅ Gọi hook để load phases
   const { data: phasesData, loading: loadingPhases } =
     usePhasesByHocKy(selectedHocKyId);
 
@@ -86,21 +82,15 @@ export default function ChuyenTrangThai() {
   const [message, setMessage] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
 
-  // ✅ FIX: Auto-select học kỳ hiện hành khi mount
   useEffect(() => {
     if (!hocKyHienHanh || hocKyNienKhoas.length === 0) return;
 
 
-    // ✅ Tìm niên khóa chứa học kỳ này
     const foundNienKhoa = hocKyNienKhoas.find((nk) =>
       nk.hocKy.some((hk) => hk.id === hocKyHienHanh.id)
     );
 
     if (!foundNienKhoa) {
-      console.error(
-        "❌ [ChuyenTrangThai] Không tìm thấy niên khóa cho học kỳ:",
-        hocKyHienHanh.id
-      );
       return;
     }
 
@@ -109,21 +99,11 @@ export default function ChuyenTrangThai() {
     );
 
     if (!foundHocKy) {
-      console.error(
-        "❌ [ChuyenTrangThai] Không tìm thấy học kỳ:",
-        hocKyHienHanh.id
-      );
       return;
     }
 
-
-    // ✅ Set niên khóa
     setSelectedNienKhoa(foundNienKhoa.nienKhoaId);
-
-    // ✅ Set học kỳ
     setSelectedHocKyId(foundHocKy.id);
-
-    // ✅ Set ngày bắt đầu/kết thúc
     setSemesterStart(
       foundHocKy.ngayBatDau
         ? new Date(foundHocKy.ngayBatDau).toISOString().split("T")[0]
@@ -135,7 +115,6 @@ export default function ChuyenTrangThai() {
         : ""
     );
 
-    // ✅ Set current semester info
     setCurrentSemester({
       ten_hoc_ky: foundHocKy.tenHocKy,
       ten_nien_khoa: foundNienKhoa.tenNienKhoa,
@@ -148,11 +127,7 @@ export default function ChuyenTrangThai() {
     });
   }, [hocKyHienHanh, hocKyNienKhoas]);
 
-  // ✅ Load phases từ API khi có selectedHocKyId
-  useEffect(() => {
-      "📦 phasesData type:",
-      Array.isArray(phasesData) ? "Array" : typeof phasesData
-    );
+   useEffect(() => {
 
     if (!selectedHocKyId) {
       setPhaseTimes(getEmptyPhaseTimes());
@@ -160,7 +135,6 @@ export default function ChuyenTrangThai() {
       return;
     }
 
-    // ✅ FIX: Check if phasesData is object with phases property OR direct array
     const phases =
       phasesData?.phases || (Array.isArray(phasesData) ? phasesData : []);
 
@@ -173,7 +147,6 @@ export default function ChuyenTrangThai() {
 
     const newPhaseTimes: Record<string, PhaseTime> = getEmptyPhaseTimes();
 
-    // ✅ Map API data to local state
     phases.forEach((phase: any) => {
       newPhaseTimes[phase.phase] = {
         start: toDatetimeLocal(phase.startAt),
@@ -183,7 +156,6 @@ export default function ChuyenTrangThai() {
 
     setPhaseTimes(newPhaseTimes);
 
-    // ✅ Xác định phase hiện tại
     const now = new Date();
     const currentPhaseItem = phases.find((p: any) => {
       const start = new Date(p.startAt);
@@ -192,9 +164,6 @@ export default function ChuyenTrangThai() {
     });
 
     if (currentPhaseItem) {
-        "✅ [ChuyenTrangThai] Current phase:",
-        currentPhaseItem.phase
-      );
       setCurrentPhase(currentPhaseItem.phase);
     } else {
       setCurrentPhase("");
@@ -467,7 +436,7 @@ export default function ChuyenTrangThai() {
         <HocKyNienKhoaShowSetup
           hocKyNienKhoas={hocKyNienKhoas}
           loadingHocKy={loadingHocKy}
-          submitting={submittingHocKy || updatingHocKyDate} // ✅ Add updatingHocKyDate
+          submitting={submittingHocKy || updatingHocKyDate}
           selectedNienKhoa={selectedNienKhoa}
           selectedHocKy={selectedHocKyId || ""}
           semesterStart={semesterStart}
