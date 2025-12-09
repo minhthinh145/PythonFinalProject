@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { svApi } from "../api/svApi";
+
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 export interface SinhVienInfoDTO {
     id: string;
@@ -24,7 +25,7 @@ export const useSinhVienInfo = () => {
             setLoading(true);
             try {
                 // Get from API /api/sv/profile
-                const response = await fetch("/api/sv/profile", {
+                const response = await fetch(`${API_URL}/sv/profile`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`,
                     },

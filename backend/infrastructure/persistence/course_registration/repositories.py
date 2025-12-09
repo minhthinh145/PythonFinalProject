@@ -3,6 +3,7 @@ Infrastructure Layer - Course Registration Repository Implementations
 """
 from typing import Optional, List, Any
 from django.db.models import F
+from django.utils import timezone
 from application.course_registration.interfaces import (
     ILopHocPhanRepository,
     IDangKyHocPhanRepository,
@@ -167,12 +168,13 @@ class LichSuDangKyRepository(ILichSuDangKyRepository):
             defaults={'id': uuid.uuid4()}
         )
         
-        # Create detail log
+        # Create detail log with current timestamp
         ChiTietLichSuDangKy.objects.using('neon').create(
             id=uuid.uuid4(),
             lich_su_dang_ky_id=lich_su.id,
             dang_ky_hoc_phan_id=dang_ky_hoc_phan_id,
-            hanh_dong=hanh_dong
+            hanh_dong=hanh_dong,
+            thoi_gian=timezone.now()
         )
 
     def find_by_sinh_vien_and_hoc_ky(self, sinh_vien_id: str, hoc_ky_id: str) -> Optional[LichSuDangKy]:

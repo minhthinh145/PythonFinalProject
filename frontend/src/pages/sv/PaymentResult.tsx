@@ -8,18 +8,17 @@ export default function PaymentResult() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // ✅ Extract orderId from DIFFERENT providers
   const orderId =
     searchParams.get("orderId") || // MoMo (custom param)
     searchParams.get("vnp_TxnRef") || // VNPay
-    searchParams.get("apptransid") || // ✅ ZaloPay (CRITICAL FIX)
+    searchParams.get("apptransid") || 
     "";
 
   const { status, loading, error } = usePaymentStatus(
     orderId,
-    20, // ✅ 20 attempts
-    1000, // ✅ Every 1s
-    2000 // ✅ Wait 2s before first poll
+    20, 
+    1000, 
+    2000
   );
 
   const [showDetails, setShowDetails] = useState(false);
