@@ -16,7 +16,15 @@ import TKBClassCard from "../tlk/tao-lop-hoc-phan/TKBClassCard";
 import type { ClassInstance } from "../tlk/tao-lop-hoc-phan/TaoThoiKhoaBieuModal";
 import type { HocKyItemDTO } from "../../features/common/types";
 
-const WEEK_DAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+const WEEK_DAYS = [
+  "Thứ 2",
+  "Thứ 3",
+  "Thứ 4",
+  "Thứ 5",
+  "Thứ 6",
+  "Thứ 7",
+  "Chủ Nhật",
+];
 
 export default function GVThoiKhoaBieu() {
   // Use common hooks
@@ -69,7 +77,7 @@ export default function GVThoiKhoaBieu() {
     [weeks, selectedWeekIndex]
   );
 
-  // Tính ngày trong tuần (T2 → CN)
+  // Tính ngày trong tuần (T2 → CN) dùng formatDate
   const weekDates = useMemo(() => {
     if (!selectedWeek) return Array(7).fill("");
 
@@ -80,6 +88,24 @@ export default function GVThoiKhoaBieu() {
       const day = new Date(monday);
       day.setDate(monday.getDate() + i);
       dates.push(formatDate(day));
+    }
+
+    return dates;
+  }, [selectedWeek]);
+
+  // Ngày hiển thị ngắn trong thead (dd/MM)
+  const weekDatesShort = useMemo(() => {
+    if (!selectedWeek) return Array(7).fill("");
+
+    const monday = new Date(selectedWeek.dateStart);
+    const dates: string[] = [];
+
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(monday);
+      day.setDate(monday.getDate() + i);
+      const d = String(day.getDate()).padStart(2, "0");
+      const m = String(day.getMonth() + 1).padStart(2, "0");
+      dates.push(`${d}/${m}`); // 22/10
     }
 
     return dates;
@@ -180,7 +206,18 @@ export default function GVThoiKhoaBieu() {
 
     return rooms.map((room) => (
       <tr key={room.id}>
-        <td className="tkb-room">{room.ma}</td>
+        {/* Cột PHÒNG trong tbody – nền nhạt + in đậm */}
+        <td
+          className="tkb-room"
+          style={{
+            backgroundColor: "rgba(0, 42, 85, 0.24)",
+            fontWeight: 700,
+            color: "rgb(23, 43, 77)",
+          }}
+        >
+          {room.ma}
+        </td>
+
         {weekDates.map((dateString, dayIndex) => {
           const items = getCellItems(room.id, dateString);
           return (
@@ -287,7 +324,7 @@ export default function GVThoiKhoaBieu() {
           {/* Tuần */}
           <div className="mr_20">
             <select
-              className="form__select"
+              className="form__select w__100p"
               value={selectedWeekIndex}
               onChange={(e) => setSelectedWeekIndex(Number(e.target.value))}
               disabled={!selectedHocKyId}
@@ -305,11 +342,21 @@ export default function GVThoiKhoaBieu() {
         {/* Week Navigation */}
         <div className="week-navigation-container">
           <button
-            className="btn__chung"
+            className="btn__chung w__40"
             onClick={handlePrevWeek}
             disabled={selectedWeekIndex === 1}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 0,
+            }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 640 640"
+              style={{ width: 16, height: 16, display: "block" }}
+            >
               <path
                 fill="#ffffff"
                 d="M491 100.8C478.1 93.8 462.3 94.5 450 102.6L192 272.1L192 128C192 110.3 177.7 96 160 96C142.3 96 128 110.3 128 128L128 512C512 529.7 142.3 544 160 544C177.7 544 192 529.7 192 512L192 367.9L450 537.5C462.3 545.6 478 546.3 491 539.3C504 532.3 512 518.8 512 504.1L512 136.1C512 121.4 503.9 107.9 491 100.9z"
@@ -317,22 +364,45 @@ export default function GVThoiKhoaBieu() {
             </svg>
           </button>
 
-          <button className="btn__chung" onClick={handleCurrentWeek}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+          <button
+            className="btn__chung"
+            onClick={handleCurrentWeek}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 4,
+            }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 640 640"
+              style={{ width: 16, height: 16, display: "block" }}
+            >
               <path
                 fill="#ffffff"
                 d="M80 259.8L289.2 345.9C299 349.9 309.4 352 320 352C330.6 352 341 349.9 350.8 345.9L593.2 246.1C602.2 242.4 608 233.7 608 224C608 214.3 602.2 205.6 593.2 201.9L350.8 102.1C341 98.1 330.6 96 320 96C309.4 96 299 98.1 289.2 102.1L46.8 201.9C37.8 205.6 32 214.3 32 224L32 520C32 533.3 42.7 544 56 544C69.3 544 80 533.3 80 520L80 259.8zM128 331.5L128 448C128 501 214 544 320 544C426 544 512 501 512 448L512 331.4L369.1 390.3C353.5 396.7 336.9 400 320 400C303.1 400 286.5 396.7 270.9 390.3L128 331.4z"
               />
-            </svg>{" "}
+            </svg>
             Hiện tại
           </button>
 
           <button
-            className="btn__chung"
+            className="btn__chung w__40"
             onClick={handleNextWeek}
             disabled={selectedWeekIndex === weeks.length}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 0,
+            }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 640 640"
+              style={{ width: 16, height: 16, display: "block" }}
+            >
               <path
                 fill="#ffffff"
                 d="M149 100.8C161.9 93.8 177.7 94.5 190 102.6L448 272.1L448 128C448 110.3 462.3 96 480 96C497.7 96 512 110.3 512 128L512 512C512 529.7 497.7 544 480 544C462.3 544 448 529.7 448 512L448 367.9L190 537.5C177.7 545.6 162 546.3 149 539.3C136 532.3 128 518.7 128 504L128 136C128 121.3 136.1 107.8 149 100.8z"
@@ -353,7 +423,9 @@ export default function GVThoiKhoaBieu() {
                     weekDates[i] === todayString ? "highlight-today" : ""
                   }
                 >
-                  {day}
+                  <div>
+                    {day} <br /> {weekDatesShort[i]}
+                  </div>
                 </th>
               ))}
             </tr>

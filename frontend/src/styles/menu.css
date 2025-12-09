@@ -79,6 +79,7 @@ a {
   align-items: center;
   border-radius: 50%;
   background: #fff;
+  flex-shrink: 0;
 }
 
 .user__icon-img {
@@ -98,7 +99,6 @@ a {
   font-size: 1.4rem;
   font-weight: 500;
   line-height: 1.57;
-  /* 167.467% */
 }
 
 .user__name__tlk,
@@ -200,10 +200,13 @@ button.btn__quanlylhp.active {
   padding-top: 0px;
   padding-bottom: 0px;
   border-left: 5px solid;
-  border-image: linear-gradient(rgba(108, 219, 141, 0) 25%,
+  border-image: linear-gradient(
+      rgba(108, 219, 141, 0) 25%,
       rgb(46, 48, 144) 25%,
       orange 75%,
-      rgba(108, 219, 141, 0) 75%) 1 / 1 / 0 stretch;
+      rgba(108, 219, 141, 0) 75%
+    )
+    1 / 1 / 0 stretch;
 }
 
 .btn__quanlysv.active {
@@ -494,7 +497,7 @@ button.btn__quanlylhp.active {
 }
 
 .form__group {
-  width: 100%;
+  /* width: 100%; */
 }
 
 .form__group__tracuu {
@@ -518,7 +521,7 @@ button.btn__quanlylhp.active {
   -webkit-appearance: none;
   background-image: url('data:image/svg+xml;utf8,<svg fill="%23999" height="12" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
   background-repeat: no-repeat;
-  background-position: right 14px center;
+  background-position: right 4px center;
   background-size: 36px;
   padding-right: 20px;
   /* Chừa chỗ cho icon */
@@ -567,8 +570,8 @@ button.btn__quanlylhp.active {
   /* 152.066% */
 }
 
-.form__group__tracuu input:focus+.form__floating-label,
-.form__group__tracuu input:not(:placeholder-shown)+.form__floating-label {
+.form__group__tracuu input:focus + .form__floating-label,
+.form__group__tracuu input:not(:placeholder-shown) + .form__floating-label {
   top: 0px;
   font-size: 1.2rem;
 }
@@ -693,6 +696,10 @@ button.btn__quanlylhp.active {
   width: 0px !important;
 }
 
+.w__40 {
+  width: 40px !important;
+}
+
 .w__48 {
   max-width: 48px;
 }
@@ -701,12 +708,20 @@ button.btn__quanlylhp.active {
   width: 60px !important;
 }
 
+.w__100 {
+  width: 100px !important;
+}
+
 .w__140 {
   width: 140px !important;
 }
 
 .w__200 {
   width: 200px !important;
+}
+
+.w__280 {
+  width: 280px !important;
 }
 
 .w__100p {
@@ -1135,6 +1150,11 @@ input.form__floating-label__quanly {
   margin: auto;
 }
 
+.bold {
+  font-weight: 600;
+  color: #172b4d;
+}
+
 .sub__title_chuyenphase {
   display: block;
   padding-bottom: 20px;
@@ -1178,6 +1198,7 @@ input.form__floating-label__quanly {
   font-size: 14px;
   color: #172b4d;
   font-weight: 600;
+  margin-bottom: 16px;
 }
 
 .note__dkhp {
@@ -1322,14 +1343,14 @@ input.form__floating-label__quanly {
 }
 
 /* Hiển thị tên ngành đã chọn hoặc placeholder */
-.md-hp-nganh>div:first-child {
+.md-hp-nganh > div:first-child {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 /* Danh sách ngành xổ xuống */
-.md-hp-nganh>div:last-child {
+.md-hp-nganh > div:last-child {
   position: absolute;
   top: 100%;
   left: 0;
@@ -1346,13 +1367,13 @@ input.form__floating-label__quanly {
 }
 
 /* Item checkbox ngành */
-.md-hp-nganh>div:last-child>div {
+.md-hp-nganh > div:last-child > div {
   display: flex;
   align-items: center;
   margin-bottom: 6px;
 }
 
-.md-hp-nganh>div:last-child>div:last-child {
+.md-hp-nganh > div:last-child > div:last-child {
   margin-bottom: 0;
 }
 
@@ -1839,7 +1860,7 @@ th {
 }
 
 /* Nhìn gọn hơn giữa các phase */
-.phases-form .phase-row+.phase-row {
+.phases-form .phase-row + .phase-row {
   border-top: 1px dashed #e5e7eb;
   padding-top: 12px;
 }
@@ -2175,4 +2196,102 @@ th {
   padding: 16px 18px 18px;
   background: linear-gradient(180deg, rgba(2, 6, 23, 0) 0%, #fafcff 100%);
   border-top: 1px solid var(--cp-border);
+}
+
+/* chuyen học ky hiện hanh  */
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px; /* thay cho inline style */
+  font-size: 14px;
+}
+
+.status-row .bold {
+  min-width: 80px; /* giúp các label thẳng hàng */
+}
+
+/* Học kỳ + niên khóa */
+.span__hk-nk {
+  font-weight: 500;
+}
+
+/* Base style cho mọi badge/span trạng thái */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 9999px; /* bo tròn pill */
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+/* Biến thể màu (tuỳ bạn chỉnh) */
+.status-pill--active {
+  color: #16a34a;
+  background-color: #dcfce7;
+}
+
+.status-pill--time {
+  color: #cf373d;
+  background-color: #eccdcf;
+}
+
+.status-pill--neutral {
+  color: #124874;
+  background-color: #e0ebf3;
+}
+
+/* tài liệu list  */
+
+.tabs {
+  display: flex;
+  align-items: center;
+}
+
+/* Tất cả button trong tabs đều là flex để căn giữa */
+.tabs > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Nút back icon-only */
+.btn-back-icon {
+  padding: 0; /* icon-only, bỏ padding text nếu cần */
+}
+
+/* Kích thước icon trong nút back */
+.btn-back-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* đăng ký học phần  */
+.tabs-container {
+  display: flex;
+  align-items: center; /* căn các label thẳng hàng nhau */
+  gap: 24px;
+}
+
+.tab-btn {
+  display: inline-flex; /* rất quan trọng */
+  align-items: center; /* căn giữa input + text theo chiều dọc */
+  cursor: pointer;
+  color: #143266;
+  margin-top: 6px;
+}
+
+.tab-btn input[type="radio"] {
+  margin-right: 6px;
+  vertical-align: middle; /* chống lệch nhẹ */
+  margin-top: 0;
+  accent-color: #143266;
+}
+
+.tab-btn span {
+  line-height: 1; /* tránh chữ bị lệch xuống */
+  display: inline-block;
 }

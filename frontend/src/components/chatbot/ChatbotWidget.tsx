@@ -19,7 +19,7 @@ const uid = () => Math.random().toString(36).slice(2);
 
 /** ====== Draggable FAB config ====== */
 const FAB_SIZE = 56;
-const PANEL_W = 420; // thoáng hơn một chút
+const PANEL_W = 420;
 const PANEL_H = 560;
 const EDGE_PAD = 12;
 const CLICK_DRAG_THRESHOLD = 6;
@@ -29,7 +29,7 @@ const clamp = (n: number, min: number, max: number) =>
   Math.max(min, Math.min(max, n));
 const isUser = (m: Message): m is UserMsg => m.role === "user";
 
-/** ====== Simple markdown renderer (bold, list, linebreak, code inline) ====== */
+/** ====== Simple markdown renderer ====== */
 function toHtml(md: string): string {
   if (!md) return "";
   let s = md;
@@ -53,13 +53,12 @@ function toHtml(md: string): string {
     const text = m.replace(/^\d+[\.\)]\s/, "");
     return `<li>${text}</li>`;
   });
-  // gộp li → ul (đủ tốt cho đoạn ngắn)
+  // gộp li → ul
   s = s.replace(
     /(?:<li>[\s\S]*?<\/li>)/g,
     (block) => `<ul class="cbt-ul">${block}</ul>`
   );
 
-  // thu gọn xuống dòng
   s = s.replace(/\r/g, "");
   s = s.replace(/[ \t]+\n/g, "\n");
   s = s.replace(/\n{3,}/g, "\n\n");
@@ -252,9 +251,9 @@ function renderBotPayload(
   return tools(<div className="cbt-bubble">{JSON.stringify(payload)}</div>);
 }
 
-/** ====== Màn chọn chức năng ====== */
+/** ====== Các chức năng (không gồm auto) ====== */
 type Choice = {
-  key: DomainKey | "auto";
+  key: DomainKey;
   title: string;
   desc: string;
   emoji: string;
@@ -262,32 +261,35 @@ type Choice = {
 
 const CHOICES: Choice[] = [
   {
-    key: "auto",
-    title: "Trợ lý tổng hợp",
-    desc: "Tự đoán nguồn phù hợp.",
-    emoji: "✨",
+    key: "phong",
+    title: "Phòng/Trung tâm",
+    desc: "Thông tin liên hệ, chức năng.",
+    emoji: "🏢",
   },
   {
     key: "bang",
-    title: "Tra cứu Bảng",
+    title: "Tra cứu bảng",
     desc: "Thang điểm, học bổng…",
     emoji: "📊",
   },
   {
-    key: "phong",
-    title: "Phòng/Trung tâm",
-    desc: "Thông tin liên hệ.",
-    emoji: "🏢",
+    key: "monhoc",
+    title: "Môn học",
+    desc: "Mô tả, đề cương…",
+    emoji: "📚",
   },
-  { key: "monhoc", title: "Môn học", desc: "Mô tả, đề cương…", emoji: "📚" },
-  { key: "khoa", title: "Khoa", desc: "Thông tin các khoa.", emoji: "🏫" },
+  {
+    key: "khoa",
+    title: "Khoa",
+    desc: "Thông tin các khoa.",
+    emoji: "🏫",
+  },
   {
     key: "nganh",
     title: "Ngành học",
-    desc: "Cơ hội nghề nghiệp.",
+    desc: "Cơ hội nghề nghiệp…",
     emoji: "🎓",
   },
-  // NEW
   {
     key: "fileqa",
     title: "File QA",
@@ -299,15 +301,18 @@ const CHOICES: Choice[] = [
 export default function ChatbotWidget() {
   /** ====== UI state ====== */
   const [open, setOpen] = useState(false);
-  const [modePicked, setModePicked] = useState<boolean>(false);
-  const [domain, setDomain] = useState<DomainKey | "auto">("auto");
+  const [modePicked, setModePicked] = useState<boolean>(false); // false = màn chọn chức năng
+  const [domain, setDomain] = useState<DomainKey | "auto">("auto"); // Trợ lý tổng hợp
 
   const [messages, setMessages] = useState<Message[]>([
     {
       id: uid(),
       role: "system",
       payload: {
-        text: "Xin chào 👋 Mời bạn chọn chức năng trước khi đặt câu hỏi.",
+        text:
+          "Xin chào 👋\n" +
+          "- Bạn có thể **chọn 1 trong 6 chức năng** ở trên.\n" +
+          "- Hoặc nhập câu hỏi ở ô chat bên dưới để dùng **Trợ lý tổng hợp (Auto)**.",
       },
     },
   ]);
@@ -320,8 +325,10 @@ export default function ChatbotWidget() {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (open) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [open, messages.length]);
+    if (open && modePicked) {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [open, modePicked, messages.length]);
 
   /** ====== FAB position (draggable + persist) ====== */
   const [fabPos, setFabPos] = useState<{ x: number; y: number }>(() => {
@@ -435,22 +442,26 @@ export default function ChatbotWidget() {
       {
         id: uid(),
         role: "system",
-        payload: { text: intro || "Bạn đã chuyển chức năng. Hãy đặt câu hỏi!" },
+        payload: {
+          text:
+            intro ||
+            "Bạn đã chuyển chức năng. Hãy đặt câu hỏi cho chức năng mới nhé!",
+        },
       },
     ]);
   };
 
-  const handlePick = (k: DomainKey | "auto") => {
+  const handlePick = (k: DomainKey) => {
     setDomain(k);
     setModePicked(true);
     resetChat(
-      k === "auto"
-        ? "Bạn đang ở chế độ Trợ lý tổng hợp (Auto)."
-        : `Bạn đang ở chức năng: ${String(k).toUpperCase()}.`
+      `Bạn đang ở chức năng: **${
+        CHOICES.find((c) => c.key === k)?.title ?? k.toUpperCase()
+      }**.`
     );
   };
 
-  /** ====== Chat logic ====== */
+  /** ====== Gửi từ màn chat chính ====== */
   const send = async () => {
     const q = input.trim();
     if (!q || loading) return;
@@ -482,10 +493,64 @@ export default function ChatbotWidget() {
     }
   };
 
-  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const onKeyDownChat = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       send();
+    }
+    if (e.key === "Escape") setOpen(false);
+  };
+
+  /** ====== Gửi từ màn chọn chức năng (dùng Trợ lý tổng hợp) ====== */
+  const sendFromIntro = async () => {
+    const q = input.trim();
+    if (!q || loading) return;
+
+    const userMsg: UserMsg = { id: uid(), role: "user", text: q };
+
+    // chuyển sang chế độ chat + auto
+    setDomain("auto");
+    setModePicked(true);
+    setMessages([
+      {
+        id: uid(),
+        role: "system",
+        payload: {
+          text: "Bạn đang ở chế độ **Trợ lý tổng hợp (Auto)**. Hệ thống sẽ tự chọn nguồn phù hợp.",
+        },
+      },
+      userMsg,
+    ]);
+    setInput("");
+    setLoading(true);
+
+    try {
+      const chosen: DomainKey = guessDomain(q); // auto đoán domain
+      const raw = await queryByDomain(chosen, q, topK);
+      const payload = formatForDomain(chosen, raw);
+      const botMsg: BotMsg = { id: uid(), role: "bot", payload };
+      setMessages((m) => [...m, botMsg]);
+    } catch (err: any) {
+      setMessages((m) => [
+        ...m,
+        {
+          id: uid(),
+          role: "system",
+          payload: {
+            text:
+              "⚠️ Xin lỗi, không thể xử lý yêu cầu.\n" + (err?.message || ""),
+          },
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onKeyDownIntro = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendFromIntro();
     }
     if (e.key === "Escape") setOpen(false);
   };
@@ -504,7 +569,7 @@ export default function ChatbotWidget() {
         💬
       </button>
 
-      {/* Panel: Pick Screen */}
+      {/* Panel: Màn chọn chức năng + ô chat trợ lý tổng hợp */}
       {open && !modePicked && (
         <div
           className="cbt-panel"
@@ -524,6 +589,7 @@ export default function ChatbotWidget() {
           </div>
 
           <div className="cbt-body cbt-narrow">
+            {/* 6 chức năng */}
             <div className="cbt-grid">
               {CHOICES.map((c) => (
                 <button
@@ -539,14 +605,31 @@ export default function ChatbotWidget() {
             </div>
 
             <div className="cbt-hint">
-              Gợi ý: Bạn có thể chuyển nhanh giữa các nguồn ngay trong phần
-              chat.
+              Hoặc bạn có thể hỏi nhanh bên dưới, hệ thống sẽ dùng{" "}
+              <strong>Trợ lý tổng hợp</strong>.
+            </div>
+
+            {/* Ô chat ở màn intro – dùng auto */}
+            <div className="cbt-input" style={{ marginTop: 8 }}>
+              <input
+                value={input}
+                placeholder="Nhập câu hỏi cho Trợ lý tổng hợp…"
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={onKeyDownIntro}
+                disabled={loading}
+              />
+              <button
+                onClick={sendFromIntro}
+                disabled={loading || !input.trim()}
+              >
+                Hỏi ngay
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Panel Chat */}
+      {/* Panel Chat chính */}
       {open && modePicked && (
         <div
           className="cbt-panel"
@@ -556,10 +639,32 @@ export default function ChatbotWidget() {
             <div className="cbt-title">
               {domain === "auto"
                 ? "Trợ lý tổng hợp"
-                : `Chatbot ${domain.toUpperCase()}`}
+                : `Chatbot ${String(domain).toUpperCase()}`}
             </div>
             <div className="cbt-actions">
               <div className="cbt-switches">
+                {/* Nút Trợ lý tổng hợp */}
+                <button
+                  className="cbt-minibtn"
+                  style={{
+                    background:
+                      domain === "auto"
+                        ? "rgba(255,255,255,.28)"
+                        : "rgba(255,255,255,.12)",
+                    borderColor: "rgba(255,255,255,.35)",
+                  }}
+                  onClick={() => {
+                    setDomain("auto");
+                    resetChat(
+                      "Bạn đang ở chế độ **Trợ lý tổng hợp (Auto)**. Cứ hỏi tự do, hệ thống sẽ tự chọn nguồn phù hợp."
+                    );
+                  }}
+                  title="Trợ lý tổng hợp"
+                >
+                  Trợ lý tổng hợp
+                </button>
+
+                {/* 6 chức năng */}
                 {CHOICES.map((c) => (
                   <button
                     key={c.key}
@@ -572,32 +677,36 @@ export default function ChatbotWidget() {
                       borderColor: "rgba(255,255,255,.35)",
                     }}
                     onClick={() => {
-                      setDomain(c.key as DomainKey | "auto");
-                      resetChat(
-                        c.key === "auto"
-                          ? "Bạn đang ở chế độ Trợ lý tổng hợp (Auto)."
-                          : `Bạn đang ở chức năng: ${String(
-                              c.key
-                            ).toUpperCase()}.`
-                      );
+                      setDomain(c.key);
+                      resetChat(`Bạn đang ở chức năng: **${c.title}**.`);
                     }}
-                    title={`Nguồn: ${c.title}`}
+                    title={c.title}
                   >
                     {c.title}
                   </button>
                 ))}
               </div>
 
+              {/* Quay lại màn chọn */}
               <button
                 className="cbt-minibtn"
                 onClick={() => {
                   setModePicked(false);
                   setInput("");
-                  resetChat("Xin chào 👋 Mời bạn chọn chức năng.");
+                  setMessages([
+                    {
+                      id: uid(),
+                      role: "system",
+                      payload: {
+                        text: "Xin chào 👋\nBạn có thể chọn 1 chức năng hoặc hỏi nhanh cho Trợ lý tổng hợp bên dưới.",
+                      },
+                    },
+                  ]);
                 }}
               >
                 ← Chọn lại
               </button>
+
               <button
                 className="cbt-close"
                 onClick={() => setOpen(false)}
@@ -646,7 +755,7 @@ export default function ChatbotWidget() {
               value={input}
               placeholder="Nhập câu hỏi và nhấn Enter…"
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={onKeyDown}
+              onKeyDown={onKeyDownChat}
               disabled={loading}
             />
             <button onClick={send} disabled={loading || !input.trim()}>

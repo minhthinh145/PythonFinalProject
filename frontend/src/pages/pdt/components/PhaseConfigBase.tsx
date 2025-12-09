@@ -222,16 +222,16 @@ export const PhaseConfigBase = forwardRef<PhaseConfigRef, PhaseConfigBaseProps>(
         return (
           <div className="khoa-config-view">
             <div className="khoa-config-view__title">
-              📋 Cấu hình hiện tại: Toàn trường
+              Cấu hình hiện tại: Toàn trường
             </div>
             {toanTruongDot ? (
               <div className="khoa-config-view__toan-truong">
                 <div>
-                  <strong>Bắt đầu:</strong>{" "}
+                  <strong className="start_time">Bắt đầu:</strong>{" "}
                   {formatDateTime(toanTruongDot.thoiGianBatDau)}
                 </div>
                 <div>
-                  <strong>Kết thúc:</strong>{" "}
+                  <strong className="end_time">Kết thúc:</strong>{" "}
                   {formatDateTime(toanTruongDot.thoiGianKetThuc)}
                 </div>
               </div>
@@ -295,10 +295,7 @@ export const PhaseConfigBase = forwardRef<PhaseConfigRef, PhaseConfigBaseProps>(
             ) : isEditMode ? (
               <>Lưu và xem</>
             ) : (
-              <>
-              
-                Chỉnh sửa
-              </>
+              <>Chỉnh sửa</>
             )}
           </button>
         </div>

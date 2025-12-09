@@ -243,7 +243,7 @@ export function PhaseHocKyNienKhoaSetup({
                         </svg>
                       </button>
                       <button
-                        className="khoa-config-item__remove-btn h__35__w__35"
+                        className="khoa-config-item__remove-btn df_center h__35__w__35"
                         onClick={handleCancelEdit}
                         style={{ padding: "6px 12px", fontSize: "14px" }}
                         disabled={submitting}

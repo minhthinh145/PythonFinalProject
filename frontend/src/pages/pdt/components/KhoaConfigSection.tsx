@@ -249,7 +249,7 @@ export const KhoaConfigSection = forwardRef<
         return (
           <div className="khoa-config-view">
             <div className="khoa-config-view__title">
-              📋 Cấu hình hiện tại: Toàn trường
+              Cấu hình hiện tại: Toàn trường
             </div>
             {toanTruongDot ? (
               <div className="khoa-config-view__toan-truong">
@@ -275,7 +275,7 @@ export const KhoaConfigSection = forwardRef<
         return (
           <div className="khoa-config-view">
             <div className="khoa-config-view__title">
-              📋 Cấu hình hiện tại: Riêng từng khoa
+              Cấu hình hiện tại: Riêng từng khoa
             </div>
             {khoaDots.length > 0 ? (
               <div className="khoa-config-view__list">

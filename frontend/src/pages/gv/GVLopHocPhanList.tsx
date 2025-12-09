@@ -33,7 +33,7 @@ export default function GVLopHocPhanList() {
                   <th></th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody style={{ color: "#172b4d" }}>
                 {rows.map((r) => (
                   <tr key={r.id}>
                     <td>{r.ma_lop}</td>
@@ -47,6 +47,7 @@ export default function GVLopHocPhanList() {
                     </td>
                     <td>
                       <button
+                        className="btn__chung"
                         onClick={() => navigate(`/gv/lop-hoc-phan/${r.id}`)}
                       >
                         Quản lý

@@ -408,24 +408,47 @@ export default function DangKyHocPhan() {
 
         {/* Tabs */}
         <div className="tabs-container" style={{ marginTop: 20 }}>
-          <button
+          {/* Môn chung */}
+          <label
             className={`tab-btn ${activeTab === "monChung" ? "active" : ""}`}
-            onClick={() => setActiveTab("monChung")}
           >
-            Môn chung
-          </button>
-          <button
+            <input
+              type="radio"
+              name="loaiMon"
+              value="monChung"
+              checked={activeTab === "monChung"}
+              onChange={() => setActiveTab("monChung")}
+            />
+            <span>Môn chung</span>
+          </label>
+
+          {/* Bắt buộc */}
+          <label
             className={`tab-btn ${activeTab === "batBuoc" ? "active" : ""}`}
-            onClick={() => setActiveTab("batBuoc")}
           >
-            Bắt buộc
-          </button>
-          <button
+            <input
+              type="radio"
+              name="loaiMon"
+              value="batBuoc"
+              checked={activeTab === "batBuoc"}
+              onChange={() => setActiveTab("batBuoc")}
+            />
+            <span>Bắt buộc</span>
+          </label>
+
+          {/* Tự chọn */}
+          <label
             className={`tab-btn ${activeTab === "tuChon" ? "active" : ""}`}
-            onClick={() => setActiveTab("tuChon")}
           >
-            Tự chọn
-          </button>
+            <input
+              type="radio"
+              name="loaiMon"
+              value="tuChon"
+              checked={activeTab === "tuChon"}
+              onChange={() => setActiveTab("tuChon")}
+            />
+            <span>Tự chọn</span>
+          </label>
         </div>
 
         {/* Fieldset 1: Đăng ký học phần */}
@@ -527,7 +550,7 @@ export default function DangKyHocPhan() {
                         Chuyển lớp
                       </button>
                       <button
-                        className="btn__cancel"
+                        className="btn-cancel"
                         style={{ padding: "5px 10px", fontSize: "12px" }}
                         onClick={() => handleHuyDangKySingle(lop.lopId)}
                         disabled={submitting}
@@ -543,7 +566,7 @@ export default function DangKyHocPhan() {
 
           <div style={{ marginTop: "1rem" }}>
             <button
-              className="btn__cancel mb_10"
+              className="btn-cancel w__200 h__40 mb_10"
               onClick={handleHuyDangKy}
               disabled={submitting || selectedToCancelIds.length === 0}
             >

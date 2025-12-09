@@ -57,7 +57,7 @@
   font-size: 28px;
   /* Tăng size nút đóng */
   cursor: pointer;
-  color: #6b7280;
+  color: #cf373d;
   padding: 4px 12px;
   line-height: 1;
   transition: all 0.2s;
@@ -65,8 +65,9 @@
 }
 
 .preview-close:hover {
-  color: #1f2937;
-  background: #f3f4f6;
+  color: #ffffff;
+  background: #cf373d;
+  transition: all 0.2s;
 }
 
 .preview-body {
