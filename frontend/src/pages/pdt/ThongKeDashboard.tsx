@@ -284,156 +284,169 @@ export default function BaoCaoThongKe() {
   const loading = loadingOverview || loadingKhoa;
 
   return (
-    <div style={{ padding: 16 }}>
-      {/* Filters */}
-      <div
-        className="df"
-        style={{
-          gap: 8,
-          alignItems: "center",
-          flexWrap: "wrap",
-          marginBottom: 12,
-        }}
-      >
-        {/* ✅ Use HocKySelector without auto-select */}
-        <HocKySelector onHocKyChange={setHocKyId} autoSelectCurrent={false} />
-
-        <div>
-          {/* Khoa */}
-          <select
-            className="form__input form__select mr_8"
-            value={khoaId}
-            onChange={(e) => {
-              setKhoaId(e.target.value);
-              setNganhId("");
-            }}
-          >
-            <option value="">Tất cả khoa</option>
-            {khoas.map((k) => (
-              <option key={k.id} value={k.id}>
-                {k.tenKhoa}
-              </option>
-            ))}
-          </select>
-
-          {/* Ngành */}
-          <select
-            className="form__input form__select"
-            value={nganhId}
-            onChange={(e) => setNganhId(e.target.value)}
-            disabled={!khoaId}
-          >
-            <option value="">Tất cả ngành</option>
-            {filteredNganhs.map((n) => (
-              <option key={n.id} value={n.id}>
-                {n.tenNganh}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <button
-          onClick={loadReports}
-          className="btn__update h__40"
-          disabled={loading}
-        >
-          {loading ? "Đang tải..." : "Tải thống kê"}
-        </button>
-
-        <button
-          onClick={handleExportExcel}
-          className="btn__update h__40"
-          disabled={exporting}
-        >
-          {exporting ? "Đang xuất..." : "Xuất Excel"}
-        </button>
-
-        <button
-          onClick={handleExportPDF}
-          className="btn__update h__40"
-          disabled={exporting}
-        >
-          {exporting ? "Đang xuất..." : "Xuất PDF"}
-        </button>
+    <section className="main__body">
+      <div className="body__title">
+        <p className="body__title-text">THỐNG KÊ DỮ LIỆU</p>
       </div>
 
-      {/* Overview cards */}
-      {overview && (
+      <div className="body__inner">
+        {/* Filters */}
         <div
           className="df"
           style={{
-            gap: 12,
+            gap: 8,
+            alignItems: "center",
             flexWrap: "wrap",
             marginBottom: 12,
+            paddingBottom: 12,
+            borderBottom: "1px solid #eee",
           }}
         >
-          <StatCard label="SV đã đăng ký (unique)" value={overview.svUnique} />
-          <StatCard label="Bản ghi đăng ký" value={overview.soDangKy} />
-          <StatCard label="Lớp học phần mở" value={overview.soLopHocPhan} />
-          <StatCard
-            label="Thực thu"
-            value={currency(overview.taiChinh.thuc_thu)}
-          />
-          <StatCard
-            label="Kỳ vọng"
-            value={currency(overview.taiChinh.ky_vong)}
-          />
+          {/* ✅ Use HocKySelector without auto-select */}
+          <HocKySelector onHocKyChange={setHocKyId} autoSelectCurrent={false} />
+
+          <div>
+            {/* Khoa */}
+            <select
+              className="form__input form__select mr_8"
+              value={khoaId}
+              onChange={(e) => {
+                setKhoaId(e.target.value);
+                setNganhId("");
+              }}
+            >
+              <option value="">Tất cả khoa</option>
+              {khoas.map((k) => (
+                <option key={k.id} value={k.id}>
+                  {k.tenKhoa}
+                </option>
+              ))}
+            </select>
+
+            {/* Ngành */}
+            <select
+              className="form__input form__select"
+              value={nganhId}
+              onChange={(e) => setNganhId(e.target.value)}
+              disabled={!khoaId}
+            >
+              <option value="">Tất cả ngành</option>
+              {filteredNganhs.map((n) => (
+                <option key={n.id} value={n.id}>
+                  {n.tenNganh}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            onClick={loadReports}
+            className="btn__update h__40"
+            disabled={loading}
+          >
+            {loading ? "Đang tải..." : "Tải thống kê"}
+          </button>
+
+          <button
+            onClick={handleExportExcel}
+            className="btn__update h__40"
+            disabled={exporting}
+          >
+            {exporting ? "Đang xuất..." : "Xuất Excel"}
+          </button>
+
+          <button
+            onClick={handleExportPDF}
+            className="btn__update h__40"
+            disabled={exporting}
+          >
+            {exporting ? "Đang xuất..." : "Xuất PDF"}
+          </button>
         </div>
-      )}
 
-      {/* Charts Grid: 2 cột -> 2 hàng cho 4 chart */}
-      {loading ? (
-        <p>Đang tải dữ liệu...</p>
-      ) : (
-        <div
-          className="charts-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            gap: 12,
-          }}
-        >
-          {/* Hàng 1 */}
-          <ChartCard
-            title="Đăng ký theo khoa"
-            chartRef={refKhoa as React.RefObject<HTMLDivElement>}
-            height={320}
-            conclusion={ketLuanKhoa || undefined}
+        {/* Overview cards */}
+        {overview && (
+          <div
+            className="df"
+            style={{
+              gap: 12,
+              flexWrap: "wrap",
+              marginBottom: 12,
+            }}
           >
-            <DangKyTheoKhoaChart data={dkTheoKhoa} />
-          </ChartCard>
+            <StatCard
+              label="SV đã đăng ký (unique)"
+              value={overview.svUnique}
+            />
+            <StatCard label="Bản ghi đăng ký" value={overview.soDangKy} />
+            <StatCard label="Lớp học phần mở" value={overview.soLopHocPhan} />
+            <StatCard
+              label="Thực thu"
+              value={currency(overview.taiChinh.thuc_thu)}
+            />
+            <StatCard
+              label="Kỳ vọng"
+              value={currency(overview.taiChinh.ky_vong)}
+            />
+          </div>
+        )}
 
-          <ChartCard
-            title={`Đăng ký theo ngành ${
-              khoaId ? "(lọc theo khoa đã chọn)" : ""
-            }`}
-            chartRef={refNganh as React.RefObject<HTMLDivElement>}
-            height={320}
-            conclusion={ketLuanNganh || undefined}
+        {/* Charts Grid: 2 cột -> 2 hàng cho 4 chart */}
+        {loading ? (
+          <p>Đang tải dữ liệu...</p>
+        ) : (
+          <div
+            className="charts-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+              gap: 12,
+            }}
           >
-            <DangKyTheoNganhChart data={dkTheoNganh} />
-          </ChartCard>
+            {/* Hàng 1 */}
+            <ChartCard
+              title="Đăng ký theo khoa"
+              chartRef={refKhoa as React.RefObject<HTMLDivElement>}
+              height={320}
+              conclusion={ketLuanKhoa || undefined}
+            >
+              <DangKyTheoKhoaChart data={dkTheoKhoa} />
+            </ChartCard>
 
-          {/* Hàng 2 */}
-          <ChartCard
-            title={`Tải giảng viên ${khoaId ? "(lọc theo khoa đã chọn)" : ""}`}
-            chartRef={refGV as React.RefObject<HTMLDivElement>}
-            height={360}
-            conclusion={ketLuanGV || undefined}
-          >
-            <TaiGiangVienChart data={taiGV} />
-          </ChartCard>
+            <ChartCard
+              title={`Đăng ký theo ngành ${
+                khoaId ? "(lọc theo khoa đã chọn)" : ""
+              }`}
+              chartRef={refNganh as React.RefObject<HTMLDivElement>}
+              height={320}
+              conclusion={ketLuanNganh || undefined}
+            >
+              <DangKyTheoNganhChart data={dkTheoNganh} />
+            </ChartCard>
 
-          <ChartCard
-            title="Tài chính học phí"
-            chartRef={refFinance as React.RefObject<HTMLDivElement>}
-            height={320}
-            conclusion={overview?.ketLuan || undefined}
-          >
-            <TaiChinhChart data={financeData} formatCurrency={currency} />
-          </ChartCard>
-        </div>
-      )}
-    </div>
+            {/* Hàng 2 */}
+            <ChartCard
+              title={`Tải giảng viên ${
+                khoaId ? "(lọc theo khoa đã chọn)" : ""
+              }`}
+              chartRef={refGV as React.RefObject<HTMLDivElement>}
+              height={360}
+              conclusion={ketLuanGV || undefined}
+            >
+              <TaiGiangVienChart data={taiGV} />
+            </ChartCard>
+
+            <ChartCard
+              title="Tài chính học phí"
+              chartRef={refFinance as React.RefObject<HTMLDivElement>}
+              height={320}
+              conclusion={overview?.ketLuan || undefined}
+            >
+              <TaiChinhChart data={financeData} formatCurrency={currency} />
+            </ChartCard>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

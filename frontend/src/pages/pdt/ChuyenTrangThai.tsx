@@ -58,7 +58,7 @@ export default function ChuyenTrangThai() {
   const { createBulkKyPhase, loading: submittingPhase } =
     useCreateBulkKyPhase();
   const { updateDotGhiDanh, loading: ghiDanhLoading } = useUpdateDotGhiDanh();
-  const { updateHocKyDate, loading: updatingHocKyDate } = useUpdateHocKyDate(); 
+  const { updateHocKyDate, loading: updatingHocKyDate } = useUpdateHocKyDate();
 
   const { data: hocKyHienHanh, loading: loadingHienHanh } = useHocKyHienHanh();
 
@@ -84,7 +84,6 @@ export default function ChuyenTrangThai() {
 
   useEffect(() => {
     if (!hocKyHienHanh || hocKyNienKhoas.length === 0) return;
-
 
     const foundNienKhoa = hocKyNienKhoas.find((nk) =>
       nk.hocKy.some((hk) => hk.id === hocKyHienHanh.id)
@@ -127,8 +126,7 @@ export default function ChuyenTrangThai() {
     });
   }, [hocKyHienHanh, hocKyNienKhoas]);
 
-   useEffect(() => {
-
+  useEffect(() => {
     if (!selectedHocKyId) {
       setPhaseTimes(getEmptyPhaseTimes());
       setCurrentPhase("");
@@ -143,7 +141,6 @@ export default function ChuyenTrangThai() {
       setCurrentPhase("");
       return;
     }
-
 
     const newPhaseTimes: Record<string, PhaseTime> = getEmptyPhaseTimes();
 
@@ -215,7 +212,6 @@ export default function ChuyenTrangThai() {
 
     // ✅ Step 1: Update ngày bắt đầu/kết thúc trước
     const updateDateResult = await updateHocKyDate(datePayload);
-
 
     if (!updateDateResult.isSuccess) {
       setSemesterMessage(
@@ -349,7 +345,6 @@ export default function ChuyenTrangThai() {
     );
     const hocKy = nienKhoa?.hocKy.find((hk) => hk.id === selectedHocKyId);
 
-
     if (hocKy) {
       // ✅ WORKAROUND: Chỉ set nếu BE đã gửi, không thì để user tự nhập
       const startDate = hocKy.ngayBatDau
@@ -358,7 +353,6 @@ export default function ChuyenTrangThai() {
       const endDate = hocKy.ngayKetThuc
         ? new Date(hocKy.ngayKetThuc).toISOString().split("T")[0]
         : semesterEnd; // ✅ Giữ giá trị cũ nếu không có từ BE
-
 
       setSemesterStart(startDate);
       setSemesterEnd(endDate);
@@ -377,7 +371,7 @@ export default function ChuyenTrangThai() {
 
   // ✅ Mock phase time data (TODO: fetch from API)
   const ghiDanhPhaseData = {
-    label: "📝 Phase Ghi Danh",
+    label: "Phase Ghi Danh",
     start: phaseTimes["ghi_danh"]?.start || "",
     end: phaseTimes["ghi_danh"]?.end || "",
     status: (currentPhase === "ghi_danh" ? "active" : "upcoming") as
@@ -387,7 +381,7 @@ export default function ChuyenTrangThai() {
   };
 
   const dangKyPhaseData = {
-    label: "📚 Phase Đăng Ký Học Phần",
+    label: "Phase Đăng Ký Học Phần",
     start: phaseTimes["dang_ky_hoc_phan"]?.start || "",
     end: phaseTimes["dang_ky_hoc_phan"]?.end || "",
     status: (currentPhase === "dang_ky_hoc_phan" ? "active" : "upcoming") as

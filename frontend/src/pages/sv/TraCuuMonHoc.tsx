@@ -94,7 +94,7 @@ export default function TraCuuMonHoc() {
                   </span>
                 </legend>
 
-                <table className="table">
+                <table className="table" style={{ color: "#172b4d" }}>
                   <thead>
                     <tr>
                       <th>STT</th>

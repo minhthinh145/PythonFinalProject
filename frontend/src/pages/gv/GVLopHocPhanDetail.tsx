@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import "../../styles/reset.css";
 import "../../styles/menu.css";
 import { useGVLopHocPhanDetail } from "../../features/gv/hooks";
@@ -7,6 +7,7 @@ import TaiLieuUpload from "./components/TaiLieuUpload";
 import TaiLieuList from "./components/TaiLieuList";
 
 export default function GVLopHocPhanDetail() {
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [tab, setTab] = useState<"docs" | "sv" | "grades">("docs");
 
@@ -36,6 +37,8 @@ export default function GVLopHocPhanDetail() {
       </div>
 
       <div className="body__inner">
+        {/* Nút trở về */}
+
         {loading && (
           <p style={{ textAlign: "center", padding: 20 }}>
             Đang tải dữ liệu...
@@ -47,19 +50,39 @@ export default function GVLopHocPhanDetail() {
             {/* Tabs */}
             <div className="tabs" style={{ marginBottom: 12 }}>
               <button
-                className={tab === "docs" ? "active" : ""}
+                className="btn__chung h__40 w__60 mr_20 btn-back-icon"
+                onClick={() => navigate(-1)} // quay lại trang trước
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
+                  <path
+                    fill="#ffffffff"
+                    d="M9.4 278.6c-12.5-12.5-12.5-32.8 0-45.3l128-128c9.2-9.2 22.9-11.9 34.9-6.9S192 115.1 192 128l0 64 336 0c26.5 0 48 21.5 48 48l0 32c0 26.5-21.5 48-48 48l-336 0 0 64c0 12.9-7.8 24.6-19.8 29.6s-25.7 2.2-34.9-6.9l-128-128z"
+                  />
+                </svg>
+              </button>
+
+              <button
+                className={`btn__update h__40 w__100 mr_20 tab-btn ${
+                  tab === "docs" ? "active" : ""
+                }`}
                 onClick={() => setTab("docs")}
               >
                 Tài liệu
               </button>
+
               <button
-                className={tab === "sv" ? "active" : ""}
+                className={`btn__update h__40 w__100 mr_20 tab-btn ${
+                  tab === "sv" ? "active" : ""
+                }`}
                 onClick={() => setTab("sv")}
               >
                 Sinh viên
               </button>
+
               <button
-                className={tab === "grades" ? "active" : ""}
+                className={`btn__update h__40 w__100 mr_20 tab-btn ${
+                  tab === "grades" ? "active" : ""
+                }`}
                 onClick={() => setTab("grades")}
               >
                 Điểm
@@ -136,7 +159,6 @@ export default function GVLopHocPhanDetail() {
                     <tbody>
                       {students.map((s) => (
                         <tr key={s.id}>
-                          {" "}
                           {/* Use UUID as key */}
                           <td>{s.mssv}</td>
                           <td>{s.hoTen}</td>

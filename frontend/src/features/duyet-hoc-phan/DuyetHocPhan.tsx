@@ -107,10 +107,11 @@ export default function DuyetHocPhan({
         setSelectedHocKyId(hocKyHienHanh.id);
         setTempSelectedHocKyId(hocKyHienHanh.id);
         setTempSelectedNienKhoa(foundNienKhoa.nienKhoaId);
-        openNotify(
-          `Đã tự chọn học kỳ hiện tại: ${hocKyHienHanh.tenHocKy} (${foundNienKhoa.tenNienKhoa})`,
-          "info"
-        );
+        // ❌ Bỏ notify info để đỡ spam
+        // openNotify(
+        //   `Đã tự chọn học kỳ hiện tại: ${hocKyHienHanh.tenHocKy} (${foundNienKhoa.tenNienKhoa})`,
+        //   "info"
+        // );
       }
     }
   }, [hocKyHienHanh, hocKyNienKhoas, selectedHocKyId, openNotify]);
@@ -169,12 +170,13 @@ export default function DuyetHocPhan({
     );
     const hocKy = nienKhoa?.hocKy.find((hk) => hk.id === tempSelectedHocKyId);
 
-    if (hocKy && nienKhoa) {
-      openNotify(
-        `Đã chọn Học kỳ ${hocKy.tenHocKy} (${nienKhoa.tenNienKhoa})`,
-        "info"
-      );
-    }
+    // ❌ Không cần notify info khi chọn thành công, UI đã thể hiện rồi
+    // if (hocKy && nienKhoa) {
+    //   openNotify(
+    //     `Đã chọn Học kỳ ${hocKy.tenHocKy} (${nienKhoa.tenNienKhoa})`,
+    //     "info"
+    //   );
+    // }
   };
 
   // ✅ Handler từ chối (nếu có action)
@@ -262,7 +264,7 @@ export default function DuyetHocPhan({
           />
         </div>
 
-        <table className="table table__duyethp">
+        <table className="table table__duyethp" style={{ color: "#172b4d" }}>
           <thead>
             <tr>
               <th>STT</th>

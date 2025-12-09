@@ -1,9 +1,11 @@
 // src/pages/sv/SVLopHocPhanDetail.tsx
+import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import "../../styles/reset.css";
 import "../../styles/menu.css";
 import { useGVLopHocPhanDetail } from "../../features/gv/hooks";
 import SVTaiLieuList from "./components/SVTaiLieuList";
+import type { SVTaiLieuDTO } from "../../features/sv/types";
 
 export default function SVLopHocPhanDetail() {
   const { id } = useParams<{ id: string }>();
@@ -11,8 +13,20 @@ export default function SVLopHocPhanDetail() {
     info: lopHocPhan,
     documents,
     loading,
-    getDocumentUrl,
   } = useGVLopHocPhanDetail(id || "");
+
+  // Transform GVDocumentDTO to SVTaiLieuDTO format
+  const svDocuments = useMemo((): SVTaiLieuDTO[] => {
+    if (!documents) return [];
+    return documents.map((doc) => ({
+      id: doc.id,
+      tenTaiLieu: doc.ten_tai_lieu,
+      fileType: doc.file_type,
+      fileUrl: "",
+      uploadedAt: doc.created_at || "",
+      uploadedBy: "",
+    }));
+  }, [documents]);
 
   if (loading) {
     return (
@@ -61,7 +75,7 @@ export default function SVLopHocPhanDetail() {
             marginBottom: "24px",
           }}
         >
-          <h3 className="sub__title_chuyenphase">
+          <h3 className="sub__title--chuyenphase">
             {lopHocPhan.ma_lop} - {lopHocPhan.hoc_phan.ten_hoc_phan}
           </h3>
           <div style={{ marginTop: "12px", color: "#6b7280" }}>
@@ -74,12 +88,8 @@ export default function SVLopHocPhanDetail() {
 
         {/* ✅ Danh sách tài liệu (READ-ONLY) */}
         <div className="form-section">
-          <h3 className="sub__title_chuyenphase">📚 Tài liệu học tập</h3>
-          <SVTaiLieuList
-            documents={documents}
-            onGetUrl={getDocumentUrl}
-            lhpId={id || ""}
-          />
+          <h3 className="sub__title--chuyenphase">Tài liệu học tập</h3>
+          <SVTaiLieuList documents={svDocuments} lhpId={id || ""} />
         </div>
       </div>
     </section>

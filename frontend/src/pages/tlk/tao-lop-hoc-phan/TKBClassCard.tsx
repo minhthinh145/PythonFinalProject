@@ -13,7 +13,6 @@ export default function TKBClassCard({
   isComplete,
   isForSinhVien = false,
 }: Props) {
-
   const hasAnyInfo =
     instance.tietBatDau ||
     instance.tietKetThuc ||
@@ -47,8 +46,23 @@ export default function TKBClassCard({
               Tiết: {instance.tietBatDau}-{instance.tietKetThuc}
             </p>
           )}
-          {isForSinhVien && <p>Giảng viên: {instance.tenGiangVien}</p>}
-          {instance.tenPhongHoc && <p>Phòng: {instance.tenPhongHoc}</p>}
+
+          {isForSinhVien && (
+            <p>
+              {" "}
+              <span style={{ color: "blue" }}>Giảng viên:</span>{" "}
+              {instance.tenGiangVien}
+            </p>
+          )}
+
+          {instance.tenPhongHoc && (
+            <p>
+              <span style={{ color: "#0a4358", fontWeight: "bold" }}>
+                Phòng:
+                {instance.tenPhongHoc}
+              </span>{" "}
+            </p>
+          )}
         </>
       )}
     </div>
