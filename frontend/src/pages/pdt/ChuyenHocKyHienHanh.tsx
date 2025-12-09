@@ -146,7 +146,7 @@ export default function ChuyenHocKyHienHanh() {
 
           <form className="search-form" onSubmit={handleSubmit}>
             {/* Niên khóa */}
-            <div className="form__field">
+            <div className="form__group">
               <label className="form__label" htmlFor="nien-khoa">
                 Niên khóa
               </label>
@@ -167,7 +167,7 @@ export default function ChuyenHocKyHienHanh() {
             </div>
 
             {/* Học kỳ */}
-            <div className="form__field">
+            <div className="form__group">
               <label className="form__label" htmlFor="hoc-ky">
                 Học kỳ
               </label>
@@ -220,8 +220,8 @@ export default function ChuyenHocKyHienHanh() {
               }}
             >
               <div className="status-row" style={{ marginBottom: "12px" }}>
-                <strong>Học kỳ:</strong>{" "}
-                <span className="span__hk-nk">
+                <strong className="bold">Học kỳ:</strong>{" "}
+                <span className="span__hk-nk status-pill status-pill--neutral">
                   {currentSemester.ten_hoc_ky} ({currentSemester.ten_nien_khoa})
                 </span>
               </div>
@@ -229,24 +229,19 @@ export default function ChuyenHocKyHienHanh() {
               {(currentSemester.ngay_bat_dau ||
                 currentSemester.ngay_ket_thuc) && (
                 <div className="status-row" style={{ marginBottom: "12px" }}>
-                  <strong>Thời gian:</strong>{" "}
-                  {currentSemester.ngay_bat_dau && currentSemester.ngay_ket_thuc
-                    ? `${currentSemester.ngay_bat_dau} → ${currentSemester.ngay_ket_thuc}`
-                    : "Chưa thiết lập"}
+                  <strong className="bold">Thời gian:</strong>{" "}
+                  <span className="status-pill status-pill--time">
+                    {currentSemester.ngay_bat_dau &&
+                    currentSemester.ngay_ket_thuc
+                      ? `${currentSemester.ngay_bat_dau} → ${currentSemester.ngay_ket_thuc}`
+                      : "Chưa thiết lập"}
+                  </span>
                 </div>
               )}
 
               <div className="status-row">
-                <strong>Trạng thái:</strong>{" "}
-                <span
-                  style={{
-                    color: "#16a34a",
-                    fontWeight: 600,
-                    padding: "4px 12px",
-                    backgroundColor: "#dcfce7",
-                    borderRadius: "4px",
-                  }}
-                >
+                <strong className="bold">Trạng thái:</strong>{" "}
+                <span className="status-pill status-pill--active">
                   {currentSemester.trang_thai}
                 </span>
               </div>

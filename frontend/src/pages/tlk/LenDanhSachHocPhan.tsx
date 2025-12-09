@@ -26,6 +26,7 @@ const LenDanhSachHocPhan: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  /* ================= Fuse search ================= */
   const fuse = useMemo(
     () =>
       new Fuse<MonHocDTO>(monHocs, {
@@ -35,15 +36,41 @@ const LenDanhSachHocPhan: React.FC = () => {
     [monHocs]
   );
 
+  /* ================= currentSemester: đọc field an toàn ================= */
+  const currentSemester = useMemo(() => {
+    if (!hocKyHienHanh) return null;
+
+    const hk: any = hocKyHienHanh;
+
+    // Thử nhiều kiểu key: camelCase, snake_case, hoặc flatten
+    const tenHocKy: string =
+      hk.tenHocKy ?? hk.ten_hoc_ky ?? hk.ten_hoc_ky_hien_hanh ?? "";
+
+    const tenNienKhoa: string =
+      hk.nienKhoa?.tenNienKhoa ?? hk.nienKhoa ?? hk.nien_khoa ?? "";
+
+    // Nếu cả 2 đều rỗng thì coi như không có học kỳ hiện hành
+    if (!tenHocKy && !tenNienKhoa) return null;
+
+    return {
+      tenHocKy,
+      tenNienKhoa,
+    };
+  }, [hocKyHienHanh]);
+
+  const currentSemesterText = currentSemester
+    ? ` (Niên khóa ${currentSemester.tenNienKhoa}, Học kỳ ${currentSemester.tenHocKy})`
+    : "";
+
+  /* ================= API calls ================= */
   const fetchHocKyHienHanh = async () => {
     try {
       const result = await tlkAPI.getHocKyHienHanh();
       if (result.isSuccess && result.data) {
         setHocKyHienHanh(result.data);
-        openNotify?.(
-          `Học kỳ hiện hành: ${result.data.ten_hoc_ky} • Niên khóa ${result.data.nien_khoa}`,
-          "info"
-        );
+        // Nếu muốn debug, có thể bật log:
+        // console.log("hocKyHienHanh >>>", result.data);
+        // Không notify info để đỡ spam
       } else {
         openNotify?.("Không lấy được học kỳ hiện hành", "warning");
         setHocKyHienHanh(null);
@@ -61,7 +88,7 @@ const LenDanhSachHocPhan: React.FC = () => {
       if (result.isSuccess && Array.isArray(result.data)) {
         setMonHocs(result.data);
         setFilteredMonHocs(result.data);
-        openNotify?.(`Đã tải ${result.data.length} môn học`, "info");
+        // Không cần notify "Đã tải X môn học"
       } else {
         setMonHocs([]);
         setFilteredMonHocs([]);
@@ -86,26 +113,28 @@ const LenDanhSachHocPhan: React.FC = () => {
     })();
   }, []);
 
+  /* ================= Handlers ================= */
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const q = searchValue.trim();
     if (!q) {
       setFilteredMonHocs(monHocs);
-      openNotify?.("Đã làm mới danh sách môn học", "info");
+      // Không cần notify “Đã làm mới danh sách môn học”
       return;
     }
     const results = fuse.search(q).map((r) => r.item);
     setFilteredMonHocs(results);
-    if (results.length === 0)
+    if (results.length === 0) {
       openNotify?.("Không tìm thấy môn học phù hợp", "warning");
-    else openNotify?.(`Tìm thấy ${results.length} môn học`, "info");
+    }
+    // Không cần notify “Tìm thấy X môn học”
   };
 
   const toggleSelectMon = async (monHocId: string) => {
     const existed = selectedRows.find((r) => r.monHocId === monHocId);
     if (existed) {
       setSelectedRows((prev) => prev.filter((r) => r.monHocId !== monHocId));
-      openNotify?.("Đã bỏ chọn môn", "info");
+      // Không cần notify “Đã bỏ chọn môn”
       return;
     }
     // nạp danh sách GV cho môn (nếu chưa có)
@@ -128,7 +157,7 @@ const LenDanhSachHocPhan: React.FC = () => {
       ...prev,
       { monHocId, soLuongLop: 1, giangVienId: "" },
     ]);
-    openNotify?.("Đã thêm môn vào danh sách đề xuất", "success");
+    // Không cần notify “Đã thêm môn vào danh sách đề xuất”
   };
 
   const onChangeGV = (monHocId: string, giangVienId: string) =>
@@ -136,22 +165,13 @@ const LenDanhSachHocPhan: React.FC = () => {
       prev.map((r) => (r.monHocId === monHocId ? { ...r, giangVienId } : r))
     );
 
-  const onChangeSoLuongLop = (monHocId: string, so: number) =>
-    setSelectedRows((prev) =>
-      prev.map((r) =>
-        r.monHocId === monHocId ? { ...r, soLuongLop: Math.max(1, so) } : r
-      )
-    );
-
-  /**
-   */
   const addDeXuat = async (monHoc: MonHocDTO, giangVienId: string) => {
     try {
       setSubmitting(true);
 
       const result = await tlkAPI.createDeXuatHocPhan({
         maHocPhan: monHoc.id,
-        maGiangVien: giangVienId || "", // ✅ Dùng giangVienId từ param
+        maGiangVien: giangVienId || "",
       });
 
       if (result.isSuccess) {
@@ -168,29 +188,18 @@ const LenDanhSachHocPhan: React.FC = () => {
     }
   };
 
+  /* ================= Render ================= */
   return (
     <section className="main__body">
       <div className="body__title">
-        <p className="body__title-text">LÊN DANH SÁCH HỌC PHẦN</p>
+        <p className="body__title-text">
+          LÊN DANH SÁCH HỌC PHẦN {currentSemesterText}
+        </p>
       </div>
 
       <div className="body__inner">
-        <div style={{ marginBottom: 14, opacity: 0.85 }}>
-          {hocKyHienHanh ? (
-            <small>
-              Học kỳ hiện hành: <b>{hocKyHienHanh.ten_hoc_ky}</b> — Niên khóa{" "}
-              <b>{hocKyHienHanh.nien_khoa}</b>
-            </small>
-          ) : (
-            <small>
-              {loading
-                ? "Đang tải học kỳ hiện hành…"
-                : "Chưa có học kỳ hiện hành"}
-            </small>
-          )}
-        </div>
         <form className="search-form" onSubmit={handleSearch}>
-          <div className="form__group form__group__ctt">
+          <div className="form__group form__group--ctt">
             <input
               type="text"
               id="search-input"
@@ -215,7 +224,7 @@ const LenDanhSachHocPhan: React.FC = () => {
           </button>
         </form>
 
-        <table className="table table_ldshp">
+        <table className="table table--ldshp" style={{ color: "#172b4d" }}>
           <thead>
             <tr>
               <th className="c-chon">Chọn</th>
@@ -246,6 +255,7 @@ const LenDanhSachHocPhan: React.FC = () => {
                   <td>
                     {checked && (
                       <select
+                        className="h__40"
                         value={current?.giangVienId ?? ""}
                         onChange={(e) => onChangeGV(mh.id, e.target.value)}
                       >
@@ -262,16 +272,16 @@ const LenDanhSachHocPhan: React.FC = () => {
                   <td>
                     {checked ? (
                       <button
-                        className="btn__chung h__40"
+                        className="btn__update h__40"
                         onClick={() =>
                           addDeXuat(mh, current?.giangVienId || "")
-                        } // ✅ Truyền giangVienId
+                        }
                         disabled={submitting}
                       >
                         {submitting ? "Đang xử lý..." : "Thêm"}
                       </button>
                     ) : (
-                      <span style={{ opacity: 0.5 }}>—</span>
+                      <span style={{ opacity: 0.5 }}></span>
                     )}
                   </td>
                 </tr>
@@ -279,7 +289,7 @@ const LenDanhSachHocPhan: React.FC = () => {
             })}
             {filteredMonHocs.length === 0 && (
               <tr>
-                <td colSpan={7} style={{ textAlign: "center" }}>
+                <td colSpan={6} style={{ textAlign: "center" }}>
                   Không tìm thấy môn học nào phù hợp.
                 </td>
               </tr>
@@ -290,7 +300,7 @@ const LenDanhSachHocPhan: React.FC = () => {
         {selectedRows.length > 0 && (
           <button
             className="btn__chung"
-            //onClick={addDeXuat}
+            // onClick={addDeXuat} // TODO: nếu sau này muốn gửi batch
             disabled={submitting}
             style={{ marginTop: "1rem", padding: "8px 16px" }}
           >

@@ -233,13 +233,17 @@ export default function GhiDanhHocPhan(): JSX.Element {
           <div className="form__group">
             <input
               type="text"
-              placeholder="Tìm kiếm mã hoặc tên học phần..."
+              placeholder="Tìm kiếm mã hoặc tên học phần"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="form__input h__40"
+              className="form__input h__40 w__280"
             />
           </div>
-          <button type="submit" className="form__button w__140">
+          <button
+            type="submit"
+            className="form__button w__140"
+            style={{ gap: 10 }}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 640 640"
@@ -272,7 +276,7 @@ export default function GhiDanhHocPhan(): JSX.Element {
             {/* Fieldset 1 - Có thể ghi danh */}
             <fieldset className="fieldeset__dkhp mt_20">
               <legend>Đăng ký theo kế hoạch</legend>
-              <table className="table">
+              <table className="table" style={{ color: "#172b4d" }}>
                 <thead>
                   <tr>
                     <th>Chọn</th>
@@ -341,7 +345,7 @@ export default function GhiDanhHocPhan(): JSX.Element {
                 Kết quả đăng ký: {totalCourses} học phần, {totalCredits} tín chỉ
               </legend>
 
-              <table className="table">
+              <table className="table" style={{ color: "#172b4d" }}>
                 <thead>
                   <tr>
                     <th>Chọn</th>
@@ -376,7 +380,7 @@ export default function GhiDanhHocPhan(): JSX.Element {
 
               <div style={{ marginTop: "1rem" }}>
                 <button
-                  className="btn__cancel mb_10"
+                  className="btn-cancel w__140 h__40 mb_10"
                   onClick={handleCancel}
                   disabled={submitting || selectedToCancelIds.length === 0}
                 >

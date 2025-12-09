@@ -14,7 +14,7 @@ export default function LichSuDangKy() {
 
   const [selectedNienKhoa, setSelectedNienKhoa] = useState<string>("");
   const [selectedHocKyId, setSelectedHocKyId] = useState<string>("");
-  
+
   const nienKhoas = useMemo(
     () => Array.from(new Set(hocKyNienKhoas.map((nk) => nk.tenNienKhoa))),
     [hocKyNienKhoas]
@@ -106,7 +106,7 @@ export default function LichSuDangKy() {
             Đang tải dữ liệu...
           </p>
         ) : (
-          <table className="table">
+          <table className="table" style={{ color: "#172b4d" }}>
             <thead>
               <tr>
                 <th>STT</th>
@@ -160,7 +160,7 @@ export default function LichSuDangKy() {
         )}
 
         {/* Footer info */}
-        {lichSuData && (
+        {/* {lichSuData && (
           <div style={{ marginTop: 16, color: "#6b7280", fontSize: 14 }}>
             <p>
               <strong>Học kỳ:</strong> {lichSuData.hocKy.tenHocKy} (
@@ -173,7 +173,7 @@ export default function LichSuDangKy() {
               <strong>Tổng số thao tác:</strong> {lichSuData.lichSu.length}
             </p>
           </div>
-        )}
+        )} */}
       </div>
     </section>
   );

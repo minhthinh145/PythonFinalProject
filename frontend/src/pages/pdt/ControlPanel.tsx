@@ -20,8 +20,6 @@ const DEFAULT_STATUSES = [
   { key: "binh_thuong", label: "Bình thường" },
 ];
 
-
-
 export default function ControlPanel({
   statuses = DEFAULT_STATUSES,
   onSet,
@@ -69,13 +67,13 @@ export default function ControlPanel({
   // ✅ Reset demo data - gọi API thực sự
   const handleReset = async () => {
     const result = await resetData();
-    
+
     if (result.isSuccess && result.data) {
       openNotify({
         message: `✅ Reset thành công ${result.data.totalCleared} bảng dữ liệu!`,
         type: "success",
       });
-      
+
       // Call parent callback and reload
       onReset?.();
       window.location.reload();
@@ -85,7 +83,7 @@ export default function ControlPanel({
         type: "error",
       });
     }
-    
+
     setShowResetConfirm(false);
   };
 
@@ -132,22 +130,24 @@ export default function ControlPanel({
               className="btn-cancel h__40__w__100"
               onClick={() => setShowResetConfirm(true)}
               disabled={resetLoading}
-              style={{ background: "#f59e0b", color: "white" }}
             >
-              🔄 Reset Demo Data
+              Reset Data
             </button>
           ) : (
-            <div style={{ 
-              padding: 16, 
-              background: "#fff3cd", 
-              borderRadius: 8,
-              border: "1px solid #ffc107"
-            }}>
+            <div
+              style={{
+                padding: 16,
+                background: "#fff3cd",
+                borderRadius: 8,
+                border: "1px solid #ffc107",
+              }}
+            >
               <p style={{ marginBottom: 12, color: "#92400e" }}>
                 ⚠️ <strong>Cảnh báo:</strong> Xóa toàn bộ dữ liệu demo?
                 <br />
                 <em style={{ fontSize: 13 }}>
-                  (Giữ: users, môn học, khoa, phòng. Xóa: đăng ký, học phí, TKB...)
+                  (Giữ: users, môn học, khoa, phòng. Xóa: đăng ký, học phí,
+                  TKB...)
                 </em>
               </p>
               <div style={{ display: "flex", gap: 10 }}>
@@ -155,13 +155,13 @@ export default function ControlPanel({
                   type="button"
                   onClick={handleReset}
                   disabled={resetLoading}
-                  style={{ 
-                    padding: "8px 16px", 
-                    background: "#dc2626", 
+                  style={{
+                    padding: "8px 16px",
+                    background: "#dc2626",
                     color: "white",
                     border: "none",
                     borderRadius: 6,
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                 >
                   {resetLoading ? "Đang reset..." : "✅ Xác nhận Reset"}
@@ -170,13 +170,13 @@ export default function ControlPanel({
                   type="button"
                   onClick={() => setShowResetConfirm(false)}
                   disabled={resetLoading}
-                  style={{ 
-                    padding: "8px 16px", 
-                    background: "#6b7280", 
+                  style={{
+                    padding: "8px 16px",
+                    background: "#6b7280",
                     color: "white",
                     border: "none",
                     borderRadius: 6,
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                 >
                   ❌ Hủy
@@ -195,4 +195,3 @@ export default function ControlPanel({
     </section>
   );
 }
-

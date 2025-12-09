@@ -126,7 +126,6 @@ export default function TaoThoiKhoaBieuModal({
       }
 
       tkb.danhSachLop.forEach((lop) => {
-
         const instance: ClassInstance = {
           id: lop.id || `existing-${Date.now()}-${Math.random()}`,
           maLopHP: tkb.maHocPhan,
@@ -283,7 +282,6 @@ export default function TaoThoiKhoaBieuModal({
 
   // Hàm validate và lưu TKB
   const handleSave = async () => {
-
     const newInstances = instances.filter((inst) => !inst.isFromBackend);
 
     const incompleteInstances = newInstances.filter(
@@ -426,7 +424,7 @@ export default function TaoThoiKhoaBieuModal({
 
           <div className="tkb-modal-footer">
             <button
-              className="btn__cancel"
+              className="btn-cancel"
               onClick={onClose}
               disabled={submitting}
             >
