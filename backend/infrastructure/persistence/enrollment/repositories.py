@@ -98,7 +98,7 @@ class KyPhaseRepository(IKyPhaseRepository):
                 phase=p.get('tenPhase'),
                 start_at=start_at,
                 end_at=end_at,
-                is_enabled=True # Default to enabled
+                is_enabled=False # Default to enabled
             )
             # phase.save(using='neon')
             new_phases.append(phase)
@@ -109,7 +109,7 @@ class KyPhaseRepository(IKyPhaseRepository):
                 "tenPhase": p.get('tenPhase'),
                 "ngayBatDau": p.get('ngayBatDau'),
                 "ngayKetThuc": p.get('ngayKetThuc'),
-                "isEnabled": True
+                "isEnabled": False
             })
             
         # KyPhase.objects.using('neon').bulk_create(new_phases)
