@@ -86,7 +86,7 @@ const QuanLyPDT: React.FC = () => {
   return (
     <section className="main__body">
       <div className="body__title">
-        <p className="body__title-text">QUẢN LÝ</p>
+        <p className="body__title-text">QUẢN LÝ NỘI BỘ</p>
       </div>
 
       <div className="body__inner">

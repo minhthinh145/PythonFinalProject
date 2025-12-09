@@ -10,7 +10,7 @@
 }
 
 .confirm__modal {
-  height: 300px;
+  height: fit-content;
   width: 400px;
   background: #fff;
   border-radius: 16px;

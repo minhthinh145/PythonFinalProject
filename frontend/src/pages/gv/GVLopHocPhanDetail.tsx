@@ -50,7 +50,7 @@ export default function GVLopHocPhanDetail() {
             {/* Tabs */}
             <div className="tabs" style={{ marginBottom: 12 }}>
               <button
-                className="btn__chung h__40 w__60 mr_20 btn-back-icon"
+                className="btn__chung h__40 w__60 mr_20 tab-btn"
                 onClick={() => navigate(-1)} // quay lại trang trước
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
@@ -111,7 +111,7 @@ export default function GVLopHocPhanDetail() {
             {/* Sinh viên */}
             {tab === "sv" && (
               <div className="table__wrapper">
-                <table className="table">
+                <table className="table" style={{ color: "#172b4d" }}>
                   <thead>
                     <tr>
                       <th>MSSV</th>
@@ -148,7 +148,7 @@ export default function GVLopHocPhanDetail() {
             {tab === "grades" && (
               <div>
                 <div className="table__wrapper">
-                  <table className="table">
+                  <table className="table" style={{ color: "#172b4d" }}>
                     <thead>
                       <tr>
                         <th>MSSV</th>
@@ -197,7 +197,11 @@ export default function GVLopHocPhanDetail() {
                   </table>
                 </div>
                 <div style={{ marginTop: 12 }}>
-                  <button onClick={saveGrades} disabled={submitting}>
+                  <button
+                    className="btn__update h__40 w__100"
+                    onClick={saveGrades}
+                    disabled={submitting}
+                  >
                     {submitting ? "Đang lưu..." : "Lưu điểm"}
                   </button>
                 </div>

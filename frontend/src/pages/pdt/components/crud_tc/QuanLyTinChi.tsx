@@ -89,15 +89,12 @@ export default function QuanLyTinChi() {
     // ✅ Cần cả 2 data
     if (!hocKyHienHanh || flatHocKys.length === 0) return;
 
-
     // ✅ Tìm học kỳ trong flatHocKys
     const foundHocKy = flatHocKys.find((hk) => hk.id === hocKyHienHanh.id);
 
     if (foundHocKy) {
-
       setSelectedNienKhoa(foundHocKy.tenNienKhoa);
       setForm((f) => ({ ...f, hocKyId: foundHocKy.id }));
-      
     } else {
       // Không tìm thấy học kỳ
     }
@@ -345,7 +342,14 @@ export default function QuanLyTinChi() {
               borderBottom: "2px solid #e5e7eb",
             }}
           >
-            <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 600 }}>
+            <h3
+              style={{
+                margin: 0,
+                fontSize: "16px",
+                fontWeight: 600,
+                color: "#172b4d",
+              }}
+            >
               Danh sách chính sách tín chỉ
             </h3>
 
@@ -373,7 +377,7 @@ export default function QuanLyTinChi() {
           </div>
 
           {/* BẢNG DANH SÁCH */}
-          <table className="table">
+          <table className="table" style={{ color: "#172b4d" }}>
             <thead>
               <tr>
                 <th>STT</th>
@@ -443,27 +447,46 @@ export default function QuanLyTinChi() {
                           }}
                         >
                           <button
-                            className="btn__chung"
+                            className="btn__chung df_center gap_10"
                             onClick={() => handleSaveEdit(d.id)}
                             style={{ padding: "4px 12px", fontSize: "13px" }}
                           >
-                            💾 Lưu
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 448 512"
+                            >
+                              <path
+                                fill="#ffffff"
+                                d="M64 32C28.7 32 0 60.7 0 96L0 416c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-242.7c0-17-6.7-33.3-18.7-45.3L352 50.7C340 38.7 323.7 32 306.7 32L64 32zm32 96c0-17.7 14.3-32 32-32l160 0c17.7 0 32 14.3 32 32l0 64c0 17.7-14.3 32-32 32l-160 0c-17.7 0-32-14.3-32-32l0-64zM224 288a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"
+                              />
+                            </svg>{" "}
+                            Lưu
                           </button>
                           <button
-                            className="btn__cancel"
+                            className="btn-cancel"
                             onClick={handleCancelEdit}
                             style={{ padding: "4px 12px", fontSize: "13px" }}
                           >
-                            ✕ Hủy
+                            Hủy
                           </button>
                         </div>
                       ) : (
                         <button
-                          className="btn__chung"
+                          className="btn__update df_center gap_10 h__40"
                           onClick={() => handleStartEdit(d.id, d.phiMoiTinChi)}
                           style={{ padding: "4px 12px", fontSize: "13px" }}
                         >
-                          ✏️ Chỉnh sửa
+                          <svg
+                            className="df_center"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 640 640"
+                          >
+                            <path
+                              fill="currentColor"
+                              d="M416.9 85.2L372 130.1L509.9 268L554.8 223.1C568.4 209.6 576 191.2 576 172C576 152.8 568.4 134.4 554.8 120.9L519.1 85.2C505.6 71.6 487.2 64 468 64C448.8 64 430.4 71.6 416.9 85.2zM338.1 164L122.9 379.1C112.2 389.8 104.4 403.2 100.3 417.8L64.9 545.6C62.6 553.9 64.9 562.9 71.1 569C77.3 575.1 86.2 577.5 94.5 575.2L222.3 539.7C236.9 535.6 250.2 527.9 261 517.1L476 301.9L338.1 164z"
+                            ></path>
+                          </svg>{" "}
+                          Chỉnh sửa
                         </button>
                       )}
                     </td>

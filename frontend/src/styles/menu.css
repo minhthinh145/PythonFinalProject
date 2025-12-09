@@ -1043,6 +1043,10 @@ input.form__floating-label__quanly {
   border-radius: 20px;
 }
 
+.gap_10 {
+  gap: 10px !important;
+}
+
 .p__0 {
   padding: 0px !important;
 }
@@ -2280,7 +2284,7 @@ th {
   display: inline-flex; /* rất quan trọng */
   align-items: center; /* căn giữa input + text theo chiều dọc */
   cursor: pointer;
-  color: #143266;
+  color: #ffffff;
   margin-top: 6px;
 }
 

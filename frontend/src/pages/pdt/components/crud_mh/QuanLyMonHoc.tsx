@@ -67,14 +67,14 @@ const QuanLyMonHoc: React.FC = () => {
       // Let's use the existing pdtApi.getDanhSachKhoa and map if needed.
       const res = await pdtApi.getDanhSachKhoa();
       if (res.isSuccess) {
-         // Map camelCase to snake_case if necessary, or update component to use camelCase.
-         // Updating component to use camelCase is better for consistency.
-         // But for now, let's map to keep changes minimal in logic.
-         const mapped = (res.data || []).map((k: any) => ({
-             id: k.id,
-             ten_khoa: k.tenKhoa || k.ten_khoa // Handle both
-         }));
-         setKhoaList(mapped);
+        // Map camelCase to snake_case if necessary, or update component to use camelCase.
+        // Updating component to use camelCase is better for consistency.
+        // But for now, let's map to keep changes minimal in logic.
+        const mapped = (res.data || []).map((k: any) => ({
+          id: k.id,
+          ten_khoa: k.tenKhoa || k.ten_khoa, // Handle both
+        }));
+        setKhoaList(mapped);
       }
     } catch {
       // có thể bỏ qua
@@ -216,7 +216,7 @@ const QuanLyMonHoc: React.FC = () => {
             />
           </div>
 
-          <table className="table table_quanly">
+          <table className="table table_quanly" style={{ color: "#172b4d" }}>
             <thead>
               <tr>
                 <th>Mã môn</th>

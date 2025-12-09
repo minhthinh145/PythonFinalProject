@@ -156,7 +156,7 @@ export function PhaseHocKyNienKhoaSetup({
     <div className="form-section" style={{ marginTop: "24px" }}>
       <h3 className="sub__title_chuyenphase">Quản lý thời gian các phase</h3>
 
-      <table className="table" style={{ marginTop: "16px" }}>
+      <table className="table" style={{ marginTop: "16px", color: "#172b4d" }}>
         <thead>
           <tr>
             <th style={{ width: "25%" }}>Tên phase</th>

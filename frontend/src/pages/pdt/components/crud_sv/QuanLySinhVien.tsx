@@ -62,7 +62,7 @@ const QuanLySinhVien: React.FC = () => {
       if (!nganhRes.isSuccess) throw new Error(nganhRes.message);
 
       setKhoaList(khoaRes.data || []);
-      
+
       // Map NganhDTO (snake_case) to Nganh (camelCase)
       const mappedNganh = (nganhRes.data || []).map((n: any) => ({
         id: n.id,
@@ -237,7 +237,7 @@ const QuanLySinhVien: React.FC = () => {
           </div>
 
           {/* Bảng */}
-          <table className="table table_quanly">
+          <table className="table table_quanly" style={{ color: "#172b4d" }}>
             <thead>
               <tr>
                 <th>Họ và Tên</th>

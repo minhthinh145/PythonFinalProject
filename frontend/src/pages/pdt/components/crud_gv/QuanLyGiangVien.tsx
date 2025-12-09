@@ -50,12 +50,12 @@ const QuanLyGiangVien: React.FC = () => {
     try {
       const res = await pdtApi.getDanhSachKhoa();
       if (res.isSuccess) {
-         // Map camelCase to snake_case if necessary
-         const mapped = (res.data || []).map((k: any) => ({
-             id: k.id,
-             ten_khoa: k.tenKhoa || k.ten_khoa
-         }));
-         setKhoaList(mapped);
+        // Map camelCase to snake_case if necessary
+        const mapped = (res.data || []).map((k: any) => ({
+          id: k.id,
+          ten_khoa: k.tenKhoa || k.ten_khoa,
+        }));
+        setKhoaList(mapped);
       }
     } catch {
       // có thể bỏ qua, không cần notify
@@ -170,7 +170,7 @@ const QuanLyGiangVien: React.FC = () => {
             />
           </div>
 
-          <table className="table table_quanly">
+          <table className="table table_quanly" style={{ color: "#172b4d" }}>
             <thead>
               <tr>
                 <th>Họ và Tên</th>
