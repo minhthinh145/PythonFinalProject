@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 function App() {
   const [data, setData] = useState<any>(null);
   useEffect(() => {
-    fetch(import.meta.env.VITE_API_BASE_URL + "/health")
+    fetch((import.meta.env.VITE_API_URL || "/api") + "/health")
       .then((r) => r.json())
       .then(setData)
       .catch(console.error);

@@ -8,6 +8,8 @@ import { setCredentials } from "../features/auth/authSlice";
 import { ROLE_HOME } from "../features/auth/roleMap";
 import { useModalContext } from "../hook/ModalContext";
 
+const API_URL = import.meta.env.VITE_API_URL || "/api";
+
 function LoginPage() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -29,7 +31,7 @@ function LoginPage() {
     setIsSendingForgot(true);
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/auth/forgot-password`,
+        `${API_URL}/auth/forgot-password`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
