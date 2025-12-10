@@ -2148,6 +2148,7 @@ th {
   padding: 14px 18px;
   border-top: 1px dashed var(--cp-border);
   transition: background 160ms ease;
+  border-radius: 16px;
 }
 
 .cp-row:first-of-type {
@@ -2155,7 +2156,8 @@ th {
 }
 
 .cp-row:hover {
-  background: #fbfdff;
+  background: #a9c0d83d;
+  border-radius: 16px;
 }
 
 .cp-row--head {
@@ -2284,7 +2286,7 @@ th {
   display: inline-flex; /* rất quan trọng */
   align-items: center; /* căn giữa input + text theo chiều dọc */
   cursor: pointer;
-  color: #ffffff;
+  color: #124874;
   margin-top: 6px;
 }
 

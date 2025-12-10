@@ -240,14 +240,10 @@ export default function TaoLopHocPhan() {
           submitting={false}
           selectedNienKhoa={selectedNienKhoa}
           selectedHocKy={selectedHocKyId}
-          semesterStart=""
-          semesterEnd=""
           currentSemester={currentSemester}
           semesterMessage=""
           onChangeNienKhoa={handleChangeNienKhoa}
           onChangeHocKy={setSelectedHocKyId}
-          onChangeStart={() => {}}
-          onChangeEnd={() => {}}
           onSubmit={(e) => e.preventDefault()}
         />
 

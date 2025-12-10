@@ -1,5 +1,5 @@
 // src/pages/pdt/ControlPanel.tsx
-import React, { useState } from "react";
+import React from "react";
 import { useModalContext } from "../../hook/ModalContext";
 import { useTogglePhase } from "../../features/pdt/hooks/useTogglePhase";
 import { useResetDemoData } from "../../features/pdt/hooks/useResetDemoData";
@@ -25,14 +25,12 @@ export default function ControlPanel({
   onSet,
   onReset,
 }: ControlPanelProps) {
-  const { openNotify } = useModalContext();
+  const { openNotify, openConfirm } = useModalContext();
   const { toggle, loading } = useTogglePhase();
   const { resetData, loading: resetLoading } = useResetDemoData();
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // ✅ Toggle phase - gọi API qua hook
   const handleTogglePhase = async (phaseKey: string) => {
-    // Map frontend keys to backend enums (legacy values)
     const phaseMapping: Record<string, string> = {
       de_xuat_phe_duyet: "de_xuat_phe_duyet",
       ghi_danh: "ghi_danh",
@@ -54,7 +52,6 @@ export default function ControlPanel({
         type: statusColor,
       });
 
-      // ✅ Call parent callback if provided
       onSet?.(phaseKey);
     } else {
       openNotify({
@@ -64,8 +61,24 @@ export default function ControlPanel({
     }
   };
 
-  // ✅ Reset demo data - gọi API thực sự
-  const handleReset = async () => {
+  // ✅ Reset demo data dùng openConfirm + openNotify
+  const handleResetClick = async () => {
+    const ok = await (openConfirm
+      ? openConfirm({
+          message:
+            "Hành động này sẽ xóa toàn bộ dữ liệu DEMO (đăng ký, học phí, thời khóa biểu, đề xuất, phases...).\nDữ liệu master (users, môn học, khoa, phòng) vẫn được giữ lại.",
+          confirmText: "Reset ngay",
+          cancelText: "Hủy",
+          variant: "danger",
+        })
+      : Promise.resolve(
+          window.confirm(
+            "Bạn có chắc muốn RESET toàn bộ dữ liệu demo (trừ dữ liệu master)?"
+          )
+        ));
+
+    if (!ok) return;
+
     const result = await resetData();
 
     if (result.isSuccess && result.data) {
@@ -74,7 +87,6 @@ export default function ControlPanel({
         type: "success",
       });
 
-      // Call parent callback and reload
       onReset?.();
       window.location.reload();
     } else {
@@ -83,8 +95,6 @@ export default function ControlPanel({
         type: "error",
       });
     }
-
-    setShowResetConfirm(false);
   };
 
   return (
@@ -101,7 +111,7 @@ export default function ControlPanel({
         </div>
 
         {/* Rows */}
-        {statuses.map((st, idx) => (
+        {statuses.map((st) => (
           <div className="cp-row" key={st.key}>
             <div className="cp-cell">
               <label className="pos__unset cp-label">
@@ -122,71 +132,18 @@ export default function ControlPanel({
           </div>
         ))}
 
-        {/* Footer - Reset Button */}
+        {/* Footer - Reset Button dùng ConfirmRoot */}
         <div className="cp-footer" style={{ marginTop: 16 }}>
-          {!showResetConfirm ? (
-            <button
-              type="button"
-              className="btn-cancel h__40__w__100"
-              onClick={() => setShowResetConfirm(true)}
-              disabled={resetLoading}
-            >
-              Reset Data
-            </button>
-          ) : (
-            <div
-              style={{
-                padding: 16,
-                background: "#fff3cd",
-                borderRadius: 8,
-                border: "1px solid #ffc107",
-              }}
-            >
-              <p style={{ marginBottom: 12, color: "#92400e" }}>
-                ⚠️ <strong>Cảnh báo:</strong> Xóa toàn bộ dữ liệu demo?
-                <br />
-                <em style={{ fontSize: 13 }}>
-                  (Giữ: users, môn học, khoa, phòng. Xóa: đăng ký, học phí,
-                  TKB...)
-                </em>
-              </p>
-              <div style={{ display: "flex", gap: 10 }}>
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  disabled={resetLoading}
-                  style={{
-                    padding: "8px 16px",
-                    background: "#dc2626",
-                    color: "white",
-                    border: "none",
-                    borderRadius: 6,
-                    cursor: "pointer",
-                  }}
-                >
-                  {resetLoading ? "Đang reset..." : "✅ Xác nhận Reset"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowResetConfirm(false)}
-                  disabled={resetLoading}
-                  style={{
-                    padding: "8px 16px",
-                    background: "#6b7280",
-                    color: "white",
-                    border: "none",
-                    borderRadius: 6,
-                    cursor: "pointer",
-                  }}
-                >
-                  ❌ Hủy
-                </button>
-              </div>
-            </div>
-          )}
+          <button
+            type="button"
+            className="btn-cancel h__40__w__100"
+            onClick={handleResetClick}
+            disabled={resetLoading}
+          >
+            {resetLoading ? "Đang reset..." : "Reset Data"}
+          </button>
         </div>
 
-        {/* ✅ Note */}
         <p style={{ marginTop: 16, color: "#6b7280", fontSize: 14 }}>
           <strong>⚠️ Lưu ý:</strong> API này toggle phase của{" "}
           <strong>học kỳ hiện hành</strong>. Chỉ dùng cho mục đích demo/testing.

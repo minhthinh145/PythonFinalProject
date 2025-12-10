@@ -292,8 +292,8 @@ const CHOICES: Choice[] = [
   },
   {
     key: "fileqa",
-    title: "File QA",
-    desc: "Hỏi theo tài liệu đã nạp.",
+    title: "HCMUE PLUS",
+    desc: "Chatbot HCMUE PLUS.",
     emoji: "🗂️",
   },
 ];
@@ -311,8 +311,8 @@ export default function ChatbotWidget() {
       payload: {
         text:
           "Xin chào 👋\n" +
-          "- Bạn có thể **chọn 1 trong 6 chức năng** ở trên.\n" +
-          "- Hoặc nhập câu hỏi ở ô chat bên dưới để dùng **Trợ lý tổng hợp (Auto)**.",
+          "- Bạn có thể chọn 1 trong 6 chức năng ở trên.\n" +
+          "- Hoặc nhập câu hỏi ở ô chat bên dưới để dùng Trợ lý HCMUE.",
       },
     },
   ]);
@@ -455,9 +455,9 @@ export default function ChatbotWidget() {
     setDomain(k);
     setModePicked(true);
     resetChat(
-      `Bạn đang ở chức năng: **${
+      `Bạn đang ở chức năng: ${
         CHOICES.find((c) => c.key === k)?.title ?? k.toUpperCase()
-      }**.`
+      }.`
     );
   };
 
@@ -516,7 +516,7 @@ export default function ChatbotWidget() {
         id: uid(),
         role: "system",
         payload: {
-          text: "Bạn đang ở chế độ **Trợ lý tổng hợp (Auto)**. Hệ thống sẽ tự chọn nguồn phù hợp.",
+          text: "Bạn đang ở chế độ Trợ lý HCMUE. Hệ thống sẽ tự chọn nguồn phù hợp.",
         },
       },
       userMsg,
@@ -566,7 +566,12 @@ export default function ChatbotWidget() {
         onPointerMove={onFabPointerMove}
         onPointerUp={onFabPointerUp}
       >
-        💬
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
+          <path
+            fill="#ffffff"
+            d="M384 144c0 97.2-86 176-192 176-26.7 0-52.1-5-75.2-14L35.2 349.2c-9.3 4.9-20.7 3.2-28.2-4.2s-9.2-18.9-4.2-28.2l35.6-67.2C14.3 220.2 0 183.6 0 144 0 46.8 86-32 192-32S384 46.8 384 144zm0 368c-94.1 0-172.4-62.1-188.8-144 120-1.5 224.3-86.9 235.8-202.7 83.3 19.2 145 88.3 145 170.7 0 39.6-14.3 76.2-38.4 105.6l35.6 67.2c4.9 9.3 3.2 20.7-4.2 28.2s-18.9 9.2-28.2 4.2L459.2 498c-23.1 9-48.5 14-75.2 14z"
+          />
+        </svg>
       </button>
 
       {/* Panel: Màn chọn chức năng + ô chat trợ lý tổng hợp */}
@@ -576,8 +581,10 @@ export default function ChatbotWidget() {
           style={{ left: panelPos.left, top: panelPos.top }}
         >
           <div className="cbt-header">
-            <div className="cbt-title">Chọn chức năng</div>
-            <div className="cbt-actions">
+            <div className="cbt-header-main">
+              <div className="cbt-header-title">
+                <div className="cbt-header-app">TRỢ LÝ HCMUE</div>
+              </div>
               <button
                 className="cbt-close"
                 onClick={() => setOpen(false)}
@@ -606,14 +613,14 @@ export default function ChatbotWidget() {
 
             <div className="cbt-hint">
               Hoặc bạn có thể hỏi nhanh bên dưới, hệ thống sẽ dùng{" "}
-              <strong>Trợ lý tổng hợp</strong>.
+              <strong>Trợ lý HCMUE</strong>.
             </div>
 
             {/* Ô chat ở màn intro – dùng auto */}
             <div className="cbt-input" style={{ marginTop: 8 }}>
               <input
                 value={input}
-                placeholder="Nhập câu hỏi cho Trợ lý tổng hợp…"
+                placeholder="Nhập câu hỏi cho Trợ lý HCMUE…"
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={onKeyDownIntro}
                 disabled={loading}
@@ -636,76 +643,18 @@ export default function ChatbotWidget() {
           style={{ left: panelPos.left, top: panelPos.top }}
         >
           <div className="cbt-header">
-            <div className="cbt-title">
-              {domain === "auto"
-                ? "Trợ lý tổng hợp"
-                : `Chatbot ${String(domain).toUpperCase()}`}
-            </div>
-            <div className="cbt-actions">
-              <div className="cbt-switches">
-                {/* Nút Trợ lý tổng hợp */}
-                <button
-                  className="cbt-minibtn"
-                  style={{
-                    background:
-                      domain === "auto"
-                        ? "rgba(255,255,255,.28)"
-                        : "rgba(255,255,255,.12)",
-                    borderColor: "rgba(255,255,255,.35)",
-                  }}
-                  onClick={() => {
-                    setDomain("auto");
-                    resetChat(
-                      "Bạn đang ở chế độ **Trợ lý tổng hợp (Auto)**. Cứ hỏi tự do, hệ thống sẽ tự chọn nguồn phù hợp."
-                    );
-                  }}
-                  title="Trợ lý tổng hợp"
-                >
-                  Trợ lý tổng hợp
-                </button>
-
-                {/* 6 chức năng */}
-                {CHOICES.map((c) => (
-                  <button
-                    key={c.key}
-                    className="cbt-minibtn"
-                    style={{
-                      background:
-                        c.key === domain
-                          ? "rgba(255,255,255,.28)"
-                          : "rgba(255,255,255,.12)",
-                      borderColor: "rgba(255,255,255,.35)",
-                    }}
-                    onClick={() => {
-                      setDomain(c.key);
-                      resetChat(`Bạn đang ở chức năng: **${c.title}**.`);
-                    }}
-                    title={c.title}
-                  >
-                    {c.title}
-                  </button>
-                ))}
+            {/* Hàng trên: tiêu đề + nút Đóng */}
+            <div className="cbt-header-main">
+              <div className="cbt-header-title">
+                <div className="cbt-header-app">Trợ lý HCMUE</div>
+                <div className="cbt-header-mode">
+                  {domain === "auto"
+                    ? "Chế độ: Trợ lý tổng hợp"
+                    : `Chế độ: ${
+                        CHOICES.find((c) => c.key === domain)?.title ?? "Khác"
+                      }`}
+                </div>
               </div>
-
-              {/* Quay lại màn chọn */}
-              <button
-                className="cbt-minibtn"
-                onClick={() => {
-                  setModePicked(false);
-                  setInput("");
-                  setMessages([
-                    {
-                      id: uid(),
-                      role: "system",
-                      payload: {
-                        text: "Xin chào 👋\nBạn có thể chọn 1 chức năng hoặc hỏi nhanh cho Trợ lý tổng hợp bên dưới.",
-                      },
-                    },
-                  ]);
-                }}
-              >
-                ← Chọn lại
-              </button>
 
               <button
                 className="cbt-close"
@@ -715,6 +664,64 @@ export default function ChatbotWidget() {
                 ✕
               </button>
             </div>
+          </div>
+
+          {/* Thanh chọn chức năng nằm ngay dưới header */}
+          <div className="cbt-modebar">
+            {/* Nút Trợ lý tổng hợp */}
+            <button
+              className={
+                "cbt-minibtn cbt-modebtn" +
+                (domain === "auto" ? " cbt-modebtn--active" : "")
+              }
+              onClick={() => {
+                setDomain("auto");
+                resetChat(
+                  "Bạn đang ở chế độ Trợ lý HCMUE. Cứ hỏi tự do, hệ thống sẽ tự chọn nguồn phù hợp."
+                );
+              }}
+              title="Trợ lý tổng hợp"
+            >
+              Trợ lý tổng hợp
+            </button>
+
+            {/* 6 chức năng */}
+            {CHOICES.map((c) => (
+              <button
+                key={c.key}
+                className={
+                  "cbt-minibtn cbt-modebtn" +
+                  (c.key === domain ? " cbt-modebtn--active" : "")
+                }
+                onClick={() => {
+                  setDomain(c.key);
+                  resetChat(`Bạn đang ở chức năng: ${c.title}.`);
+                }}
+                title={c.title}
+              >
+                {c.title}
+              </button>
+            ))}
+
+            {/* Nút “Chọn lại” nhỏ bên phải */}
+            <button
+              className="cbt-minibtn cbt-modebtn cbt-modebtn--ghost"
+              onClick={() => {
+                setModePicked(false);
+                setInput("");
+                setMessages([
+                  {
+                    id: uid(),
+                    role: "system",
+                    payload: {
+                      text: "Xin chào 👋\nBạn có thể chọn 1 chức năng hoặc hỏi nhanh cho Trợ lý tổng hợp bên dưới.",
+                    },
+                  },
+                ]);
+              }}
+            >
+              ← Chọn lại
+            </button>
           </div>
 
           <div className="cbt-body">

@@ -431,7 +431,7 @@ export default function TaoThoiKhoaBieuModal({
               Hủy
             </button>
             <button
-              className="btn__save"
+              className="btn__chung"
               onClick={handleSave}
               disabled={submitting || instances.length === 0}
             >

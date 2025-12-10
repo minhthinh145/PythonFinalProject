@@ -14,14 +14,21 @@ type HocKyNienKhoaShowSetupProps = {
   submitting: boolean;
   selectedNienKhoa: string;
   selectedHocKy: string;
-  semesterStart: string;
-  semesterEnd: string;
+
+  /** ✅ Để optional: nếu không truyền thì sẽ không render ô ngày + nút Set */
+  semesterStart?: string;
+  semesterEnd?: string;
+
   currentSemester: CurrentSemester;
-  semesterMessage: string;
+  semesterMessage?: string;
+
   onChangeNienKhoa: (value: string) => void;
   onChangeHocKy: (value: string) => void;
-  onChangeStart: (value: string) => void;
-  onChangeEnd: (value: string) => void;
+
+  /** ✅ Optional luôn */
+  onChangeStart?: (value: string) => void;
+  onChangeEnd?: (value: string) => void;
+
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 };
 
@@ -44,6 +51,10 @@ export function HocKyNienKhoaShowSetup({
   const selectedNienKhoaObj = hocKyNienKhoas.find(
     (nk) => nk.nienKhoaId === selectedNienKhoa
   );
+
+  // ✅ Có props ngày thì mới hiện block "ngày bắt đầu / kết thúc + nút Set"
+  const hasSemesterRangeControls =
+    typeof semesterStart !== "undefined" && typeof semesterEnd !== "undefined";
 
   return (
     <form className="search-form" onSubmit={onSubmit}>
@@ -87,58 +98,60 @@ export function HocKyNienKhoaShowSetup({
         </select>
       </div>
 
-      {/* ✅ Date fields - RESTORE */}
-      <div className="form__group form__group__ctt">
-        <input
-          type="date"
-          className="form__input"
-          value={semesterStart}
-          onChange={(e) => onChangeStart(e.target.value)}
-          disabled={submitting}
-          required
-        />
-        <label className="form__floating-label">Ngày bắt đầu</label>
-      </div>
+      {/* ✅ Date fields + nút Set: chỉ hiện nếu có semesterStart/semesterEnd */}
+      {hasSemesterRangeControls && (
+        <>
+          <div className="form__group form__group__ctt">
+            <input
+              type="date"
+              className="form__input"
+              value={semesterStart ?? ""}
+              onChange={(e) => onChangeStart?.(e.target.value)}
+              disabled={submitting}
+              required
+            />
+            <label className="form__floating-label">Ngày bắt đầu</label>
+          </div>
 
-      <div className="form__group form__group__ctt">
-        <input
-          type="date"
-          className="form__input"
-          value={semesterEnd}
-          onChange={(e) => onChangeEnd(e.target.value)}
-          disabled={submitting}
-          required
-        />
-        <label className="form__floating-label">Ngày kết thúc</label>
-      </div>
+          <div className="form__group form__group__ctt">
+            <input
+              type="date"
+              className="form__input"
+              value={semesterEnd ?? ""}
+              onChange={(e) => onChangeEnd?.(e.target.value)}
+              disabled={submitting}
+              required
+            />
+            <label className="form__floating-label">Ngày kết thúc</label>
+          </div>
 
-      {/* ✅ Submit button - RESTORE */}
-      <button
-        type="submit"
-        className="form__button btn__chung"
-        disabled={submitting}
-      >
-        {submitting ? (
-          "Đang xử lý..."
-        ) : (
-          <>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <path
-                d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"
-                fill="currentColor"
-              />
-              ko d
-            </svg>
-            Set
-          </>
-        )}
-      </button>
+          <button
+            type="submit"
+            className="form__button btn__chung"
+            disabled={submitting}
+          >
+            {submitting ? (
+              "Đang xử lý..."
+            ) : (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <path
+                    d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"
+                    fill="currentColor"
+                  />
+                </svg>
+                Set
+              </>
+            )}
+          </button>
+        </>
+      )}
 
       {/* Message */}
       {semesterMessage && (
